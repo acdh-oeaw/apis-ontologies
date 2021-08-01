@@ -10,8 +10,21 @@ from apis_core.apis_entities.models import TempEntityClass
 @reversion.register(follow=["tempentityclass_ptr"])
 class E1_Crm_Entity(TempEntityClass):
 
-    note = models.CharField(max_length=1024, blank=True, null=True)
+    pass
 
+
+@reversion.register(follow=["tempentityclass_ptr"])
+class E40_Legal_Body(E1_Crm_Entity):
+
+    # for institutions and publishers
+
+    pass
+
+
+@reversion.register(follow=["tempentityclass_ptr"])
+class E55_Type(E1_Crm_Entity):
+
+    pass
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -28,47 +41,25 @@ class F1_Work(E1_Crm_Entity):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class F2_Expression(E1_Crm_Entity):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
 class F4_Manifestation_Singleton(E1_Crm_Entity):
 
-    pass
+    note = models.CharField(max_length=1024, blank=True, null=True)
+
+    ref_target = models.URLField(blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Inszenierung(TempEntityClass):
+class F9_Place(E1_Crm_Entity):
 
     pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Auffuehrung(TempEntityClass):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Ereignis(TempEntityClass):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class F9_Place(TempEntityClass):
-
-    cidoc_id = "F9"
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F10_Person(E1_Crm_Entity):
 
-    role =  models.CharField(max_length=1024, blank=True, null=True)
+    # TODO: Find a solution for if no name is given, but surname and forename exist
 
-    cidoc_id = "F10"
+    role =  models.CharField(max_length=1024, blank=True, null=True)
 
     forename = models.CharField(
         max_length=255,
@@ -118,74 +109,19 @@ class F10_Person(E1_Crm_Entity):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Kapitel(TempEntityClass):
+class F20_Performance_Work(F1_Work):
 
-    cidoc_id = "F50"
+    note = models.CharField(max_length=1024, blank=True, null=True)
 
-    kapitel_nummer = models.CharField(max_length=255, null=True, blank=True)
-
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Publisher(TempEntityClass):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Textausschnitt(TempEntityClass):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Aufzeichnung(TempEntityClass):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Thema(TempEntityClass):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Einteiliges_Work(TempEntityClass):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Sammelwerk(TempEntityClass):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Performatives_Work(TempEntityClass):
-
-    pass
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Genre(TempEntityClass):
-
-    kapitelnummer = models.CharField(max_length=30, blank=True, null=True)
-
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class E55_Type(E1_Crm_Entity):
-
-    pass
+    # TODO: consider changing this to a e55 relation
+    category = models.CharField(max_length=1024, blank=True, null=True)
 
 
 
 def construct_properties():
-    from apis_core.apis_relations.models import TempTriple, Property
-    from apis_core.apis_metainfo.models import Text, RootObject
-    from apis_core.apis_vocabularies.models import TextType, VocabsBaseClass
+
+    from apis_core.apis_relations.models import Property
+    from apis_core.apis_metainfo.models import RootObject
 
     RootObject.objects.all().delete()
 
@@ -228,6 +164,7 @@ def construct_properties():
     is_translator_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
+    is_translator_of.obj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
     is_translator_of.save()
 
     is_editor_of = Property.objects.create(
@@ -235,6 +172,7 @@ def construct_properties():
         name_reverse="has been edited by",
     )
     is_editor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_editor_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     is_editor_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_editor_of.obj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
     is_editor_of.save()
@@ -243,13 +181,115 @@ def construct_properties():
         name="is publisher of",
         name_reverse="has been published by",
     )
-    is_publisher_of.subj_class.add(ContentType.objects.get(model=Publisher.__name__))
+    is_publisher_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     is_publisher_of.obj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
     is_publisher_of.save()
 
+    is_director_of = Property.objects.create(
+        name="is director of",
+        name_reverse="has been directed by",
+    )
+    is_director_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_director_of.obj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
+    is_director_of.save()
+
+    was_published_in = Property.objects.create(
+        name="was published in",
+        name_reverse="is publication place of",
+    )
+    was_published_in.subj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
+    was_published_in.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    was_published_in.obj_class.add(ContentType.objects.get(model=F9_Place.__name__))
+    was_published_in.save()
+
+    has_been_performed_at = Property.objects.create(
+        name="has been performed at",
+        name_reverse="has had performance",
+    )
+    has_been_performed_at.subj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
+    has_been_performed_at.obj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
+    has_been_performed_at.save()
 
 
-# Old ontology, defined by Daniel's google doc (eihter update it to reality of tei files, or vice versa)
+
+# Old ontology, defined by Daniel's google doc (either update the doc to reality of tei files, or vice versa)
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Inszenierung(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Auffuehrung(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Ereignis(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Kapitel(TempEntityClass):
+#
+#     cidoc_id = "F50"
+#
+#     kapitel_nummer = models.CharField(max_length=255, null=True, blank=True)
+#
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Publisher(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Textausschnitt(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Aufzeichnung(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Thema(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Einteiliges_Work(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Sammelwerk(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Performatives_Work(TempEntityClass):
+#
+#     pass
+#
+#
+# @reversion.register(follow=["tempentityclass_ptr"])
+# class Genre(TempEntityClass):
+#
+#     kapitelnummer = models.CharField(max_length=30, blank=True, null=True)
+#
+#
+# def construct_properties():
 #
 #     hat_genre = Property.objects.create(
 #         name="hat Genre",

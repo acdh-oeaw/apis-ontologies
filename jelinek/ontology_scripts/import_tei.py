@@ -4,201 +4,663 @@ from apis_core.apis_relations.models import TempTriple, Property
 from apis_core.apis_vocabularies.models import *
 from django.core.management.base import BaseCommand, CommandError
 
-def crawl(node_list):
 
-    node_pair = node_list[-1]
-    node = node_pair[0]
-    node_entity = node_pair[1]
+tei_xml_file = "../manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte/FRBR-Works/001_WasgeschahnachdemNoraihrenMannverlassenhatteoderStützenderGesellschaften.xml"
 
-    if node.tag.endswith("bibl") and node.attrib.get("ana") == "frbroo:work":
+
+class ContextNode():
+
+    xml_node = None
+    context_node_parent = None
+    context_node_children_list = None
+    apis_object_main = None
+    apis_object_attrib_list = None
+    apis_object_related_list = None
+
+    def __init__(self, xml_node, context_node_parent):
+        self.xml_node = xml_node
+        self.context_node_parent = context_node_parent
+        self.context_node_children_list = []
+        self.apis_object_attrib_list = []
+        self.apis_object_related_list = []
+
+    def __str__(self):
+
+        return self.xml_node.tag.replace("{http://www.tei-c.org/ns/1.0}", "") + "-" + str(self.xml_node.attrib) + "-" + self.xml_node.text
+
+    def __repr__(self):
+
+        return self.__str__()
+
+
+
+
+class AbstractObjectCreator():
+
+    @classmethod
+    def enrich_context_node(cls, context_node_current):
+
+        return None
+
+
+# TODO : Check all object creations for redundant data creation
+class ObjectCreator(AbstractObjectCreator):
+
+    counter_e40_legal_body_parsed = 0
+    counter_e40_legal_body_created = 0
+    counter_e55type_parsed = 0
+    counter_e55type_created = 0
+    counter_f1_work_parsed = 0
+    counter_f1_work_created = 0
+    counter_f4_manifestation_parsed = 0
+    counter_f4_manifestation_created = 0
+    counter_f9_place_parsed = 0
+    counter_f9_place_created = 0
+    counter_f10_person_parsed = 0
+    counter_f10_person_created = 0
+    counter_f20_performance_work_parsed = 0
+    counter_f20_performance_work_created = 0
+
+
+    @classmethod
+    def parse_e40_legal_body(cls, context_node_current):
+
+        cls.counter_e40_legal_body_parsed += 1
+
+        db_result = E40_Legal_Body.objects.get_or_create(name=context_node_current.xml_node.text)
+
+        # TODO check context_node_current.xml_node.text for empty texts
+        context_node_current.apis_object_main = db_result[0]
+
+        if db_result[1] is True:
+
+            cls.counter_e40_legal_body_created += 1
+
+        return context_node_current
+
+
+
+    @classmethod
+    def parse_f1_work(cls, context_node_current):
+
+        cls.counter_f1_work_parsed += 1
 
         title = None
 
-        for c in node.getchildren():
+        for c in context_node_current.xml_node.getchildren():
 
             if c.tag.endswith("title"):
-
                 title = c.text
 
-        f1_work = F1_Work.objects.get_or_create(name=title)[0]
+        db_result = F1_Work.objects.get_or_create(name=title)
 
-        node_entity = f1_work
+        context_node_current.apis_object_main = db_result[0]
 
-    elif node.tag.endswith("bibl") and node.attrib.get("ana") == "frbroo:manifestation":
+        if db_result[1] is True:
 
-        e55_type = None
-        type = node.attrib.get("type")
-        if type is not None:
+            cls.counter_f1_work_created += 1
 
-            e55_type = E55_Type.objects.get_or_create(name=type)[0]
+        return context_node_current
 
-        e55_type_sub = None
-        subtype = node.attrib.get("subtype")
-        if subtype is not None:
 
-            if type is None:
+    @classmethod
+    def parse_f4_manifestation(cls, context_node_current):
 
-                print(f"found subtype but no type: node:{node}, attrib: {node.attrib}")
+        cls.counter_f4_manifestation_parsed += 1
 
-            else:
+        def create_entity(context_node_current):
 
-                e55_type_sub = E55_Type.objects.get_or_create(name=subtype)[0]
-                TempTriple.objects.get_or_create(
-                    subj=e55_type_sub,
-                    obj=e55_type,
-                    prop=Property.objects.get(name="p127 has broader term")
+            entity_f4_manifestation = None
+
+            title = None
+            title_in_note = None
+            date = None
+            note = None
+            ref_target = None
+
+            for context_node_child in context_node_current.context_node_children_list:
+
+                xml_node_child = context_node_child.xml_node
+
+                if xml_node_child.tag.endswith("title"):
+
+                    title = xml_node_child.text
+
+                elif xml_node_child.tag.endswith("date"):
+
+                    date = xml_node_child.text
+
+                elif xml_node_child.tag.endswith("note"):
+
+                    for xml_node_child_child in xml_node_child.getchildren():
+
+                        if xml_node_child_child.tag.endswith("title"):
+
+                            title_in_note = xml_node_child_child.text
+
+                    note = xml_node_child.text
+
+                elif xml_node_child.tag.endswith("ref"):
+
+                    ref_target = xml_node_child.attrib.get("target")
+
+            if title is not None and title_in_note is not None:
+
+                print(
+                    f"conflicting data found in frbroo:manifestation between title: '{title}' "
+                    f"and title_is_note: '{title_in_note}'"
                 )
+                return None
 
-        title = None
-        date = None
-        note = None
+            elif title is None and title_in_note is not None:
 
-        for c in node.getchildren():
+                title = title_in_note
 
-            if c.tag.endswith("title"):
+            if title is None:
 
-                title = c.text
+                title = f"unnamed f4, number {cls.counter_f4_manifestation_parsed}"
 
-            elif c.tag.endswith("date"):
-
-                date = c.text
-
-            elif c.tag.endswith("note"):
-
-                note = c.text
-
-        f4_manifestation_singleton = None
-        if title is not None:
-
-            f4_manifestation_singleton = F4_Manifestation_Singleton.objects.get_or_create(
+            db_result = F4_Manifestation_Singleton.objects.get_or_create(
                 name=title,
-                start_date_written=date,
-                note=note
-            )[0]
+            )
 
-            if e55_type is not None:
+            entity_f4_manifestation = db_result[0]
 
-                TempTriple.objects.get_or_create(
-                    subj=f4_manifestation_singleton,
-                    obj=e55_type,
+            entity_f4_manifestation.start_date_written = date
+            entity_f4_manifestation.note = note
+            entity_f4_manifestation.ref_target = ref_target
+            entity_f4_manifestation.save()
+
+            if db_result[1] is True:
+
+                cls.counter_f4_manifestation_created += 1
+
+            return entity_f4_manifestation
+
+
+        def create_triples(entity_f4_manifestation, context_node_current):
+
+            str_e55_type = None
+            str_e55_subtype = None
+            entity_e55_type = None
+            entity_e55_subtype = None
+
+            for attrib_key, attrib_value in context_node_current.xml_node.attrib.items():
+
+                if attrib_key == "type":
+
+                    cls.counter_e55type_parsed += 1
+
+                    if str_e55_type is None:
+
+                        str_e55_type = attrib_value
+
+                        db_result = E55_Type.objects.get_or_create(name=str_e55_type)
+
+                        entity_e55_type = db_result[0]
+
+                        if db_result[1] is True:
+
+                            cls.counter_e55type_created += 1
+
+                    else:
+
+                        print(f"Conflict: found a type before")
+
+                elif attrib_key == "subtype":
+
+                    cls.counter_e55type_parsed += 1
+
+                    if str_e55_subtype is None:
+
+                        str_e55_subtype = attrib_value
+
+                        db_result = E55_Type.objects.get_or_create(name=str_e55_subtype)
+
+                        entity_e55_subtype = db_result[0]
+
+                        if db_result[1] is True:
+
+                            cls.counter_e55type_created += 1
+
+                    else:
+
+                        print(f"Conflict: found a subtype before")
+
+            if entity_e55_type is not None and entity_e55_subtype is not None:
+
+                triple = TempTriple.objects.get_or_create(
+                    subj=entity_e55_subtype,
+                    obj=entity_e55_type,
+                    prop=Property.objects.get(name="p127 has broader term")
+                )[0]
+
+            elif entity_e55_type is None and entity_e55_subtype is not None:
+
+                print(f"found subtype but no type: node:{entity_e55_subtype}")
+
+            if entity_e55_type is not None:
+
+                context_node_current.apis_object_attrib_list.append(entity_e55_type)
+
+            if entity_e55_subtype is not None:
+
+                context_node_current.apis_object_attrib_list.append(entity_e55_subtype)
+
+            if entity_f4_manifestation is not None and entity_e55_type is not None:
+
+                triple = TempTriple.objects.get_or_create(
+                    subj=entity_f4_manifestation,
+                    obj=entity_e55_type,
                     prop=Property.objects.get(name="p2 has type")
-                )
+                )[0]
 
-            node_entity = f4_manifestation_singleton
+        entity_f4_manifestation = create_entity(context_node_current)
 
-            node_pair_above = node_list[-2]
-            node_pair_above_2 = node_list[-3]
-            if node_pair_above[0].tag.endswith("relatedItem"):
+        context_node_current.apis_object_main = entity_f4_manifestation
 
-                if node_pair_above[0].attrib.get("type") == "host" and node_pair_above_2[1] is not None:
+        create_triples(entity_f4_manifestation, context_node_current)
 
-                    TempTriple.objects.create(
-                        subj=node_pair_above_2[1],
-                        obj=node_entity,
-                        prop=Property.objects.get(name="host")
-                    )
+        return context_node_current
+
+
+    @classmethod
+    def parse_f9_place(cls, context_node_current):
+
+        cls.counter_f9_place_parsed += 1
+
+        db_result = F9_Place.objects.get_or_create(name=context_node_current.xml_node.text)
+
+        # TODO check context_node_current.xml_node.text for empty texts
+        context_node_current.apis_object_main = db_result[0]
+
+        if db_result[1]:
+
+            cls.counter_f9_place_created += 1
+
+        return context_node_current
+
+
+    @classmethod
+    def parse_f10_person(cls, context_node_current):
+
+        cls.counter_f10_person_parsed += 1
+
+        forename = None
+
+        surname = None
+
+        for xml_node_child in context_node_current.xml_node.getchildren():
+
+            if xml_node_child.tag.endswith("forename"):
+
+                forename = xml_node_child.text
+
+            elif xml_node_child.tag.endswith("surname"):
+
+                surname = xml_node_child.text
+
+        kwargs = {}
+
+        if forename is None and surname is None:
+
+            kwargs["name"] = context_node_current.xml_node.text
 
         else:
 
-            print(f"Found manifestation without title: node:{node}, attrib: {node.attrib}")
+            kwargs["forename"] = forename
+            kwargs["surname"] = surname
+            kwargs["name"] = forename + ", " + surname
 
-    elif node.tag.endswith("persName"):
+        db_result = F10_Person.objects.get_or_create(**kwargs)
 
-        f10_person = None
+        context_node_current.apis_object_main = db_result[0]
 
-        if not node_list[-2][0].tag.endswith("respStmt"):
+        if db_result[1] is True:
 
-            forename = None
-            surname = None
+            cls.counter_f10_person_created += 1
 
-            for c in node.getchildren():
+        return context_node_current
 
-                if c.tag.endswith("forename"):
 
-                    forename = c.text
+    @classmethod
+    def parse_f20_performance_work(cls, context_node_current):
 
-                elif c.tag.endswith("surname"):
+        cls.counter_f20_performance_work_parsed += 1
 
-                    surname = c.text
+        def create_entity(context_node_current):
 
-            if forename is None and surname is None:
+            note = None
+            category = None
+            start_date_written = None
 
-                f10_person = F10_Person.objects.get_or_create(
-                    name=node.text,
-                )[0]
+            for context_node_child in context_node_current.context_node_children_list:
 
-            else:
+                xml_node_child = context_node_child.xml_node
 
-                f10_person = F10_Person.objects.get_or_create(
-                    forename=forename,
-                    surname=surname,
-                    name=forename + " " + surname,
-                )[0]
+                if xml_node_child.tag.endswith("note"):
 
-            node_pair_above = node_list[-2]
-            if node_pair_above[0].tag.endswith("bibl") and node_pair_above[1] is not None:
+                    note = xml_node_child.text
 
-                role = node.attrib.get("role")
+                    for context_node_child_child in context_node_child.context_node_children_list:
 
-                prop = None
+                        xml_node_child_child = context_node_child_child.xml_node
 
-                if role == "author":
+                        if (
+                            xml_node_child_child.tag.endswith("ref")
+                            and xml_node_child_child.attrib.get("type") == "category"
+                        ):
 
-                    prop = Property.objects.get(name="is author of")
+                            category = xml_node_child_child.text
 
-                elif role == "translator":
+                elif xml_node_child.tag.endswith("date"):
 
-                    prop = Property.objects.get(name="is translator of")
+                    start_date_written = xml_node_child.text
 
-                elif role == "editor":
+            name = f"unnamed f20, number {cls.counter_f20_performance_work_parsed}"
 
-                    prop = Property.objects.get(name="is editor of")
+            db_result = F20_Performance_Work.objects.get_or_create(name=name)
 
-                if prop is not None:
+            entity_f20_performance_work = db_result[0]
+
+            entity_f20_performance_work.note = note
+
+            entity_f20_performance_work.category = category
+
+            entity_f20_performance_work.start_date_written = start_date_written
+
+            entity_f20_performance_work.save()
+
+            if db_result[1] is True:
+
+                cls.counter_f20_performance_work_created += 1
+
+            return entity_f20_performance_work
+
+
+        def create_triples(entity_f20_performance_work, context_node_current):
+
+            for context_node_child in context_node_current.context_node_children_list:
+
+                xml_node_child = context_node_child.xml_node
+
+                if xml_node_child.tag.endswith("persName"):
+
+                    entity_f10_person = context_node_child.apis_object_main
+
+                    prop = None
+
+                    if xml_node_child.attrib.get("role") == "director":
+
+                        prop = Property.objects.get(name="is director of")
+
+                    elif xml_node_child.attrib.get("role") == "translator":
+
+                        prop = Property.objects.get(name="is translator of")
+
+                    else:
+
+                        print(
+                            f"Found relation to person but without role:"
+                            f" f20: {entity_f20_performance_work},"
+                            f" f10: {entity_f10_person},"
+                        )
+
+                    if prop is not None:
+
+                        triple = TempTriple.objects.get_or_create(
+                            subj=entity_f10_person,
+                            obj=entity_f20_performance_work,
+                            prop=prop,
+                        )[0]
+
+                elif (
+                    xml_node_child.tag.endswith("rs")
+                    and xml_node_child.attrib.get("type") == "institution"
+                ):
+
+                    entity_e40_legal_body = context_node_child.apis_object_main
 
                     triple = TempTriple.objects.get_or_create(
-                        subj=f10_person,
-                        obj=node_pair_above[1],
-                        prop=prop
+                        subj=entity_f20_performance_work,
+                        obj=entity_e40_legal_body,
+                        prop=Property.objects.get(name="has been performed at"),
                     )[0]
 
-    elif node.tag.endswith("publisher"):
+        entity_f20_performance_work = create_entity(context_node_current)
 
-        try:
+        context_node_current.apis_object_main = entity_f20_performance_work
 
-            publisher = Publisher.objects.get_or_create(
-                name=node.text
-            )[0]
+        create_triples(entity_f20_performance_work, context_node_current)
 
-            node_pair_above = node_list[-2]
-            if node_pair_above[0].tag.endswith("bibl") and node_pair_above[1] is not None:
-
-                triple = TempTriple.objects.get_or_create(
-                    subj=publisher,
-                    obj=node_pair_above[1],
-                    prop=Property.objects.get(name="is publisher of")
-                )[0]
-
-        except Exception as ex:
-
-            print(ex)
-
-    node_list[-1] = (node, node_entity)
-
-    for c in node.getchildren():
-
-        node_list.append((c, None))
-
-        crawl(node_list)
-
-        del node_list[-1]
+        return context_node_current
 
 
-def node_is_work(node):
+    @classmethod
+    def parse_triple_f4_manifestation_to_e40_legal_body(cls, context_node_of_manifestatation):
 
-    ana = node.attrib.get("ana")
+        triple = None
 
-    return ana is not None and ana == "frbroo:work"
+        entity_f4_manifestation = context_node_of_manifestatation.apis_object_main
+
+        if entity_f4_manifestation is not None:
+
+            for context_node_child in context_node_of_manifestatation.context_node_children_list:
+
+                e40_legal_body_entity = context_node_child.apis_object_main
+
+                if (
+                    context_node_child.apis_object_main is not None
+                    and type(e40_legal_body_entity) is E40_Legal_Body
+                ):
+
+                    prop = None
+
+                    if context_node_child.xml_node.tag.endswith("publisher"):
+
+                        prop = Property.objects.get(name="is publisher of")
+
+                    elif context_node_child.xml_node.tag.endswith("institution"):
+
+                        if context_node_child.xml_node.attrib.get("role") == "editor":
+
+                            prop = Property.objects.get(name="is editor of")
+
+                        else:
+
+                            print(f"Found no specifying role of institution")
+
+                    else:
+
+                        print(
+                            f"Found e40 child node of f4 without a valid relation pattern. "
+                            f"f4: {context_node_of_manifestatation.apis_object_main} "
+                            f"e40: {context_node_child.apis_object_main}"
+                        )
+
+                    if prop is not None:
+
+                        triple = TempTriple.objects.get_or_create(
+                            subj=e40_legal_body_entity,
+                            obj=entity_f4_manifestation,
+                            prop=prop
+                        )[0]
+
+        return triple
+
+
+    @classmethod
+    def parse_triple_f4_manifestation_host_f4_manifestation(cls, context_node_of_manifestatation):
+
+        triple = None
+
+        entity_f4_manifestation_hosted = context_node_of_manifestatation.apis_object_main
+
+        if entity_f4_manifestation_hosted is not None:
+
+            for context_node_child in context_node_of_manifestatation.context_node_children_list:
+
+                if (
+                    context_node_child.xml_node.tag.endswith("relatedItem")
+                    and context_node_child.xml_node.attrib.get("type") == "host"
+                ):
+
+                    for context_node_child_child in context_node_child.context_node_children_list:
+
+                        entity_f4_manifestation_host = context_node_child_child.apis_object_main
+
+                        if (
+                            context_node_child_child.xml_node.tag.endswith("bibl")
+                            and entity_f4_manifestation_host is not None
+                            and type(entity_f4_manifestation_host) is F4_Manifestation_Singleton
+                        ):
+                            triple = TempTriple.objects.create(
+                                subj=entity_f4_manifestation_hosted,
+                                obj=entity_f4_manifestation_host,
+                                prop=Property.objects.get(name="host")
+                            )
+
+        return triple
+
+    @classmethod
+    def parse_triple_f4_manifestation_published_f9_place(cls, context_node_current):
+
+        triple = None
+
+        entity_f4_manifestation = context_node_current.apis_object_main
+
+        if entity_f4_manifestation is not None:
+
+            for context_node_child in context_node_current.context_node_children_list:
+
+                f9_place = context_node_child.apis_object_main
+
+                if (
+                    context_node_child.xml_node.tag.endswith("pubPlace")
+                    and type(f9_place) is F9_Place
+                ):
+
+                    triple = TempTriple.objects.get_or_create(
+                        subj=entity_f4_manifestation,
+                        obj=f9_place,
+                        prop=Property.objects.get(name="was published in")
+                    )[0]
+
+        return triple
+
+    @classmethod
+    def parse_triple_f4_manifestation_f10_person(cls, context_node_current):
+
+        triple = None
+
+        entity_f4_manifestation = context_node_current.apis_object_main
+
+        if entity_f4_manifestation is not None:
+
+            for context_node_child in context_node_current.context_node_children_list:
+
+                entity_f10_person = context_node_child.apis_object_main
+
+                if (
+                    context_node_child.xml_node.tag.endswith("persName")
+                    and type(entity_f10_person) is F10_Person
+                ):
+
+                    role = context_node_child.xml_node.attrib.get("role")
+
+                    prop = None
+
+                    if role == "author":
+
+                        prop = Property.objects.get(name="is author of")
+
+                    elif role == "translator":
+
+                        prop = Property.objects.get(name="is translator of")
+
+                    elif role == "editor":
+
+                        prop = Property.objects.get(name="is editor of")
+
+                    if prop is not None:
+
+                        triple = TempTriple.objects.get_or_create(
+                            subj=entity_f10_person,
+                            obj=entity_f4_manifestation,
+                            prop=prop
+                        )[0]
+
+                    else:
+
+                        print(f"Found person with no role attached. Can not create relationship with unknown property.")
+
+        return triple
+
+
+    @classmethod
+    def enrich_context_node(cls, context_node_current: ContextNode) -> ContextNode:
+
+        if context_node_current.xml_node.tag.endswith("bibl") and context_node_current.xml_node.attrib.get("ana") == "frbroo:work":
+
+            context_node_current = cls.parse_f1_work(context_node_current)
+
+        elif context_node_current.xml_node.tag.endswith("bibl") and context_node_current.xml_node.attrib.get("ana") == "frbroo:manifestation":
+
+            context_node_current = cls.parse_f4_manifestation(context_node_current)
+
+            triple_f4_manifestation_to_e40_legal_body = cls.parse_triple_f4_manifestation_to_e40_legal_body(context_node_current)
+
+            triple_f4_manifestation_host_f4_manifestation = cls.parse_triple_f4_manifestation_host_f4_manifestation(context_node_current)
+
+            triple_f4_manifestation_published_f9_place = cls.parse_triple_f4_manifestation_published_f9_place(context_node_current)
+
+            triple_f4_manifestation_f10_person = cls.parse_triple_f4_manifestation_f10_person(context_node_current)
+
+        elif (
+            context_node_current.xml_node.tag.endswith("publisher")
+            or context_node_current.xml_node.tag.endswith("institution")
+            or (
+                context_node_current.xml_node.tag.endswith("rs")
+                and context_node_current.xml_node.attrib.get("type") == "institution"
+            )
+        ):
+
+            context_node_current = cls.parse_e40_legal_body(context_node_current)
+
+        elif context_node_current.xml_node.tag.endswith("pubPlace"):
+
+            context_node_current = cls.parse_f9_place(context_node_current)
+
+        elif context_node_current.xml_node.tag.endswith("persName"):
+
+            context_node_current = cls.parse_f10_person(context_node_current)
+
+        elif (
+            context_node_current.xml_node.tag.endswith("item")
+            and context_node_current.xml_node.attrib.get("ana") == "staging"
+        ):
+
+            context_node_current = cls.parse_f20_performance_work(context_node_current)
+
+
+        return context_node_current
+
+
+def crawl(context_node_current: ContextNode, object_creator: AbstractObjectCreator) -> ContextNode:
+
+    for xml_node_child in context_node_current.xml_node.getchildren():
+
+        context_node_child = ContextNode(xml_node=xml_node_child, context_node_parent=context_node_current)
+
+        context_node_child = crawl(context_node_child, object_creator)
+
+        context_node_current.context_node_children_list.append(context_node_child)
+
+    context_node_current = object_creator.enrich_context_node(context_node_current)
+
+    return context_node_current
+        
+
 
 
 def run(*args, **options):
@@ -207,13 +669,29 @@ def run(*args, **options):
     from apis_ontology.models import construct_properties
     construct_properties()
 
-    tei_xml_file = "../manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte/FRBR-Works/001_WasgeschahnachdemNoraihrenMannverlassenhatteoderStützenderGesellschaften.xml"
-
     tree = ET.parse(tei_xml_file)
 
     root = tree.getroot()
 
-    crawl([(root, None)])
+    crawl(ContextNode(root, None), ObjectCreator)
 
-    print()
+    print(f"ObjectCreator.counter_e40_legal_body_parsed{ObjectCreator.counter_e40_legal_body_parsed}")
+    print(f"ObjectCreator.counter_e40_legal_body_created: {ObjectCreator.counter_e40_legal_body_created}")
 
+    print(f"ObjectCreator.counter_e55type_parsed: {ObjectCreator.counter_e55type_parsed}")
+    print(f"ObjectCreator.counter_e55type_created: {ObjectCreator.counter_e55type_created}")
+
+    print(f"ObjectCreator.counter_f1_work_parsed: {ObjectCreator.counter_f1_work_parsed}")
+    print(f"ObjectCreator.counter_f1_work_created: {ObjectCreator.counter_f1_work_created}")
+
+    print(f"ObjectCreator.counter_f4_manifestation_parsed: {ObjectCreator.counter_f4_manifestation_parsed}")
+    print(f"ObjectCreator.counter_f4_manifestation_created: {ObjectCreator.counter_f4_manifestation_created}")
+
+    print(f"ObjectCreator.counter_f9_place_parsed: {ObjectCreator.counter_f9_place_parsed}")
+    print(f"ObjectCreator.counter_f9_place_created: {ObjectCreator.counter_f9_place_created}")
+
+    print(f"ObjectCreator.counter_f10_person_parsed: {ObjectCreator.counter_f10_person_parsed}")
+    print(f"ObjectCreator.counter_f10_person_created: {ObjectCreator.counter_f10_person_created}")
+
+    print(f"ObjectCreator.counter_f20_performance_work_parsed: {ObjectCreator.counter_f20_performance_work_parsed}")
+    print(f"ObjectCreator.counter_f20_performance_work_created: {ObjectCreator.counter_f20_performance_work_created}")
