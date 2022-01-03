@@ -41,11 +41,15 @@ class F1_Work(E1_Crm_Entity):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class F4_Manifestation_Singleton(E1_Crm_Entity):
+class F3_Manifestation_Product_Type(E1_Crm_Entity):
 
+    bibl_id = models.CharField(max_length=1024, blank=True, null=True)
     note = models.CharField(max_length=1024, blank=True, null=True)
-
+    series = models.CharField(max_length=1024, blank=True, null=True)
+    edition = models.CharField(max_length=1024, blank=True, null=True)
     ref_target = models.URLField(blank=True, null=True)
+    ref_accessed = models.CharField(max_length=1024, blank=True, null=True)
+    text_language = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -109,6 +113,12 @@ class F10_Person(E1_Crm_Entity):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
+class F17_Aggregation_Work(F1_Work):
+
+    pass
+
+
+@reversion.register(follow=["tempentityclass_ptr"])
 class F20_Performance_Work(F1_Work):
 
     note = models.CharField(max_length=1024, blank=True, null=True)
@@ -144,8 +154,8 @@ def construct_properties():
     host = Property.objects.create(
         name="host",
     )
-    host.subj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
-    host.obj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
+    host.subj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    host.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     host.save()
 
     is_author_of = Property.objects.create(
@@ -154,7 +164,7 @@ def construct_properties():
     )
     is_author_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_author_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
-    is_author_of.obj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
+    is_author_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_author_of.save()
 
     is_translator_of = Property.objects.create(
@@ -163,7 +173,7 @@ def construct_properties():
     )
     is_translator_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
-    is_translator_of.obj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
+    is_translator_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
     is_translator_of.save()
 
@@ -174,7 +184,7 @@ def construct_properties():
     is_editor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_editor_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     is_editor_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
-    is_editor_of.obj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
+    is_editor_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_editor_of.save()
 
     is_publisher_of = Property.objects.create(
@@ -182,7 +192,7 @@ def construct_properties():
         name_reverse="has been published by",
     )
     is_publisher_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
-    is_publisher_of.obj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
+    is_publisher_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_publisher_of.save()
 
     is_director_of = Property.objects.create(
@@ -197,7 +207,7 @@ def construct_properties():
         name="was published in",
         name_reverse="is publication place of",
     )
-    was_published_in.subj_class.add(ContentType.objects.get(model=F4_Manifestation_Singleton.__name__))
+    was_published_in.subj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     was_published_in.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     was_published_in.obj_class.add(ContentType.objects.get(model=F9_Place.__name__))
     was_published_in.save()
@@ -209,6 +219,23 @@ def construct_properties():
     has_been_performed_at.subj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
     has_been_performed_at.obj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     has_been_performed_at.save()
+
+    contains = Property.objects.create(
+        name="contains",
+        name_reverse="is contained in",
+    )
+    contains.subj_class.add(ContentType.objects.get(model=F17_Aggregation_Work.__name__))
+    contains.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    contains.save()
+
+    is_expressed_in = Property.objects.create(
+        name="is expressed in",
+        name_reverse="expresses",
+    )
+    is_expressed_in.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_expressed_in.subj_class.add(ContentType.objects.get(model=F17_Aggregation_Work.__name__))
+    is_expressed_in.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_expressed_in.save()
 
 
 
