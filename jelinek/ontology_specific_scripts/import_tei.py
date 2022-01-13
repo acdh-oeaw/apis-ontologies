@@ -41,6 +41,17 @@ class AbstractObjectCreator():
         return None
 
 
+def reset_all():
+
+    print("RootObject.objects.all().delete()")
+    print(RootObject.objects.all().delete())
+
+    print("construct_properties")
+    construct_properties()
+
+
+
+
 # TODO : Check all object creations for redundant data creation
 class ObjectCreator(AbstractObjectCreator):
 
@@ -1007,20 +1018,20 @@ def crawl_all_xml_folders():
             for f in listdir(folder) if isfile(join(folder, f)) if not f.endswith(".swp")
         ]
 
-    # files_001_lyrik_001_buchpublikationen = get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/001_Buchpublikationen")
-    # files_001_lyrik_frbr_works = get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/FRBR-Works")
-    # files_002_romane = get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane")
-    # files_003_kurzprosa = get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/003_Kurzprosa")
-    # files_004_theatertexte = get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte/FRBR-Works")
+    # files_001_lyrik_001_buchpublikationen = get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/001_Buchpublikationen")
+    # files_001_lyrik_frbr_works = get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/FRBR-Works")
+    # files_002_romane = get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane")
+    # files_003_kurzprosa = get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/003_Kurzprosa")
+    # files_004_theatertexte = get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte/FRBR-Works")
 
 
     all_files = \
-        ["../manuelle-korrektur/korrigiert/bibls.xml"] \
-        + get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/001_Buchpublikationen") \
-        + get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/FRBR-Works") \
-        + get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane") \
-        + get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/003_Kurzprosa") \
-        + get_files("../manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte/FRBR-Works")
+        ["./manuelle-korrektur/korrigiert/bibls.xml"] \
+        + get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/001_Buchpublikationen") \
+        + get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/FRBR-Works") \
+        + get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane") \
+        + get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/003_Kurzprosa") \
+        + get_files("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte/FRBR-Works")
 
     i = 1
 
@@ -1076,6 +1087,8 @@ def crawl_all_xml_folders():
 
 def run(*args, **options):
     # TODO RDF : delete all model instances
+
+    reset_all()
 
     crawl_all_csv_files()
 
