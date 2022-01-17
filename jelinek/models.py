@@ -6,6 +6,9 @@ from apis_core.apis_entities.models import TempEntityClass
 
 
 
+class XmlFile(TempEntityClass):
+
+    file_path = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class E1_Crm_Entity(TempEntityClass):
@@ -31,6 +34,7 @@ class E55_Type(E1_Crm_Entity):
 class F1_Work(E1_Crm_Entity):
 
     untertitel = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
+    idno = models.CharField(max_length=1024, blank=True, null=True)
 
     anmerkung = models.CharField(
         max_length=1024,
@@ -43,7 +47,8 @@ class F1_Work(E1_Crm_Entity):
 @reversion.register(follow=["tempentityclass_ptr"])
 class F3_Manifestation_Product_Type(E1_Crm_Entity):
 
-    bibl_id = models.CharField(max_length=1024, blank=True, null=True)
+    idno = models.CharField(max_length=1024, blank=True, null=True)
+    bibl_id = models.CharField(max_length=1024, blank=True, null=True) # TODO __sresch__ : Maybe replace with idno?
     note = models.CharField(max_length=1024, blank=True, null=True)
     series = models.CharField(max_length=1024, blank=True, null=True)
     edition = models.CharField(max_length=1024, blank=True, null=True)
@@ -134,6 +139,13 @@ def construct_properties():
     from apis_core.apis_metainfo.models import RootObject
 
     RootObject.objects.all().delete()
+
+    data_read_from = Property.objects.create(
+        name="data read from file",
+        name_reverse="provides data to",
+    )
+    data_read_from.subj_class.add(ContentType.objects.get(model=E1_Crm_Entity.__name__))
+    data_read_from.obj_class.add(ContentType.objects.get(model=XmlFile.__name__))
 
     p2_has_type = Property.objects.create(
         name="p2 has type",
