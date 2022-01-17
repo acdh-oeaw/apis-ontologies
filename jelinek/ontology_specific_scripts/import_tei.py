@@ -722,17 +722,19 @@ class TreesManager:
             kwargs["surname"] = surname
             kwargs["name"] = forename + ", " + surname
 
-        db_result = F10_Person.objects.get_or_create(**kwargs)
+        if kwargs["name"] is not None:
 
-        if db_result[1] is True:
+            db_result = F10_Person.objects.get_or_create(**kwargs)
 
-            entity = db_result[0]
-            cls.counter_f10_person_created += 1
-            print(f"created entity: type: {entity.__class__.__name__}, name: {entity.name}, pk: {entity.pk}")
+            if db_result[1] is True:
 
-        else:
+                entity = db_result[0]
+                cls.counter_f10_person_created += 1
+                print(f"created entity: type: {entity.__class__.__name__}, name: {entity.name}, pk: {entity.pk}")
 
-            print("entity already exists")
+            else:
+
+                print("entity already exists")
 
 
     @classmethod
