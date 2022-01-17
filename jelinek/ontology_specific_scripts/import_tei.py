@@ -1,6 +1,7 @@
+from __future__ import annotations
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element as XmlElement
-from typing import Type
+from typing import Type, List
 from apis_core.apis_entities.models import *
 from apis_core.apis_relations.models import TempTriple, Property
 from apis_core.apis_vocabularies.models import *
@@ -9,12 +10,11 @@ from os import listdir
 from os.path import isfile, join
 
 
-
 class ContextNode():
 
     xml_elem = None
-    context_node_parent = None
-    context_node_children_list = None
+    context_node_parent: ContextNode
+    context_node_children_list: List[ContextNode]
     apis_object_main = None
     apis_object_attrib_list = None
     apis_object_related_list = None
@@ -63,11 +63,11 @@ class TreesManager:
 
 
     @classmethod
-    def parse_entity(cls, xml_elem: XmlElement):
+    def check_if_e40_legal_body(cls, context_node: ContextNode):
 
-        print(f"\nParsing: tag: {xml_elem.tag}, attrib: {xml_elem.attrib}, text: {xml_elem.text.__repr__()}")
+        xml_elem = context_node.xml_elem
 
-        if (
+        return (
             xml_elem.tag.endswith("publisher")
             or xml_elem.tag.endswith("institution")
             or (
@@ -75,12 +75,14 @@ class TreesManager:
                 and xml_elem.attrib.get("type") == "institution"
             )
             or xml_elem.tag.endswith("orgName")
-        )\
-                :
+        )
 
-            cls.parse_e40_legal_body(xml_elem)
+    @classmethod
+    def check_if_f1_work(cls, context_node: ContextNode):
 
-        elif (
+        xml_elem = context_node.xml_elem
+
+        return (
             (
                 xml_elem.tag.endswith("bibl")
                 and xml_elem.attrib.get("ana") == "frbroo:work"
@@ -89,18 +91,14 @@ class TreesManager:
                 xml_elem.tag.endswith("rs")
                 and xml_elem.attrib.get("type") == "work"
             )
-        ):
+        )
 
-            cls.parse_f1_work(xml_elem)
+    @classmethod
+    def check_if_f3_manifestation(cls, context_node: ContextNode):
 
-        elif (
-            xml_elem.tag.endswith("bibl")
-            and xml_elem.attrib.get("ana") == "frbroo:aggregation_work"
-        ):
+        xml_elem = context_node.xml_elem
 
-            cls.parse_f17_aggregation_work(xml_elem)
-
-        elif (
+        return (
             xml_elem.tag.endswith("bibl")
             and (
                 xml_elem.attrib.get("ana") == "frbroo:manifestation"
@@ -110,31 +108,105 @@ class TreesManager:
                     and xml_elem.attrib.get("ref").startswith("bibls:")
                 )
             )
-        ):
+        )
 
-            cls.parse_f3_manifestation(xml_elem)
+    @classmethod
+    def check_if_f9_place(cls, context_node: ContextNode):
 
-        elif xml_elem.tag.endswith("pubPlace"):
+        xml_elem = context_node.xml_elem
 
-            cls.parse_f9_place(xml_elem)
+        return xml_elem.tag.endswith("pubPlace")
 
-        elif xml_elem.tag.endswith("persName"):
+    @classmethod
+    def check_if_f10_person(cls, context_node: ContextNode):
 
-            # TODO : Consider ruling out Project members
-            cls.parse_f10_person(xml_elem)
+        xml_elem = context_node.xml_elem
 
-        elif (
+        if context_node.context_node_parent is not None:
+
+            xml_elem_parent = context_node.context_node_parent.xml_elem
+
+        return (
+            (
+                xml_elem.tag.endswith("persName")
+                # and (
+                #     not xml_elem_parent.tag.endswith("rs")
+                #     and xml_elem_parent.attrib.get("type") != "person"
+                # )
+            )
+            or (
+                xml_elem.tag.endswith("rs")
+                and xml_elem.attrib.get("type") == "person"
+                and xml_elem.attrib.get("ref") is not None
+                and xml_elem.attrib.get("ref").startswith("")
+            )
+        )
+
+    @classmethod
+    def check_if_f17_aggregation_work(cls, context_node: ContextNode):
+
+        xml_elem = context_node.xml_elem
+
+        return (
+            xml_elem.tag.endswith("bibl")
+            and xml_elem.attrib.get("ana") == "frbroo:aggregation_work"
+        )
+
+    @classmethod
+    def check_if_f20_performance_work(cls, context_node: ContextNode):
+
+        xml_elem = context_node.xml_elem
+
+        return (
             xml_elem.tag.endswith("item")
             and xml_elem.attrib.get("ana") == "staging"
-        ):
+        )
+
+
+    @classmethod
+    def parse_entity(cls, context_node: ContextNode):
+
+        print(f"\nParsing: tag: {context_node.xml_elem.tag}, attrib: {context_node.xml_elem.attrib}, text: {context_node.xml_elem.text.__repr__()}")
+
+        if cls.check_if_e40_legal_body(context_node):
+
+            cls.parse_e40_legal_body(context_node.xml_elem)
+
+        if cls.check_if_f1_work(context_node):
+
+            f1_work = cls.parse_f1_work(context_node.xml_elem)
+
+            # for xml_elem_child in xml_elem:
+            #
+            #     if xml_elem_child
+
+        if cls.check_if_f3_manifestation(context_node):
+
+            cls.parse_f3_manifestation(context_node.xml_elem)
+
+        if cls.check_if_f9_place(context_node):
+
+            cls.parse_f9_place(context_node.xml_elem)
+
+        if cls.check_if_f10_person(context_node):
+
+            # TODO : Consider ruling out Project members
+            cls.parse_f10_person(context_node.xml_elem)
+
+        if cls.check_if_f17_aggregation_work(context_node):
+
+            cls.parse_f17_aggregation_work(context_node.xml_elem)
+
+        if cls.check_if_f20_performance_work(context_node):
 
             pass
             # TODO
             # cls.parse_f20_performance_work(xml_elem)
 
-        elif (
-            xml_elem.tag.endswith("div")
-            and xml_elem.attrib.get('type') == "entry"
+        # TODO
+        if (
+            context_node.xml_elem.tag.endswith("div")
+            and context_node.xml_elem.attrib.get('type') == "entry"
         ):
 
             pass
@@ -143,46 +215,47 @@ class TreesManager:
 
             print(f"Nothing created")
 
-            # already_in_not_parsed_set = False
-            #
-            # if xml_elem.tag not in cls.entity_xml_tag_not_parsed:
-            #
-            #     cls.entity_xml_tag_not_parsed.add(xml_elem.tag)
-            #     already_in_not_parsed_set = True
-            #
-            # if xml_elem.text not in cls.entity_xml_text_not_parsed:
-            #
-            #     cls.entity_xml_text_not_parsed.add(xml_elem.text)
-            #     already_in_not_parsed_set = True
-            #
-            # if already_in_not_parsed_set:
-            #
-            #     print(f"Nothing created with tag: {xml_elem.tag}, text: {xml_elem.text.__repr__()}")
+            if context_node.xml_elem.tag not in cls.entity_xml_tag_not_parsed:
+
+                cls.entity_xml_tag_not_parsed.add(context_node.xml_elem.tag)
+
+            if context_node.xml_elem.text not in cls.entity_xml_text_not_parsed:
+
+                cls.entity_xml_text_not_parsed.add(context_node.xml_elem.text)
 
 
     @classmethod
     def parse_e40_legal_body(cls, xml_elem):
 
-        cls.counter_e40_legal_body_parsed += 1
+        if xml_elem.text is not None:
 
-        db_result = E40_Legal_Body.objects.get_or_create(name=xml_elem.text)
+            db_result = E40_Legal_Body.objects.get_or_create(name=xml_elem.text)
 
-        if db_result[1] is True:
+            if db_result[1] is True:
 
-            entity = db_result[0]
-            cls.counter_e40_legal_body_created += 1
-            print(f"created entity: type: {entity.__class__.__name__}, name: {entity.name}, pk: {entity.pk}")
+                entity = db_result[0]
+                cls.counter_e40_legal_body_created += 1
+                print(f"created entity: type: {entity.__class__.__name__}, name: {entity.name}, pk: {entity.pk}")
+
+            else:
+
+                print("entity already exists")
 
         else:
 
-            print("entity already exists")
+            # TODO : Check how often this is the case
+            print("Came accross an e40 without name")
 
-    
-    
+        cls.counter_e40_legal_body_parsed += 1
+
+
+
+
     @classmethod
     def parse_f1_work(cls, xml_elem):
 
         cls.counter_f1_work_parsed += 1
+        entity = None
         title = None
         idno = None
 
@@ -286,6 +359,8 @@ class TreesManager:
             # TODO : Check how often this is the case
             print("Entity found without a uniquely identifying attribute")
 
+        return entity
+
 
     @classmethod
     def parse_f3_manifestation(cls, xml_elem):
@@ -366,9 +441,9 @@ class TreesManager:
                 xml_elem_child.attrib.get("target") is not None
                 and xml_elem_child.attrib.get("target").startswith("#bibl")
             ):
-                
+
                 if bibl_id is not None:
-                    
+
                     raise Exception("Inconsistent data or mapping")
 
                 bibl_id = xml_elem_child.attrib.get("target").replace("#", "")
@@ -421,7 +496,7 @@ class TreesManager:
             db_result = F3_Manifestation_Product_Type.objects.get_or_create(
                 bibl_id=bibl_id,
             )
-            
+
         elif title is not None:
 
             # TODO : Temporary Work-around until the encoding problem is solved
@@ -445,27 +520,27 @@ class TreesManager:
                     F3_Manifestation_Product_Type.objects.create(name=title),
                     True
                 ]
-            
+
         else:
 
             # TODO : Check how often this is the case
             print("Entity found without a uniquely identifying attribute")
-        
+
         if db_result is not None:
-    
+
             entity = db_result[0]
-    
+
             if db_result[1] is True:
-    
+
                 cls.counter_f3_manifestation_created += 1
                 print(f"created entity: type: {entity.__class__.__name__}, name: {entity.name}, pk: {entity.pk}")
 
                 if title is None and entity.name == "":
 
                     title = f"unnamed f3, number {cls.counter_f3_manifestation_parsed}"
-    
+
             else:
-    
+
                 print("entity already exists")
 
             if (
@@ -1185,14 +1260,20 @@ def reset_all():
     construct_properties()
 
 
-def crawl_for_entity(xml_elem: XmlElement, trees_manager: Type[TreesManager]):
+# TODO : Add relation entity -'read data from file'-> xml file
+def crawl_xml_tree(current_xml_elem: XmlElement, parent_node: ContextNode, trees_manager: Type[TreesManager]):
 
-    trees_manager.parse_entity(xml_elem)
+    current_context_node = ContextNode(current_xml_elem, parent_node)
 
-    for xml_elem_child in xml_elem:
+    trees_manager.parse_entity(current_context_node)
 
-        crawl_for_entity(xml_elem_child, trees_manager)
+    for xml_elem_child in current_context_node.xml_elem:
 
+        child_context_node = crawl_xml_tree(xml_elem_child, current_context_node, trees_manager)
+
+        current_context_node.context_node_children_list.append(child_context_node)
+
+    return current_context_node
 
     # for xml_elem_child in xml_elem.getchildren():
     #
@@ -1220,18 +1301,17 @@ def crawl_for_entity(xml_elem: XmlElement, trees_manager: Type[TreesManager]):
 
     # return xml_elem
 
-
-def crawl_all_csv_files():
-
-    # TODO
-    pass
-
+# def crawl_all_csv_files():
+#
+#     # TODO
+#     pass
 
 
-def relate_work_to_manifestations(node):
 
-    # TODO
-    pass
+# def relate_work_to_manifestations(node):
+#
+#     # TODO
+#     pass
 
 
 def get_flat_file_list(folder):
@@ -1239,21 +1319,26 @@ def get_flat_file_list(folder):
     list_current = []
 
     for f in listdir(folder):
+
         path = folder + "/" + f
 
         if isfile(path) and f.endswith(".xml") and not f.endswith(".swp"):
+
             list_current.append(path)
+
         else:
+
             list_current.extend(get_flat_file_list(path))
 
     return list_current
 
 
-def crawl_all_xml_files_for_entities(xml_file_list):
+def crawl_xml_list(xml_file_list):
     
     trees_manager = TreesManager
 
-    # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1//001_Werke/011_EssayistischeTexteRedenundStatements/009_ZumTheater/001_ZueinzelnenTheaterleuten/045_ohneTitel.xml"]
+    # xml_file_list = xml_file_list[657:]
+    # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1//001_Werke/011_EssayistischeTexteRedenundStatements/016_ZurösterreichischenPolitikundGesellschaft/001_EssaysBeiträge/014_EinVolkEinFest.xml"]
 
     for xml_file in xml_file_list:
 
@@ -1263,9 +1348,9 @@ def crawl_all_xml_files_for_entities(xml_file_list):
 
         # TODO : Create xml file entity
 
-        crawl_for_entity(tree.getroot(), trees_manager)
+        crawl_xml_tree(tree.getroot(), None, trees_manager)
 
-    print(f"ObjectCreator.counter_e40_legal_body_parsed{trees_manager.counter_e40_legal_body_parsed}")
+    print(f"ObjectCreator.counter_e40_legal_body_parsed: {trees_manager.counter_e40_legal_body_parsed}")
     print(f"ObjectCreator.counter_e40_legal_body_created: {trees_manager.counter_e40_legal_body_created}")
 
     print(f"ObjectCreator.counter_e55type_parsed: {trees_manager.counter_e55type_parsed}")
@@ -1290,18 +1375,6 @@ def crawl_all_xml_files_for_entities(xml_file_list):
     print(f"ObjectCreator.counter_f20_performance_work_created: {trees_manager.counter_f20_performance_work_created}")
 
 
-def crawl_all_xml_files_for_relations(xml_file_list):
-
-    # TODO : Add relation entity -'read data from file'-> xml file
-    pass
-
-
-def crawl_all_xml_files(xml_file_list):
-
-    crawl_all_xml_files_for_entities(xml_file_list)
-    crawl_all_xml_files_for_relations(xml_file_list)
-
-
 def run(*args, **options):
     # TODO RDF : delete all model instances
 
@@ -1312,4 +1385,4 @@ def run(*args, **options):
     xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
     xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
 
-    crawl_all_xml_files(xml_file_list)
+    crawl_xml_list(xml_file_list)
