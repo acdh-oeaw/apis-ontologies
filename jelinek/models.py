@@ -69,6 +69,7 @@ class F10_Person(E1_Crm_Entity):
     # TODO: Find a solution for if no name is given, but surname and forename exist
 
     role =  models.CharField(max_length=1024, blank=True, null=True)
+    pers_id = models.CharField(max_length=1024, blank=True, null=True)
 
     forename = models.CharField(
         max_length=255,
@@ -189,6 +190,14 @@ def construct_properties():
     is_translator_of.obj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
     is_translator_of.save()
 
+    is_translator_of = Property.objects.create(
+        name="is translation of",
+        name_reverse="is original for translation",
+    )
+    is_translator_of.subj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_translator_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_translator_of.save()
+
     is_editor_of = Property.objects.create(
         name="is editor of",
         name_reverse="has been edited by",
@@ -220,7 +229,6 @@ def construct_properties():
         name_reverse="is publication place of",
     )
     was_published_in.subj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
-    was_published_in.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     was_published_in.obj_class.add(ContentType.objects.get(model=F9_Place.__name__))
     was_published_in.save()
 
