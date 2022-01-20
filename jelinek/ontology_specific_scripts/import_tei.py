@@ -38,6 +38,10 @@ class PathNode():
 
 def is_valid_text(var_str):
 
+    if var_str is None:
+
+        return False
+
     return not re.match(r"^$|^[ \n]*$", var_str)
 
 
@@ -234,6 +238,10 @@ class TreesManager:
                         )
                         or xml_elem.tag.endswith("orgName")
                     )
+                    and not (
+                        xml_elem.attrib.get("ref") is not None
+                        and xml_elem.attrib.get("ref").startswith("bibls:")
+                    )
                     and is_valid_text(xml_elem.text)
                 ):
 
@@ -273,8 +281,9 @@ class TreesManager:
                 name_subtype = None
 
                 if (
-                        xml_elem.tag.endswith("bibl")
-                        and xml_elem.attrib.get("ana") == "frbroo:manifestation"
+                    xml_elem.tag.endswith("bibl")
+                    and xml_elem.attrib.get("type") is not None
+                    # and xml_elem.attrib.get("ana") == "frbroo:manifestation"
                 ):
 
                     name_type = xml_elem.attrib.get("type")
@@ -870,10 +879,10 @@ class TreesManager:
                 surname = None
 
                 if (
-                        xml_elem.tag.endswith("rs")
-                        and xml_elem.attrib.get("type") == "person"
-                        and xml_elem.attrib.get("ref") is not None
-                        and xml_elem.attrib.get("ref").startswith("persons:")
+                    xml_elem.tag.endswith("rs")
+                    and xml_elem.attrib.get("type") == "person"
+                    and xml_elem.attrib.get("ref") is not None
+                    and xml_elem.attrib.get("ref").startswith("persons:")
                 ):
 
                     for xml_elem_child in xml_elem:
@@ -885,12 +894,12 @@ class TreesManager:
                     pers_id = xml_elem.attrib.get("ref").replace("persons:", "")
 
                 elif (
-                        xml_elem.tag.endswith("persName")
-                        and (
-                                path_node.path_node_parent is not None
-                                and not path_node.path_node_parent.xml_elem.tag.endswith("rs")
-                                and path_node.path_node_parent.xml_elem.attrib.get("type") != "person"
-                        )
+                    xml_elem.tag.endswith("persName")
+                    and (
+                        path_node.path_node_parent is not None
+                        and not path_node.path_node_parent.xml_elem.tag.endswith("rs")
+                        and path_node.path_node_parent.xml_elem.attrib.get("type") != "person"
+                    )
                 ):
 
                     name, forename, surname = parse_persName(xml_elem)
@@ -1678,14 +1687,22 @@ class TreesManager:
 
                 for entity_other in path_node.entities_list:
 
-                    if entity_other.__class__ is E55_Type:
+                    if entity_other.__class__ is E55_Type and entity_other.name is not None:
 
-                        if entity_other.name == name_subtype:
+                        # TODO : After db fix with regards to upper-lower-case colloations, remove this 'lower()' here
+                        if (
+                            name_subtype is not None
+                            and entity_other.name.lower() == name_subtype.lower()
+                        ):
 
                             subtype_found = True
                             entity_found = entity_other
 
-                        elif entity_other.name == name_type and not subtype_found:
+                        elif (
+                            name_type is not None
+                            and entity_other.name.lower() == name_type.lower()
+                            and not subtype_found
+                        ):
 
                             entity_found = entity_other
 
@@ -1895,7 +1912,7 @@ def run(*args, **options):
 
             trees_manager = TreesManager
 
-            # xml_file_list = xml_file_list[602:]
+            xml_file_list = xml_file_list[659:]
             # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1//001_Werke/011_EssayistischeTexteRedenundStatements/016_ZurösterreichischenPolitikundGesellschaft/001_EssaysBeiträge/014_EinVolkEinFest.xml"]
             # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1/001_Werke/003_Kurzprosa/020_BegierdeFahrerlaubni.xml"]
 
