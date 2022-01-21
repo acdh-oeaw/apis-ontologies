@@ -1912,7 +1912,6 @@ def run(*args, **options):
 
             trees_manager = TreesManager
 
-            xml_file_list = xml_file_list[659:]
             # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1//001_Werke/011_EssayistischeTexteRedenundStatements/016_ZurösterreichischenPolitikundGesellschaft/001_EssaysBeiträge/014_EinVolkEinFest.xml"]
             # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1/001_Werke/003_Kurzprosa/020_BegierdeFahrerlaubni.xml"]
 
