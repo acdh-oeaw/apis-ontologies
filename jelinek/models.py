@@ -133,6 +133,11 @@ class F20_Performance_Work(F1_Work):
     category = models.CharField(max_length=1024, blank=True, null=True)
 
 
+@reversion.register(follow=["tempentityclass_ptr"])
+class Chapter(TempEntityClass):
+
+    chapter_number = models.CharField(max_length=1024, blank=True, null=True)
+
 
 def construct_properties():
 
@@ -257,6 +262,19 @@ def construct_properties():
     is_expressed_in.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_expressed_in.save()
 
+    is_in_chapter = Property.objects.create(
+        name="is in chapter",
+        name_reverse="contains work",
+    )
+    is_in_chapter.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_in_chapter.obj_class.add(ContentType.objects.get(model=Chapter.__name__))
+
+    is_in_chapter = Property.objects.create(
+        name="is sub chapter of",
+        name_reverse="contains chapter",
+    )
+    is_in_chapter.subj_class.add(ContentType.objects.get(model=Chapter.__name__))
+    is_in_chapter.obj_class.add(ContentType.objects.get(model=Chapter.__name__))
 
 
 # Old ontology, defined by Daniel's google doc (either update the doc to reality of tei files, or vice versa)

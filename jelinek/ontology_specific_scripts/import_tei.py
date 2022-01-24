@@ -220,6 +220,81 @@ class TreesManager:
                 return None
 
 
+        def parse_template_function(path_node: PathNode):
+
+            def parse_attr(path_node: PathNode):
+
+                xml_elem = path_node.xml_elem
+
+                foo = None
+
+                if xml_elem: # condition
+
+                    foo = "something"
+
+                else:
+
+                    return None
+
+                return {
+                    "foo": foo,
+                    "bar": None
+                }
+
+            def sub_main(path_node):
+
+                enities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    db_result = None
+
+                    if attr_dict["foo"] is not None: # foo is unique identifier
+
+                        # db_result = EntityClass.objects.get_or_create(foo=attr_dict["foo"])
+                        db_result = None
+
+                    elif attr_dict["bar"] is not None: # bar is identifish
+
+                        # if this entity is mostly created using these fields:
+                        # db_result = EntityClass.objects.get_or_create(foo=attr_dict["bar"])
+
+                        # if this entity is mostly created using other fields, and thus the field 'bar' could lead to multiple results
+                        # db_hit = EntityClass.objects.filter(name=attr_dict["name"])
+                        db_hit = None
+
+                        if len(db_hit) > 1:
+
+                            # TODO : Check how often this is the case
+                            print("Multiple occurences found, taking the first")
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 1:
+
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 0:
+
+                            # db_result = [
+                            #     EntityClass.objects.create(name=attr_dict["name"]),
+                            #     True
+                            # ]
+                            pass
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    enities_list.append(handle_after_creation(db_result, attr_dict))
+
+                return enities_list
+
+            return sub_main(path_node)
+
+
+
         def parse_e40_legal_body(path_node: PathNode):
 
             def parse_attr(path_node: PathNode):
@@ -1108,6 +1183,59 @@ class TreesManager:
                 return entity_f20_performance_work
 
 
+        def parse_chapter(path_node):
+
+            def parse_attr(path_node: PathNode):
+
+                xml_elem = path_node.xml_elem
+
+                chapter_number = None
+
+                if (
+                    path_node.path_node_parent is not None
+                    and path_node.path_node_parent.xml_elem.tag.endswith("keywords")
+                    and path_node.path_node_parent.xml_elem.attrib.get("ana") == "chapters"
+                    and xml_elem.tag.endswith("term")
+                    and xml_elem.attrib.get("n") is not None
+                    and is_valid_text(xml_elem.text)
+                ):
+
+                    chapter_number = xml_elem.attrib.get("n")
+                    name = xml_elem.text
+
+                else:
+
+                    return None
+
+                return {
+                    "chapter_number": chapter_number,
+                    "name": name
+                }
+
+
+            def sub_main(path_node):
+
+                enities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    db_result = None
+
+                    if attr_dict["chapter_number"] is not None:
+
+                        db_result = Chapter.objects.get_or_create(chapter_number=attr_dict["chapter_number"])
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    enities_list.append(handle_after_creation(db_result, attr_dict))
+
+                return enities_list
+
+            return sub_main(path_node)
 
 
         def sub_main(path_node):
@@ -1126,6 +1254,8 @@ class TreesManager:
 
             # TODO : Consider ruling out Project members
             path_node.entities_list.extend(parse_f10_person(path_node))
+
+            path_node.entities_list.extend(parse_chapter(path_node))
 
 
             # cls.parse_f17_aggregation_work(path_node.xml_elem)
@@ -1579,6 +1709,27 @@ class TreesManager:
     @classmethod
     def parse_for_triples(cls, path_node: PathNode):
 
+        def climb_up(path_node, level):
+
+            if level > 0:
+
+                level -= 1
+
+                path_node_next_up = path_node.path_node_parent
+
+                if path_node_next_up is not None:
+
+                    return climb_up(path_node_next_up, level)
+
+                else:
+
+                    raise Exception("No more parents")
+
+            else:
+
+                return path_node
+
+
         def create_triple(entity_subj, entity_obj, prop):
 
             db_result = TempTriple.objects.get_or_create(
@@ -1820,6 +1971,64 @@ class TreesManager:
             triple_from_f10_to_f3(entity_person, path_node)
 
 
+        def parse_triples_from_chapter(entity_chapter, path_node: PathNode):
+
+            path_node_tei = climb_up(path_node, 5)
+
+            def triple_from_chapter_to_f1(entity_chapter, path_node: PathNode):
+
+                for path_node_text in path_node_tei.path_node_children_list:
+
+                    if path_node_text.xml_elem.tag.endswith("text"):
+
+                        for path_node_body in path_node_text.path_node_children_list:
+
+                            if path_node_body.xml_elem.tag.endswith("body"):
+
+                                for path_node_div in path_node_body.path_node_children_list:
+
+                                    if path_node_div.xml_elem.tag.endswith("div"):
+
+                                        for path_node_bibl in path_node_div.path_node_children_list:
+
+                                            for entity_work in path_node_bibl.entities_list:
+
+                                                if entity_work.__class__ == F1_Work:
+
+                                                    create_triple(
+                                                        entity_subj=entity_work,
+                                                        entity_obj=entity_chapter,
+                                                        prop=Property.objects.get(name="is in chapter"),
+                                                    )
+
+                                                break
+
+                                        break
+
+                                break
+
+                        break
+
+            def triple_from_chapter_to_chapter(entity_chapter: Chapter, path_node: PathNode):
+
+                chapter_number_parent = ".".join(entity_chapter.chapter_number.split(".")[:-1])
+
+                if chapter_number_parent != "":
+
+                    entity_chapter_parent = Chapter.objects.get(chapter_number=chapter_number_parent)
+
+                    create_triple(
+                        entity_subj=entity_chapter,
+                        entity_obj=entity_chapter_parent,
+                        prop=Property.objects.get(name="is sub chapter of")
+                    )
+
+
+            triple_from_chapter_to_f1(entity_chapter, path_node)
+            triple_from_chapter_to_chapter(entity_chapter, path_node)
+
+
+
         def sub_main(path_node):
 
             for entity in path_node.entities_list:
@@ -1839,6 +2048,10 @@ class TreesManager:
                 elif entity.__class__ == F10_Person:
 
                     parse_triples_from_f10_person(entity, path_node)
+
+                elif entity.__class__ == Chapter:
+
+                    parse_triples_from_chapter(entity, path_node)
 
         sub_main(path_node)
 
@@ -1912,8 +2125,7 @@ def run(*args, **options):
 
             trees_manager = TreesManager
 
-            # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1//001_Werke/011_EssayistischeTexteRedenundStatements/016_ZurösterreichischenPolitikundGesellschaft/001_EssaysBeiträge/014_EinVolkEinFest.xml"]
-            # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1/001_Werke/003_Kurzprosa/020_BegierdeFahrerlaubni.xml"]
+            # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1/001_Werke/011_EssayistischeTexteRedenundStatements/016_ZurösterreichischenPolitikundGesellschaft/001_EssaysBeiträge/014_EinVolkEinFest.xml"]
 
             for xml_file in xml_file_list:
 
@@ -1958,11 +2170,11 @@ def run(*args, **options):
         reset_all()
 
         xml_file_list = []
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_test.xml")
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
 
         crawl_xml_list(xml_file_list)
 
