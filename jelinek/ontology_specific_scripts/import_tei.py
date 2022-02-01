@@ -2,7 +2,7 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element as XmlElement
 from typing import Type, List
-from apis_core.apis_entities.models import *
+from apis_ontology.models import *
 from apis_core.apis_relations.models import Triple, TempTriple, Property
 from apis_core.apis_vocabularies.models import *
 from django.core.management.base import BaseCommand, CommandError
