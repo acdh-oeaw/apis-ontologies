@@ -62,6 +62,7 @@ MAIN_TEXT_NAME = "ÖBL Haupttext"
 
 LANGUAGE_CODE = "de"
 
+APIS_AUTOCOMPLETE_SETTINGS = "apis_ontology.settings.autocomplete_settings"
 
 #STATICFILES_DIRS = [BASE_DIR + "/member_images"]
 
