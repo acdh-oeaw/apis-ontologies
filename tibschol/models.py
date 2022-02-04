@@ -9,55 +9,43 @@ from apis_core.apis_metainfo.models import RootObject
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Resource(TempEntityClass):
-
-    class_uri = "https://www.w3.org/2000/01/rdf-schema#Resource"
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Agent(Resource):
-
-    class_uri = "http://id.loc.gov/ontologies/bibframe/Agent"
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
-class Contribution(Resource):
+class Contribution(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Contribution"
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Identifier(Resource):
+class Identifier(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Identifier"
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Instance(Resource):
+class Instance(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Instance"
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Item(Resource):
+class Item(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Item"
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Person(Agent):
+class Person(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Person"
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Role(Resource):
+class Role(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Role"
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Work(Resource):
+class Work(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Work"
 
