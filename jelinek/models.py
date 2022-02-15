@@ -71,7 +71,7 @@ class F10_Person(E1_Crm_Entity):
 
     # TODO: Find a solution for if no name is given, but surname and forename exist
 
-    role =  models.CharField(max_length=1024, blank=True, null=True)
+    role =  models.CharField(max_length=1024, blank=True, null=True) # TODO : remove this, use appropriate relation
     pers_id = models.CharField(max_length=1024, blank=True, null=True)
     gnd_url = models.URLField(blank=True, null=True)
 
@@ -130,6 +130,12 @@ class F17_Aggregation_Work(F1_Work):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F20_Performance_Work(F1_Work):
+
+    pass
+
+
+@reversion.register(follow=["tempentityclass_ptr"])
+class F31_Performance(F1_Work):
 
     note = models.CharField(max_length=1024, blank=True, null=True)
 
@@ -231,7 +237,7 @@ def construct_properties():
         name_reverse="has been directed by",
     )
     is_director_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
-    is_director_of.obj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
+    is_director_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_director_of.save()
 
     was_published_in = Property.objects.create(
@@ -246,9 +252,17 @@ def construct_properties():
         name="has been performed at",
         name_reverse="has had performance",
     )
-    has_been_performed_at.subj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
+    has_been_performed_at.subj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     has_been_performed_at.obj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     has_been_performed_at.save()
+
+    has_been_performed_in = Property.objects.create(
+        name="has been performed in",
+        name_reverse="was performance of",
+    )
+    has_been_performed_in.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    has_been_performed_in.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    has_been_performed_in.save()
 
     contains = Property.objects.create(
         name="contains",

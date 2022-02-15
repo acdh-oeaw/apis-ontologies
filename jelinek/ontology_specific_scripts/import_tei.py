@@ -48,27 +48,9 @@ def is_valid_text(var_str):
 # TODO : Check all object creations for redundant data creation
 class TreesManager:
 
-    counter_e40_legal_body_parsed = 0
-    counter_e40_legal_body_created = 0
-    counter_e55type_parsed = 0
-    counter_e55type_created = 0
-    counter_f1_work_parsed = 0
-    counter_f1_work_created = 0
-    counter_f3_manifestation_parsed = 0
-    counter_f3_manifestation_created = 0
-    counter_f9_place_parsed = 0
-    counter_f9_place_created = 0
-    counter_f10_person_parsed = 0
-    counter_f10_person_created = 0
-    counter_f17_aggregation_work_parsed = 0
-    counter_f17_aggregation_work_created = 0
-    counter_f20_performance_work_parsed = 0
-    counter_f20_performance_work_created = 0
-
     # TODO output these at the end of parsing
     entity_xml_tag_not_parsed = set()
     entity_xml_text_not_parsed = set()
-
 
     # @classmethod
     # def check_if_e40_legal_body(cls, path_node: PathNode):
@@ -994,7 +976,13 @@ class TreesManager:
                         path_node.path_node_parent is not None
                         and not path_node.path_node_parent.xml_elem.tag.endswith("rs")
                         and path_node.path_node_parent.xml_elem.attrib.get("type") != "person"
-                        and not path_node.path_node_parent.xml_elem.tag.endswith("item") # as in person_index.xml
+                        and (
+                            not path_node.path_node_parent.xml_elem.tag.endswith("item") # as in person_index.xml
+                            or (
+                                path_node.path_node_parent.xml_elem.tag.endswith("item")
+                                and  path_node.path_node_parent.xml_elem.attrib.get("ana") == "staging" # as in xmls in 001_Werke/004_Theatertexte/FRBR-Works/
+                            )
+                        )
                     )
                 ):
 
@@ -1137,93 +1125,137 @@ class TreesManager:
 
         def parse_f17_aggregation_work(path_node):
 
-            cls.counter_f17_aggregation_work_parsed += 1
+            # cls.counter_f17_aggregation_work_parsed += 1
+            #
+            # title = None
+            #
+            # for c in xml_elem.getchildren():
+            #
+            #     if c.tag.endswith("title"):
+            #
+            #         if title is None:
+            #
+            #             title = c.text
+            #
+            #         else:
+            #
+            #             print("Found multiple titles!")
+            #
+            # db_result = F17_Aggregation_Work.objects.get_or_create(name=title)
+            #
+            # if db_result[1] is True:
+            #
+            #     entity = db_result[0]
+            #     cls.counter_f17_aggregation_work_created += 1
+            #     print(f"created entity: type: {entity.__class__.__name__}, name: {entity.name}, pk: {entity.pk}")
+            #
+            # else:
+            #
+            #     print("entity already exists")
 
-            title = None
-
-            for c in xml_elem.getchildren():
-
-                if c.tag.endswith("title"):
-
-                    if title is None:
-
-                        title = c.text
-
-                    else:
-
-                        print("Found multiple titles!")
-
-            db_result = F17_Aggregation_Work.objects.get_or_create(name=title)
-
-            if db_result[1] is True:
-
-                entity = db_result[0]
-                cls.counter_f17_aggregation_work_created += 1
-                print(f"created entity: type: {entity.__class__.__name__}, name: {entity.name}, pk: {entity.pk}")
-
-            else:
-
-                print("entity already exists")
+            pass
 
 
-        def parse_f20_performance_work(path_node):
+        def parse_f31_performance(path_node):
 
-            cls.counter_f20_performance_work_parsed += 1
+            def parse_attr(path_node: PathNode):
 
-            def create_entity(xml_elem):
+                xml_elem = path_node.xml_elem
 
+                name = ""
                 note = None
                 category = None
                 start_date_written = None
+                institution = None
 
-                for path_node_child in xml_elem:
+                if (
+                    xml_elem.tag.endswith("item")
+                    and xml_elem.attrib.get("ana") == "staging"
+                ):
 
-                    xml_elem_child = path_node_child.xml_elem
+                    for xml_elem_child in xml_elem:
 
-                    if xml_elem_child.tag.endswith("note"):
+                        if (
+                            xml_elem_child.tag.endswith("date")
+                            and is_valid_text(xml_elem_child.text)
+                        ):
 
-                        note = xml_elem_child.text
+                            start_date_written = xml_elem_child.text
 
-                        for path_node_child_child in path_node_child.path_node_children_list:
+                        elif (
+                            xml_elem_child.tag.endswith("rs")
+                            and xml_elem_child.attrib.get("type") == "institution"
+                            and is_valid_text(xml_elem_child.text)
+                        ):
 
-                            xml_elem_child_child = path_node_child_child.xml_elem
+                            institution = xml_elem_child.text
 
-                            if (
+                        elif (
+                            xml_elem_child.tag.endswith("note")
+                            and is_valid_text(xml_elem_child.text)
+                        ):
+
+                            note = xml_elem_child.text
+
+                            for xml_elem_child_child in xml_elem_child:
+
+                                if (
                                     xml_elem_child_child.tag.endswith("ref")
                                     and xml_elem_child_child.attrib.get("type") == "category"
-                            ):
+                                    and is_valid_text(xml_elem_child_child.text)
+                                ):
 
-                                category = xml_elem_child_child.text
-
-                    elif xml_elem_child.tag.endswith("date"):
-
-                        start_date_written = xml_elem_child.text
-
-                name = f"unnamed f20, number {cls.counter_f20_performance_work_parsed}"
-
-                db_result = F20_Performance_Work.objects.get_or_create(name=name)
-
-                entity_f20_performance_work = db_result[0]
-
-                entity_f20_performance_work.note = note
-
-                entity_f20_performance_work.category = category
-
-                entity_f20_performance_work.start_date_written = start_date_written
-
-                entity_f20_performance_work.save()
-
-                if db_result[1] is True:
-
-                    entity = db_result[0]
-                    cls.counter_f20_performance_work_created += 1
-                    print(f"created entity: type: {entity.__class__.__name__}, name: {entity.name}, pk: {entity.pk}")
+                                    category = xml_elem_child_child.text
 
                 else:
 
-                    print("entity already exists")
+                    return None
 
-                return entity_f20_performance_work
+                if (
+                    start_date_written is not None
+                    and institution is not None
+                ):
+
+                    name = f"Aufführung, Am {start_date_written}, Bei {institution}"
+
+                elif start_date_written is not None:
+
+                    name = f"Aufführung, Am {start_date_written}"
+
+                elif institution is not None:
+
+                    name = f"Bei {institution}"
+
+                return {
+                    "name": name,
+                    "note": note,
+                    "category": category,
+                    "start_date_written": start_date_written,
+                }
+
+            def sub_main(path_node: PathNode):
+
+                entities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    db_result = None
+
+                    if attr_dict["name"] != "":
+
+                        db_result = F31_Performance.objects.get_or_create(name=attr_dict["name"])
+
+                        entities_list.append(handle_after_creation(db_result, attr_dict))
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                return entities_list
+
+            return sub_main(path_node)
 
 
         def parse_chapter(path_node):
@@ -1297,6 +1329,8 @@ class TreesManager:
 
             # TODO : Consider ruling out Project members
             path_node.entities_list.extend(parse_f10_person(path_node))
+
+            path_node.entities_list.extend(parse_f31_performance(path_node))
 
             path_node.entities_list.extend(parse_chapter(path_node))
 
@@ -1793,27 +1827,6 @@ class TreesManager:
 
         def parse_triples_from_f1_work(entity_work, path_node):
 
-            def triple_from_f1_to_f10(entity_work, path_node):
-
-                for child_path_node in path_node.path_node_children_list:
-
-                    for entity_other in child_path_node.entities_list:
-
-                        if entity_other.__class__ == F10_Person:
-
-                            for child_child_path_node in child_path_node.path_node_children_list:
-
-                                if (
-                                        child_child_path_node.xml_elem.tag.endswith("persName")
-                                        and child_child_path_node.xml_elem.attrib.get("role") == "author"
-                                ):
-
-                                    create_triple(
-                                        entity_subj=entity_other,
-                                        entity_obj=entity_work,
-                                        prop=Property.objects.get(name="is author of")
-                                    )
-
             def triple_from_f1_to_f3(entity_work, path_node):
 
                 def check_and_create_triple_to_f3(entity_work, path_node_other):
@@ -1873,8 +1886,60 @@ class TreesManager:
                                                 prop=Property.objects.get(name="is translation of")
                                             )
 
-            triple_from_f1_to_f10(entity_work, path_node)
+
+            def triple_from_f1_to_f10(entity_work, path_node):
+
+                for child_path_node in path_node.path_node_children_list:
+
+                    for entity_other in child_path_node.entities_list:
+
+                        if entity_other.__class__ == F10_Person:
+
+                            for child_child_path_node in child_path_node.path_node_children_list:
+
+                                if (
+                                        child_child_path_node.xml_elem.tag.endswith("persName")
+                                        and child_child_path_node.xml_elem.attrib.get("role") == "author"
+                                ):
+
+                                    create_triple(
+                                        entity_subj=entity_other,
+                                        entity_obj=entity_work,
+                                        prop=Property.objects.get(name="is author of")
+                                    )
+
+            def triple_from_f1_to_f31(entity_work, path_node):
+
+                for neighbour_path_node in path_node.path_node_parent.path_node_children_list:
+
+                    if (
+                        neighbour_path_node.xml_elem.tag.endswith("div")
+                        and neighbour_path_node.xml_elem.attrib.get("type") == "stagings"
+                    ):
+
+                        for neighbour_path_node_child in neighbour_path_node.path_node_children_list:
+
+                            if (
+                                neighbour_path_node_child.xml_elem.tag.endswith("list")
+                                and neighbour_path_node_child.xml_elem.attrib.get("type") == "stagings"
+                            ):
+
+                                for item_path_node in neighbour_path_node_child.path_node_children_list:
+
+                                    for entity_other in item_path_node.entities_list:
+
+                                        if entity_other.__class__ is F31_Performance:
+
+                                            create_triple(
+                                                entity_subj=entity_work,
+                                                entity_obj=entity_other,
+                                                prop=Property.objects.get(name="has been performed in"),
+                                            )
+
+
             triple_from_f1_to_f3(entity_work, path_node)
+            triple_from_f1_to_f10(entity_work, path_node)
+            triple_from_f1_to_f31(entity_work, path_node)
 
         def parse_triples_from_f3_manifestation(entity_manifestation, path_node):
 
@@ -2047,6 +2112,80 @@ class TreesManager:
             triple_from_f10_to_f3(entity_person, path_node)
 
 
+        def parse_triples_from_f31_performance(entity_performance, path_node: PathNode):
+
+            print()
+
+            def triple_from_f31_to_e40(entity_performance, path_node: PathNode):
+
+                for path_node_child in path_node.path_node_children_list:
+
+                    for entity_other in path_node_child.entities_list:
+
+                        if entity_other.__class__ is E40_Legal_Body:
+
+                            create_triple(
+                                entity_subj=entity_performance,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="has been performed at"),
+                            )
+
+
+            def triple_from_f31_to_f10(entity_performance, path_node: PathNode):
+
+                for path_node_child in path_node.path_node_children_list:
+
+                    entity_person = None
+                    role = None
+
+                    for entity_other in path_node_child.entities_list:
+
+                        if entity_other.__class__ is F10_Person:
+
+                            entity_person = entity_other
+
+                    if path_node_child.xml_elem.attrib.get("role") is not None:
+
+                        role = path_node_child.xml_elem.attrib.get("role")
+
+                    if role is None:
+
+                        for path_node_child_child in path_node_child.path_node_children_list:
+
+                            if path_node_child_child.xml_elem.attrib.get("role") is not None:
+
+                                role = path_node_child_child.xml_elem.attrib.get("role")
+
+                    if entity_person is not None:
+
+                        if role is not None:
+
+                            if role == "director":
+
+                                create_triple(
+                                    entity_subj=entity_person,
+                                    entity_obj=entity_performance,
+                                    prop=Property.objects.get(name="is director of"),
+                                )
+
+                            elif role == "translator":
+
+                                pass # to be ignored, because a translated theatre play needs to have its own work
+
+                            else:
+
+                                # TODO : Check how often this is the case
+                                print(f"Found unspecified role {role}")
+
+                        else:
+
+                            # TODO : Check how often this is the case
+                            print("Found a relation to a person without a role")
+
+            triple_from_f31_to_e40(entity_performance, path_node)
+            triple_from_f31_to_f10(entity_performance, path_node)
+
+
         def parse_triples_from_chapter(entity_chapter, path_node: PathNode):
 
             path_node_tei = climb_up(path_node, 5)
@@ -2128,7 +2267,11 @@ class TreesManager:
 
             for entity in path_node.entities_list:
 
-                if entity.__class__ is F1_Work:
+                if entity.__class__ is E55_Type:
+
+                    parse_triples_from_e55_manifestation(entity, path_node)
+
+                elif entity.__class__ is F1_Work:
 
                     parse_triples_from_f1_work(entity, path_node)
 
@@ -2136,13 +2279,13 @@ class TreesManager:
 
                     parse_triples_from_f3_manifestation(entity, path_node)
 
-                elif entity.__class__ is E55_Type:
-
-                    parse_triples_from_e55_manifestation(entity, path_node)
-
                 elif entity.__class__ is F10_Person:
 
                     parse_triples_from_f10_person(entity, path_node)
+
+                elif entity.__class__ is F31_Performance:
+
+                    parse_triples_from_f31_performance(entity, path_node)
 
                 elif entity.__class__ is Chapter:
 
@@ -2252,30 +2395,6 @@ def run(*args, **options):
 
                 path_node_root = crawl_xml_tree_for_entities(path_node_root, trees_manager)
                 crawl_xml_tree_for_triples(path_node_root, trees_manager)
-
-            print(f"ObjectCreator.counter_e40_legal_body_parsed: {trees_manager.counter_e40_legal_body_parsed}")
-            print(f"ObjectCreator.counter_e40_legal_body_created: {trees_manager.counter_e40_legal_body_created}")
-
-            print(f"ObjectCreator.counter_e55type_parsed: {trees_manager.counter_e55type_parsed}")
-            print(f"ObjectCreator.counter_e55type_created: {trees_manager.counter_e55type_created}")
-
-            print(f"ObjectCreator.counter_f1_work_parsed: {trees_manager.counter_f1_work_parsed}")
-            print(f"ObjectCreator.counter_f1_work_created: {trees_manager.counter_f1_work_created}")
-
-            print(f"ObjectCreator.counter_f3_manifestation_parsed: {trees_manager.counter_f3_manifestation_parsed}")
-            print(f"ObjectCreator.counter_f3_manifestation_created: {trees_manager.counter_f3_manifestation_created}")
-
-            print(f"ObjectCreator.counter_f9_place_parsed: {trees_manager.counter_f9_place_parsed}")
-            print(f"ObjectCreator.counter_f9_place_created: {trees_manager.counter_f9_place_created}")
-
-            print(f"ObjectCreator.counter_f10_person_parsed: {trees_manager.counter_f10_person_parsed}")
-            print(f"ObjectCreator.counter_f10_person_created: {trees_manager.counter_f10_person_created}")
-
-            print(f"ObjectCreator.counter_f17_aggregation_work_parsed: {trees_manager.counter_f17_aggregation_work_parsed}")
-            print(f"ObjectCreator.counter_f17_aggregation_work_created: {trees_manager.counter_f17_aggregation_work_created}")
-
-            print(f"ObjectCreator.counter_f20_performance_work_parsed: {trees_manager.counter_f20_performance_work_parsed}")
-            print(f"ObjectCreator.counter_f20_performance_work_created: {trees_manager.counter_f20_performance_work_created}")
 
         sub_main(xml_file_list)
 
