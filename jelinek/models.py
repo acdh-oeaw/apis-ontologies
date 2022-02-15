@@ -6,9 +6,11 @@ from apis_core.apis_entities.models import TempEntityClass
 
 
 
-class XmlFile(TempEntityClass):
+@reversion.register(follow=["tempentityclass_ptr"])
+class Xml_File(TempEntityClass):
 
-    file_path = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
+    file_path = models.CharField(max_length=1024, blank=True, null=True)
+
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class E1_Crm_Entity(TempEntityClass):
@@ -35,6 +37,7 @@ class F1_Work(E1_Crm_Entity):
 
     untertitel = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
     idno = models.CharField(max_length=1024, blank=True, null=True)
+    gnd_url = models.URLField(blank=True, null=True)
 
     anmerkung = models.CharField(
         max_length=1024,
@@ -70,6 +73,7 @@ class F10_Person(E1_Crm_Entity):
 
     role =  models.CharField(max_length=1024, blank=True, null=True)
     pers_id = models.CharField(max_length=1024, blank=True, null=True)
+    gnd_url = models.URLField(blank=True, null=True)
 
     forename = models.CharField(
         max_length=255,
@@ -151,7 +155,8 @@ def construct_properties():
         name_reverse="provides data to",
     )
     data_read_from.subj_class.add(ContentType.objects.get(model=E1_Crm_Entity.__name__))
-    data_read_from.obj_class.add(ContentType.objects.get(model=XmlFile.__name__))
+    data_read_from.subj_class.add(ContentType.objects.get(model=Chapter.__name__))
+    data_read_from.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
 
     p2_has_type = Property.objects.create(
         name="p2 has type",

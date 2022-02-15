@@ -182,7 +182,7 @@ class TreesManager:
 
                     entity_attr_val = getattr(entity, attr_name)
 
-                    if entity_attr_val == "":
+                    if entity_attr_val == "" or entity_attr_val is None:
 
                         setattr(entity, attr_name, attr_val)
 
@@ -399,6 +399,7 @@ class TreesManager:
                 xml_elem = path_node.xml_elem
                 idno = None
                 name = None
+                gnd_url = None
 
                 if (
                         xml_elem.tag.endswith("bibl")
@@ -437,6 +438,14 @@ class TreesManager:
 
                             name = xml_elem_child.text
 
+                        elif (
+                                xml_elem_child.tag.endswith("ref")
+                                and xml_elem_child.attrib.get("type") == "gnd"
+                                and xml_elem_child.attrib.get("target") is not None
+                        ):
+
+                            gnd_url = xml_elem_child.attrib.get("target")
+
                 elif (
                         xml_elem.tag.endswith("rs")
                         and xml_elem.attrib.get("type") == "work"
@@ -459,7 +468,8 @@ class TreesManager:
 
                 return {
                     "idno": idno,
-                    "name": name
+                    "name": name,
+                    "gnd_url": gnd_url,
                 }
 
 
@@ -526,26 +536,34 @@ class TreesManager:
                 bibl_id = None
 
                 if (
-                        xml_elem.tag.endswith("bibl")
-                        and xml_elem.attrib.get("ana") == "frbroo:manifestation"
-                        and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is None
+                    xml_elem.tag.endswith("bibl")
+                    and xml_elem.attrib.get("ana") == "frbroo:manifestation"
+                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is None
                 ):
 
                     for xml_elem_child in xml_elem:
 
                         if (
-                                xml_elem_child.tag.endswith("ptr")
-                                and xml_elem_child.attrib.get("type") == "bibl"
-                                and xml_elem_child.attrib.get("target") is not None
-                                and xml_elem_child.attrib.get("target").startswith("bibls:")
+                            xml_elem_child.tag.endswith("ptr")
+                            and xml_elem_child.attrib.get("type") == "bibl"
+                            and xml_elem_child.attrib.get("target") is not None
+                            and xml_elem_child.attrib.get("target").startswith("bibls:")
                         ):
 
                             bibl_id = xml_elem_child.attrib.get("target").replace("bibls:", "")
 
+                        elif (
+                            xml_elem_child.tag is not None
+                            and xml_elem_child.tag.endswith("title")
+                            and is_valid_text(xml_elem_child.text)
+                        ):
+
+                            name = xml_elem_child.text
+
                 elif (
-                        xml_elem.tag.endswith("bibl")
-                        and xml_elem.attrib.get("ana") == "frbroo:manifestation"
-                        and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
+                    xml_elem.tag.endswith("bibl")
+                    and xml_elem.attrib.get("ana") == "frbroo:manifestation"
+                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
                 ):
 
                     bibl_id = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
@@ -710,6 +728,7 @@ class TreesManager:
                         #     name=attr_dict["name"],
                         # )
                         db_hit = F3_Manifestation_Product_Type.objects.filter(name=attr_dict["name"])
+
                         if len(db_hit) > 1:
 
                             # TODO : Check how often this is the case
@@ -916,11 +935,11 @@ class TreesManager:
 
                 for xml_elem_child in xml_elem:
 
-                    if xml_elem_child.tag.endswith("forename"):
+                    if xml_elem_child.tag.endswith("forename") and is_valid_text(xml_elem_child.text):
 
                         forename = xml_elem_child.text
 
-                    if xml_elem_child.tag.endswith("surname"):
+                    if xml_elem_child.tag.endswith("surname") and is_valid_text(xml_elem_child.text):
 
                         surname = xml_elem_child.text
 
@@ -952,6 +971,7 @@ class TreesManager:
                 name = None
                 forename = None
                 surname = None
+                gnd_url = None
 
                 if (
                     xml_elem.tag.endswith("rs")
@@ -974,10 +994,32 @@ class TreesManager:
                         path_node.path_node_parent is not None
                         and not path_node.path_node_parent.xml_elem.tag.endswith("rs")
                         and path_node.path_node_parent.xml_elem.attrib.get("type") != "person"
+                        and not path_node.path_node_parent.xml_elem.tag.endswith("item") # as in person_index.xml
                     )
                 ):
 
                     name, forename, surname = parse_persName(xml_elem)
+
+                elif (
+                    xml_elem.tag.endswith("item")
+                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
+                ):
+
+                    pers_id = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+
+                    for xml_elem_child in xml_elem:
+
+                        if xml_elem_child.tag.endswith("persName"):
+
+                            name, forename, surname = parse_persName(xml_elem_child)
+
+                        elif (
+                            xml_elem_child.tag.endswith("ref")
+                            and xml_elem_child.attrib.get("type") == "gnd"
+                            and xml_elem_child.attrib.get("target") is not None
+                        ):
+
+                            gnd_url = xml_elem_child.attrib.get("target")
 
                 else:
 
@@ -988,6 +1030,7 @@ class TreesManager:
                     "name": name,
                     "forename": forename,
                     "surname": surname,
+                    "gnd_url": gnd_url,
                 }
 
             def sub_main(path_node):
@@ -1773,6 +1816,18 @@ class TreesManager:
 
             def triple_from_f1_to_f3(entity_work, path_node):
 
+                def check_and_create_triple_to_f3(entity_work, path_node_other):
+
+                    for entity_other in path_node_other.entities_list:
+
+                        if entity_other.__class__ is F3_Manifestation_Product_Type:
+
+                            create_triple(
+                                entity_subj=entity_work,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="is expressed in")
+                            )
+
                 for neighbour_path_node in path_node.path_node_parent.path_node_children_list:
 
                     # direct manifestations
@@ -1787,15 +1842,11 @@ class TreesManager:
 
                                 for neighbour_child_child_path_node in neighbour_child_path_node.path_node_children_list:
 
-                                    for entity_other in neighbour_child_child_path_node.entities_list:
+                                    check_and_create_triple_to_f3(entity_work, neighbour_child_child_path_node)
 
-                                        if entity_other.__class__ is F3_Manifestation_Product_Type:
+                            else:
 
-                                            create_triple(
-                                                entity_subj=entity_work,
-                                                entity_obj=entity_other,
-                                                prop=Property.objects.get(name="is expressed in")
-                                            )
+                                check_and_create_triple_to_f3(entity_work, neighbour_child_path_node)
 
                     # translated manifestations
                     elif (
@@ -1869,6 +1920,30 @@ class TreesManager:
                         prop=Property.objects.get(name="p2 has type")
                     )
 
+            def triples_from_f3_to_f3(entity_manifestation, path_node: PathNode):
+
+                for path_node_child in path_node.path_node_children_list:
+
+                    if (
+                        path_node_child.xml_elem.tag.endswith("relatedItem")
+                        and path_node_child.xml_elem.attrib.get("type") == "host"
+                    ):
+
+                        for path_node_child_child in path_node_child.path_node_children_list:
+
+                            for entity_other in path_node_child_child.entities_list:
+
+                                if (
+                                    path_node_child_child.xml_elem.tag.endswith("bibl")
+                                    and entity_other.__class__ is F3_Manifestation_Product_Type
+                                ):
+
+                                    create_triple(
+                                        entity_subj=entity_manifestation,
+                                        entity_obj=entity_other,
+                                        prop=Property.objects.get(name="host")
+                                    )
+
             def triples_from_f3_to_f9(entity_manifestation, path_node: PathNode):
 
                 for child_path_node in path_node.path_node_children_list:
@@ -1919,6 +1994,7 @@ class TreesManager:
                     triple.save()
 
             triples_from_f3_to_e55(entity_manifestation, path_node)
+            triples_from_f3_to_f3(entity_manifestation, path_node)
             triples_from_f3_to_f9(entity_manifestation, path_node)
             triples_from_f3_to_e40(entity_manifestation, path_node)
 
@@ -2028,34 +2104,70 @@ class TreesManager:
             triple_from_chapter_to_chapter(entity_chapter, path_node)
 
 
+        def parse_triples_from_xml_file(entity_xml_file, path_node: PathNode):
+
+            def wire_with_all(entity_xml_file, path_node_current):
+
+                for entity_other in path_node_current.entities_list:
+
+                    if not entity_other.__class__ is entity_xml_file.__class__:
+
+                        create_triple(
+                            entity_subj=entity_other,
+                            entity_obj=entity_xml_file,
+                            prop=Property.objects.get(name="data read from file"),
+                        )
+
+                for path_node_child in path_node_current.path_node_children_list:
+
+                    wire_with_all(entity_xml_file, path_node_child)
+
+            wire_with_all(entity_xml_file, path_node)
 
         def sub_main(path_node):
 
             for entity in path_node.entities_list:
 
-                if entity.__class__ == F1_Work:
+                if entity.__class__ is F1_Work:
 
                     parse_triples_from_f1_work(entity, path_node)
 
-                elif entity.__class__ == F3_Manifestation_Product_Type:
+                elif entity.__class__ is F3_Manifestation_Product_Type:
 
                     parse_triples_from_f3_manifestation(entity, path_node)
 
-                elif entity.__class__ == E55_Type:
+                elif entity.__class__ is E55_Type:
 
                     parse_triples_from_e55_manifestation(entity, path_node)
 
-                elif entity.__class__ == F10_Person:
+                elif entity.__class__ is F10_Person:
 
                     parse_triples_from_f10_person(entity, path_node)
 
-                elif entity.__class__ == Chapter:
+                elif entity.__class__ is Chapter:
 
                     parse_triples_from_chapter(entity, path_node)
+
+                elif entity.__class__ is Xml_File:
+
+                    parse_triples_from_xml_file(entity, path_node)
 
         sub_main(path_node)
 
 
+def parse_xml_entity_tmp(xml_file_path):
+    # Temporary helper method to parse the xml_file path to create an entity representing the xml file
+    # for help in curation
+
+    name = xml_file_path.split("/")[-1]
+
+    db_result = Xml_File.objects.get_or_create(name=name, file_path=xml_file_path)
+
+    if db_result[1] is False:
+
+        raise Exception("XML file already parsed.")
+
+    return db_result[0]
 
 
 def run(*args, **options):
@@ -2127,16 +2239,19 @@ def run(*args, **options):
 
             # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1/001_Werke/011_EssayistischeTexteRedenundStatements/016_ZurösterreichischenPolitikundGesellschaft/001_EssaysBeiträge/014_EinVolkEinFest.xml"]
 
-            for xml_file in xml_file_list:
+            for xml_file_path in xml_file_list:
 
-                print(f"\nParsing {xml_file}")
+                print(f"\nParsing {xml_file_path}")
 
-                tree = ET.parse(xml_file)
+                tree = ET.parse(xml_file_path)
 
-                # TODO : Create xml file entity
+                xml_entity = parse_xml_entity_tmp(xml_file_path)
 
-                root_path_node = crawl_xml_tree_for_entities(PathNode(tree.getroot(), None), trees_manager)
-                crawl_xml_tree_for_triples(root_path_node, trees_manager)
+                path_node_root = PathNode(tree.getroot(), None)
+                path_node_root.entities_list.append(xml_entity)
+
+                path_node_root = crawl_xml_tree_for_entities(path_node_root, trees_manager)
+                crawl_xml_tree_for_triples(path_node_root, trees_manager)
 
             print(f"ObjectCreator.counter_e40_legal_body_parsed: {trees_manager.counter_e40_legal_body_parsed}")
             print(f"ObjectCreator.counter_e40_legal_body_created: {trees_manager.counter_e40_legal_body_created}")
@@ -2170,11 +2285,10 @@ def run(*args, **options):
         reset_all()
 
         xml_file_list = []
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_test.xml")
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
 
         crawl_xml_list(xml_file_list)
 
