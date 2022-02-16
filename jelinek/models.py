@@ -164,6 +164,13 @@ def construct_properties():
     data_read_from.subj_class.add(ContentType.objects.get(model=Chapter.__name__))
     data_read_from.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
 
+    was_defined_primarily_in = Property.objects.create(
+        name="was defined primarily in",
+        name_reverse="defined primarily",
+    )
+    was_defined_primarily_in.subj_class.add(ContentType.objects.get(model=E1_Crm_Entity.__name__))
+    was_defined_primarily_in.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
+
     p2_has_type = Property.objects.create(
         name="p2 has type",
         name_reverse="p2i is type of",

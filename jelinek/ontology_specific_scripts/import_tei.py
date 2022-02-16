@@ -2245,7 +2245,7 @@ class TreesManager:
 
         def parse_triples_from_xml_file(entity_xml_file, path_node: PathNode):
 
-            def wire_with_all(entity_xml_file, path_node_current):
+            def triple_to_all(entity_xml_file, path_node_current: PathNode):
 
                 for entity_other in path_node_current.entities_list:
 
@@ -2257,11 +2257,27 @@ class TreesManager:
                             prop=Property.objects.get(name="data read from file"),
                         )
 
+                    if (
+                            path_node_current.path_node_parent is not None
+                            and path_node_current.path_node_parent.xml_elem.tag.endswith("div")
+                            and path_node_current.path_node_parent.xml_elem.attrib.get("type") == "entry"
+                            and path_node_current.path_node_parent.path_node_parent.xml_elem.tag.endswith("body")
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("text")
+                    ):
+
+                        create_triple(
+                            entity_subj=entity_other,
+                            entity_obj=entity_xml_file,
+                            prop=Property.objects.get(name="was defined primarily in"),
+                        )
+
                 for path_node_child in path_node_current.path_node_children_list:
 
-                    wire_with_all(entity_xml_file, path_node_child)
+                    triple_to_all(entity_xml_file, path_node_child)
 
-            wire_with_all(entity_xml_file, path_node)
+
+            triple_to_all(entity_xml_file, path_node)
+
 
         def sub_main(path_node):
 
