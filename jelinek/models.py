@@ -135,7 +135,7 @@ class F20_Performance_Work(F1_Work):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class F31_Performance(F1_Work):
+class F31_Performance(E1_Crm_Entity):
 
     note = models.CharField(max_length=1024, blank=True, null=True)
 
