@@ -10,6 +10,7 @@ from apis_core.apis_entities.models import TempEntityClass
 class Xml_File(TempEntityClass):
 
     file_path = models.CharField(max_length=1024, blank=True, null=True)
+    file_content = models.TextField(blank=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])

@@ -2318,13 +2318,25 @@ def parse_xml_entity_tmp(xml_file_path):
     # Temporary helper method to parse the xml_file path to create an entity representing the xml file
     # for help in curation
 
-    name = xml_file_path.split("/")[-1]
-
-    db_result = Xml_File.objects.get_or_create(name=name, file_path=xml_file_path)
+    db_result = Xml_File.objects.get_or_create(file_path=xml_file_path)
 
     if db_result[1] is False:
 
         raise Exception("XML file already parsed.")
+
+    else:
+
+        xml_ent = db_result[0]
+
+        name = xml_file_path.split("/")[-1]
+
+        with open(xml_file_path, "r") as f:
+
+            file_content = f.read()
+
+        xml_ent.name = name
+        xml_ent.file_content = file_content
+        xml_ent.save()
 
     return db_result[0]
 
@@ -2396,8 +2408,6 @@ def run(*args, **options):
 
             trees_manager = TreesManager
 
-            # xml_file_list = ["./manuelle-korrektur/korrigiert/bd1/001_Werke/011_EssayistischeTexteRedenundStatements/016_ZurösterreichischenPolitikundGesellschaft/001_EssaysBeiträge/014_EinVolkEinFest.xml"]
-
             for xml_file_path in xml_file_list:
 
                 print(f"\nParsing {xml_file_path}")
@@ -2420,10 +2430,10 @@ def run(*args, **options):
         reset_all()
 
         xml_file_list = []
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
 
         crawl_xml_list(xml_file_list)
 
