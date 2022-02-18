@@ -73,3 +73,5 @@ LANGUAGE_CODE = "de"
 
 
 APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
+
+INSTALLED_APPS.append("apis_highlighter")
