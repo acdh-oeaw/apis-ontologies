@@ -152,10 +152,20 @@ class Chapter(TempEntityClass):
 
 def construct_properties():
 
+    from apis_core.apis_vocabularies.models import TextType
+    from apis_core.apis_metainfo.models import Collection
     from apis_core.apis_relations.models import Property
-    from apis_core.apis_metainfo.models import RootObject
+    from apis_highlighter.models import AnnotationProject, Project
+    from django.contrib.auth.models import User
 
-    RootObject.objects.all().delete()
+    TextType.objects.all().delete()
+    tt = TextType.objects.create(entity="E1_Crm_Entity")
+    tt.collections.add(Collection.objects.create(name="manually created entity"))
+
+    AnnotationProject.objects.create(name="test__annotation_project_1")
+    Project.objects.create(name="test__project_1", user=User.objects.first())
+
+    Property.objects.all().delete()
 
     data_read_from = Property.objects.create(
         name="data read from file",
