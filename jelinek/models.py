@@ -136,6 +136,18 @@ class F20_Performance_Work(F1_Work):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
+class F21_Recording_Work(F1_Work):
+
+    pass
+
+
+@reversion.register(follow=["tempentityclass_ptr"])
+class F26_Recording(F1_Work):
+
+    airing_date = models.CharField(max_length=1024, blank=True, null=True)
+
+
+@reversion.register(follow=["tempentityclass_ptr"])
 class F31_Performance(E1_Crm_Entity):
 
     note = models.CharField(max_length=1024, blank=True, null=True)
@@ -312,3 +324,10 @@ def construct_properties():
     )
     is_in_chapter.subj_class.add(ContentType.objects.get(model=Chapter.__name__))
     is_in_chapter.obj_class.add(ContentType.objects.get(model=Chapter.__name__))
+
+    r13_is_realised_in = Property.objects.create(
+        name="R13 is realised in",
+        name_reverse="R13i realises",
+    )
+    r13_is_realised_in.subj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
+    r13_is_realised_in.obj_class.add(ContentType.objects.get(model=F26_Recording.__name__))

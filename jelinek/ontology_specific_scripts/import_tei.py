@@ -51,9 +51,10 @@ class TreesManager:
     # TODO output these at the end of parsing
     entity_xml_tag_not_parsed = set()
     entity_xml_text_not_parsed = set()
+    helper_dict = {}
 
     @classmethod
-    def parse_for_entities(cls, path_node: PathNode):
+    def parse_for_entities(cls, path_node: PathNode, trees_manager: Type[TreesManager]):
 
         def handle_after_creation(db_result, attr_dict):
 
@@ -285,18 +286,22 @@ class TreesManager:
                 if (
                     xml_elem.tag.endswith("bibl")
                     and xml_elem.attrib.get("ana") == "frbroo:work"
+                    and trees_manager.helper_dict["current_type"] is F1_Work
                 ):
 
                     for xml_elem_child in xml_elem:
 
                         # TODO : Check if there are titles without 'type="main"'
-                        if xml_elem_child.tag.endswith("title"):
+                        if (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "main"
+                        ):
 
                             name = xml_elem_child.text
 
                         if (
-                                xml_elem_child.tag.endswith("idno")
-                                and xml_elem_child.attrib["type"] == "JWV"
+                            xml_elem_child.tag.endswith("idno")
+                            and xml_elem_child.attrib["type"] == "JWV"
                         ):
 
                             idno = xml_elem_child.text
@@ -328,10 +333,10 @@ class TreesManager:
                             gnd_url = xml_elem_child.attrib.get("target")
 
                 elif (
-                        xml_elem.tag.endswith("rs")
-                        and xml_elem.attrib.get("type") == "work"
-                        and xml_elem.attrib.get("ref") is not None
-                        and xml_elem.attrib.get("ref").startswith("works:")
+                    xml_elem.tag.endswith("rs")
+                    and xml_elem.attrib.get("type") == "work"
+                    and xml_elem.attrib.get("ref") is not None
+                    and xml_elem.attrib.get("ref").startswith("works:")
                 ):
 
                     idno = xml_elem.attrib.get("ref").replace("works:", "")
@@ -879,8 +884,6 @@ class TreesManager:
 
                     entities_list.append(handle_after_creation(db_result, attr_dict))
 
-                    # TODO : Triple creation here
-
                 return entities_list
 
             return sub_main(path_node)
@@ -916,6 +919,186 @@ class TreesManager:
             #     print("entity already exists")
 
             pass
+
+        def parse_f21_recording_work(path_node):
+
+            def parse_attr(path_node: PathNode):
+
+                xml_elem = path_node.xml_elem
+                name = None
+                idno = None
+
+                if (
+                    xml_elem.tag.endswith("bibl")
+                    and xml_elem.attrib.get("ana") == "frbroo:work"
+                ):
+
+                    for xml_elem_child in xml_elem:
+
+                        # TODO : Check if there are titles without 'type="main"'
+                        if (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "main"
+                            and trees_manager.helper_dict["current_type"] is F21_Recording_Work
+                        ):
+
+                            name = xml_elem_child.text
+
+                        if (
+                            xml_elem_child.tag.endswith("idno")
+                            and xml_elem_child.attrib["type"] == "JWV"
+                        ):
+
+                            idno = xml_elem_child.text
+
+                else:
+
+                    return None
+
+                return {
+                    "name": name,
+                    "idno": idno,
+                }
+
+
+            def sub_main(path_node):
+
+                enities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    db_result = None
+
+                    if attr_dict["name"] is not None:
+
+                        # db_result = F21_Recording_Work.objects.get_or_create(name=attr_dict["name"])
+                        db_hit = F21_Recording_Work.objects.filter(name=attr_dict["name"])
+                        if len(db_hit) > 1:
+
+                            # TODO : Check how often this is the case
+                            print("Multiple occurences found, taking the first")
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 1:
+
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 0:
+
+                            db_result = [
+                                F21_Recording_Work.objects.create(name=attr_dict["name"]),
+                                True
+                            ]
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    enities_list.append(handle_after_creation(db_result, attr_dict))
+
+                return enities_list
+
+            return sub_main(path_node)
+
+
+        def parse_f26_recording(path_node):
+
+            def parse_attr(path_node: PathNode):
+
+                xml_elem = path_node.xml_elem
+                name = None
+                airing_date = None
+                helper_org = None
+
+                if (
+                    xml_elem.tag.endswith("item")
+                    and xml_elem.attrib.get("type") == "broadcast"
+                ):
+
+                    for xml_elem_child in xml_elem:
+
+                        # TODO : Check if there are titles without 'type="main"'
+                        if (
+                            xml_elem_child.tag.endswith("date")
+                        ):
+
+                            airing_date = xml_elem_child.text
+
+                        elif (
+                            xml_elem_child.tag.endswith("orgName")
+                            and xml_elem_child.attrib["role"] == "broadcaster"
+                        ):
+
+                            helper_org = xml_elem_child.text
+
+                    if airing_date is not None and helper_org is not None:
+
+                        name = "aired on " + airing_date + " at " + helper_org
+
+                    elif airing_date is not None:
+
+                        name = "aired on " + airing_date
+
+                    elif helper_org is not None:
+
+                        name = "aired at " + helper_org
+
+                    else:
+
+                        name = "Unknown recording date"
+
+                else:
+
+                    return None
+
+                return {
+                    "name": name,
+                    "airing_date": airing_date,
+                }
+
+
+            def sub_main(path_node):
+
+                enities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    db_result = None
+
+                    if attr_dict["name"] is not None:
+
+                        # db_result = F26_Recording.objects.get_or_create(name=attr_dict["name"])
+                        db_hit = F26_Recording.objects.filter(name=attr_dict["name"])
+                        if len(db_hit) > 1:
+
+                            # TODO : Check how often this is the case
+                            print("Multiple occurences found, taking the first")
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 1:
+
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 0:
+
+                            db_result = [
+                                F26_Recording.objects.create(name=attr_dict["name"]),
+                                True
+                            ]
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    enities_list.append(handle_after_creation(db_result, attr_dict))
+
+                return enities_list
+
+            return sub_main(path_node)
 
 
         def parse_f31_performance(path_node):
@@ -1091,6 +1274,10 @@ class TreesManager:
 
             # TODO : Consider ruling out Project members
             path_node.entities_list.extend(parse_f10_person(path_node))
+
+            path_node.entities_list.extend(parse_f21_recording_work(path_node))
+
+            path_node.entities_list.extend(parse_f26_recording(path_node))
 
             path_node.entities_list.extend(parse_f31_performance(path_node))
 
@@ -1453,12 +1640,51 @@ class TreesManager:
                                 prop=Property.objects.get(name="is author of")
                             )
 
-            triple_from_f10_to_f3(entity_person, path_node)
+            def triple_from_f10_to_f21(entity_person, path_node: PathNode):
 
+                if path_node.path_node_parent.xml_elem.tag.endswith("bibl"):
+
+                    for entity_other in path_node.path_node_parent.entities_list:
+
+                        if entity_other.__class__ is F21_Recording_Work:
+
+                            create_triple(
+                                entity_subj=entity_person,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="is author of")
+                            )
+
+            triple_from_f10_to_f3(entity_person, path_node)
+            triple_from_f10_to_f21(entity_person, path_node)
+
+
+        def parse_triples_from_f21_recording_work(entity_recording_work, path_node: PathNode):
+
+            def triple_from_f21_to_f26(entity_recording_work, path_node: PathNode):
+
+                for path_node_neighbour in path_node.path_node_parent.path_node_children_list:
+
+                    if path_node_neighbour.xml_elem.attrib.get("type") == "broadcasts":
+
+                        for path_node_neighbour_child in path_node_neighbour.path_node_children_list:
+
+                            for path_node_neighbour_child_child in path_node_neighbour_child.path_node_children_list:
+
+                                for entity_other in path_node_neighbour_child_child.entities_list:
+
+                                    if entity_other.__class__ is F26_Recording:
+
+                                        create_triple(
+                                            entity_subj=entity_recording_work,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="R13 is realised in"),
+                                        )
+
+            triple_from_f21_to_f26(entity_recording_work, path_node)
+
+            parse_triples_from_f1_work(entity_recording_work, path_node)
 
         def parse_triples_from_f31_performance(entity_performance, path_node: PathNode):
-
-            print()
 
             def triple_from_f31_to_e40(entity_performance, path_node: PathNode):
 
@@ -1643,6 +1869,10 @@ class TreesManager:
 
                     parse_triples_from_f10_person(entity, path_node)
 
+                elif entity.__class__ is F21_Recording_Work:
+
+                    parse_triples_from_f21_recording_work(entity, path_node)
+
                 elif entity.__class__ is F31_Performance:
 
                     parse_triples_from_f31_performance(entity, path_node)
@@ -1718,11 +1948,9 @@ def run(*args, **options):
 
     def crawl_xml_list(xml_file_list):
 
-
-        # TODO : Add relation entity -'read data from file'-> xml file
         def crawl_xml_tree_for_entities(path_node: PathNode, trees_manager: Type[TreesManager]):
 
-            path_node = trees_manager.parse_for_entities(path_node)
+            path_node = trees_manager.parse_for_entities(path_node, trees_manager)
 
             for xml_elem_child in path_node.xml_elem:
 
@@ -1762,6 +1990,23 @@ def run(*args, **options):
 
                 path_node_root = PathNode(tree.getroot(), None)
                 path_node_root.entities_list.append(xml_entity)
+
+                current_type = None
+
+                if (
+                    "005_TextefürHörspiele" in xml_file_path
+                    or "006_DrehbücherundTextefürFilme" in xml_file_path
+                ):
+
+                    current_type = F21_Recording_Work
+
+                # TODO : add more elsif to differentiate other types coming from other folders
+
+                else:
+
+                    current_type = F1_Work
+
+                trees_manager.helper_dict["current_type"] = current_type
 
                 path_node_root = crawl_xml_tree_for_entities(path_node_root, trees_manager)
                 crawl_xml_tree_for_triples(path_node_root, trees_manager)
