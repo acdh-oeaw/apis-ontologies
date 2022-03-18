@@ -371,12 +371,18 @@ class TreesManager:
 
                     if attr_dict["idno"] is not None:
 
-                        db_result = F1_Work.objects.get_or_create(idno=attr_dict["idno"])
+                        db_result = F1_Work.objects.get_or_create(
+                            idno=attr_dict["idno"],
+                            self_content_type=F1_Work.get_content_type()
+                        )
 
                     elif attr_dict["name"] is not None:
 
                         # db_result = F1_Work.objects.get_or_create(name=attr_dict["name"])
-                        db_hit = F1_Work.objects.filter(name=attr_dict["name"])
+                        db_hit = F1_Work.objects.filter(
+                            name=attr_dict["name"],
+                            self_content_type=F1_Work.get_content_type()
+                        )
                         if len(db_hit) > 1:
 
                             # TODO : Check how often this is the case
@@ -847,6 +853,7 @@ class TreesManager:
                 if attr_dict is not None:
 
                     db_result = None
+                    db_hit = None
 
                     if attr_dict["pers_id"] is not None:
 
@@ -854,13 +861,20 @@ class TreesManager:
 
                     elif attr_dict["forename"] is not None and attr_dict["surname"] is not None:
 
-                        db_result = F10_Person.objects.get_or_create(forename=attr_dict["forename"], surname=attr_dict["surname"])
+                        db_hit = F10_Person.objects.filter(forename=attr_dict["forename"], surname=attr_dict["surname"])
 
                     elif attr_dict["name"] is not None:
 
                         # There can be multiple persons with the same name, hence until disambiguation can be finished,
                         # db_result = F10_Person.objects.get_or_create(name=attr_dict["name"])
                         db_hit = F10_Person.objects.filter(name=attr_dict["name"])
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    if db_hit is not None:
+
                         if len(db_hit) > 1:
 
                             # TODO : Check how often this is the case
@@ -877,10 +891,6 @@ class TreesManager:
                                 F10_Person.objects.create(name=attr_dict["name"]),
                                 True
                             ]
-
-                    else:
-
-                        print("Entity found without a uniquely identifying attribute")
 
                     entities_list.append(handle_after_creation(db_result, attr_dict))
 
