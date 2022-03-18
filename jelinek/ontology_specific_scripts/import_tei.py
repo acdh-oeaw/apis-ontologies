@@ -2034,12 +2034,10 @@ def run(*args, **options):
         reset_all()
 
         xml_file_list = []
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
-
-        xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0015.xml")
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
+        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
+        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
+        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
 
         crawl_xml_list(xml_file_list)
 
