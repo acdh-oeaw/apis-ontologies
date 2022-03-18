@@ -44,6 +44,27 @@ def is_valid_text(var_str):
 
     return not re.match(r"^$|^[ \n]*$", var_str)
 
+def has_class_as_parent(class_to_check, class_parent):
+
+    if class_to_check is type:
+
+        return False
+
+    elif class_to_check is class_parent:
+
+        return True
+
+    else:
+
+        for parent in class_to_check.__bases__:
+
+            if has_class_as_parent(parent, class_parent):
+
+                return True
+
+        return False
+
+
 
 # TODO : Check all object creations for redundant data creation
 class TreesManager:
@@ -286,7 +307,7 @@ class TreesManager:
                 if (
                     xml_elem.tag.endswith("bibl")
                     and xml_elem.attrib.get("ana") == "frbroo:work"
-                    and trees_manager.helper_dict["current_type"] is F1_Work
+                    and trees_manager.helper_dict["current_type"] == "work"
                 ):
 
                     for xml_elem_child in xml_elem:
@@ -808,7 +829,7 @@ class TreesManager:
                             not path_node.path_node_parent.xml_elem.tag.endswith("item") # as in person_index.xml
                             or (
                                 path_node.path_node_parent.xml_elem.tag.endswith("item")
-                                and  path_node.path_node_parent.xml_elem.attrib.get("ana") == "staging" # as in xmls in 001_Werke/004_Theatertexte/FRBR-Works/
+                                and path_node.path_node_parent.xml_elem.attrib.get("ana") == "staging" # as in xmls in 001_Werke/004_Theatertexte/FRBR-Works/
                             )
                         )
                     )
@@ -903,6 +924,98 @@ class TreesManager:
 
             return sub_main(path_node)
 
+        def parse_f20_performance_work(path_node):
+
+            def parse_attr(path_node: PathNode):
+
+                xml_elem = path_node.xml_elem
+                name = None
+                idno = None
+
+                if (
+                    xml_elem.tag.endswith("bibl")
+                    and xml_elem.attrib.get("ana") == "frbroo:work"
+                    and (
+                        trees_manager.helper_dict["current_type"] is "009_LibrettiOper"
+                        or trees_manager.helper_dict["current_type"] is "013_TextefürInstallationenundProjektionenFotoarbeiten"
+                    )
+                ):
+
+                    for xml_elem_child in xml_elem:
+
+                        if (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "main"
+                        ):
+
+                            name = xml_elem_child.text
+
+                        if (
+                            xml_elem_child.tag.endswith("idno")
+                            and xml_elem_child.attrib["type"] == "JWV"
+                        ):
+
+                            idno = xml_elem_child.text
+
+                else:
+
+                    return None
+
+                return {
+                    "name": name,
+                    "idno": idno,
+                }
+
+            def sub_main(path_node: PathNode):
+
+                entities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    if attr_dict["idno"] is not None:
+
+                        db_result = F20_Performance_Work.objects.get_or_create(
+                            idno=attr_dict["idno"],
+                            self_content_type=F20_Performance_Work.get_content_type()
+                        )
+
+                    elif attr_dict["name"] is not None:
+
+                        # db_result = F20_Performance_Work.objects.get_or_create(name=attr_dict["name"])
+                        db_hit = F20_Performance_Work.objects.filter(
+                            name=attr_dict["name"],
+                            self_content_type=F20_Performance_Work.get_content_type()
+                        )
+                        if len(db_hit) > 1:
+
+                            # TODO : Check how often this is the case
+                            print("Multiple occurences found, taking the first")
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 1:
+
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 0:
+
+                            db_result = [
+                                F20_Performance_Work.objects.create(name=attr_dict["name"]),
+                                True
+                            ]
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    entities_list.append(handle_after_creation(db_result, attr_dict))
+
+                return entities_list
+
+            return sub_main(path_node)
+
+
         def parse_f17_aggregation_work(path_node):
 
             # cls.counter_f17_aggregation_work_parsed += 1
@@ -954,7 +1067,11 @@ class TreesManager:
                         if (
                             xml_elem_child.tag.endswith("title")
                             and xml_elem_child.attrib.get("type") == "main"
-                            and trees_manager.helper_dict["current_type"] is F21_Recording_Work
+                            and (
+                                trees_manager.helper_dict["current_type"] == "005_TextefürHörspiele"
+                                or trees_manager.helper_dict["current_type"] == "006_DrehbücherundTextefürFilme"
+                                or trees_manager.helper_dict["current_type"] == "007_Kompositionen"
+                            )
                         ):
 
                             name = xml_elem_child.text
@@ -1290,6 +1407,8 @@ class TreesManager:
             # TODO : Consider ruling out Project members
             path_node.entities_list.extend(parse_f10_person(path_node))
 
+            path_node.entities_list.extend(parse_f20_performance_work(path_node))
+
             path_node.entities_list.extend(parse_f21_recording_work(path_node))
 
             path_node.entities_list.extend(parse_f26_recording(path_node))
@@ -1300,9 +1419,6 @@ class TreesManager:
 
 
             # cls.parse_f17_aggregation_work(path_node.xml_elem)
-
-            # TODO
-            # cls.parse_f20_performance_work(xml_elem)
 
             # # TODO
             # if (
@@ -1793,7 +1909,7 @@ class TreesManager:
 
                                             for entity_work in path_node_bibl.entities_list:
 
-                                                if entity_work.__class__ == F1_Work:
+                                                if has_class_as_parent(entity_work.__class__, F1_Work):
 
                                                     create_triple(
                                                         entity_subj=entity_work,
@@ -2008,18 +2124,30 @@ def run(*args, **options):
 
                 current_type = None
 
-                if (
-                    "005_TextefürHörspiele" in xml_file_path
-                    or "006_DrehbücherundTextefürFilme" in xml_file_path
-                ):
+                if "005_TextefürHörspiele" in xml_file_path:
 
-                    current_type = F21_Recording_Work
+                    current_type = "005_TextefürHörspiele"
 
-                # TODO : add more elsif to differentiate other types coming from other folders
+                elif "006_DrehbücherundTextefürFilme" in xml_file_path:
+
+                    current_type = "006_DrehbücherundTextefürFilme"
+
+                elif "007_Kompositionen" in xml_file_path:
+
+                    current_type = "007_Kompositionen"
+
+                elif "009_LibrettiOper" in xml_file_path:
+
+                    current_type = "009_LibrettiOper"
+
+
+                elif "013_TextefürInstallationenundProjektionenFotoarbeiten" in xml_file_path:
+
+                    current_type = "013_TextefürInstallationenundProjektionenFotoarbeiten"
 
                 else:
 
-                    current_type = F1_Work
+                    current_type = "work"
 
                 trees_manager.helper_dict["current_type"] = current_type
 
