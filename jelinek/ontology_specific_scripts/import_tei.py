@@ -481,11 +481,17 @@ class TreesManager:
 
                     for xml_elem_child in xml_elem:
 
-                        if xml_elem_child.tag.endswith("title"):
+                        if (
+                            xml_elem_child.tag.endswith("title")
+                            and is_valid_text(xml_elem_child.text)
+                        ):
 
                             name = xml_elem_child.text
 
-                        elif xml_elem_child.tag.endswith("hi"):
+                        elif (
+                            xml_elem_child.tag.endswith("hi")
+                            and is_valid_text(xml_elem_child.text)
+                        ):
 
                             name = xml_elem_child.text
 
@@ -644,7 +650,6 @@ class TreesManager:
                         print("Entity found without a uniquely identifying attribute")
 
                     if db_result is not None:
-
 
                             # TODO : Maybe reactivate a default naming scheme for empty entries, or maybe not
                             # if attr_dict["name"] is None and entity.name == "":
@@ -2029,10 +2034,12 @@ def run(*args, **options):
         reset_all()
 
         xml_file_list = []
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
-        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
-        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
-        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
+
+        xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0015.xml")
 
         crawl_xml_list(xml_file_list)
 
