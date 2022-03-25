@@ -1057,7 +1057,12 @@ class TreesManager:
                 idno = None
 
                 if (
-                    xml_elem.tag.endswith("bibl")
+                    (
+                        trees_manager.helper_dict["current_type"] == "005_TextefürHörspiele"
+                        or trees_manager.helper_dict["current_type"] == "006_DrehbücherundTextefürFilme"
+                        or trees_manager.helper_dict["current_type"] == "007_Kompositionen"
+                    )
+                    and xml_elem.tag.endswith("bibl")
                     and xml_elem.attrib.get("ana") == "frbroo:work"
                 ):
 
@@ -1067,11 +1072,6 @@ class TreesManager:
                         if (
                             xml_elem_child.tag.endswith("title")
                             and xml_elem_child.attrib.get("type") == "main"
-                            and (
-                                trees_manager.helper_dict["current_type"] == "005_TextefürHörspiele"
-                                or trees_manager.helper_dict["current_type"] == "006_DrehbücherundTextefürFilme"
-                                or trees_manager.helper_dict["current_type"] == "007_Kompositionen"
-                            )
                         ):
 
                             name = xml_elem_child.text
@@ -1103,7 +1103,14 @@ class TreesManager:
 
                     db_result = None
 
-                    if attr_dict["name"] is not None:
+                    if attr_dict["idno"] is not None:
+
+                        db_result = F21_Recording_Work.objects.get_or_create(
+                            idno=attr_dict["idno"],
+                            self_content_type=F21_Recording_Work.get_content_type()
+                        )
+
+                    elif attr_dict["name"] is not None:
 
                         # db_result = F21_Recording_Work.objects.get_or_create(name=attr_dict["name"])
                         db_hit = F21_Recording_Work.objects.filter(name=attr_dict["name"])
