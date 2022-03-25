@@ -225,13 +225,18 @@ class TreesManager:
 
                     name = xml_elem.text
 
+
+                attr_dict = {
+                    "name": name
+                }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
                 else:
 
                     return None
-
-                return {
-                    "name": name
-                }
 
             def sub_main(path_node: PathNode):
 
@@ -267,10 +272,18 @@ class TreesManager:
                     name_type = xml_elem.attrib.get("type")
                     name_subtype = xml_elem.attrib.get("subtype")
 
-                return {
+                attr_dict = {
                     "name_type": name_type,
                     "name_subtype": name_subtype
                 }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
 
             def sub_main(path_node: PathNode):
 
@@ -278,17 +291,19 @@ class TreesManager:
 
                 attr_dict = parse_attr(path_node)
 
-                if attr_dict["name_type"] is not None:
+                if attr_dict is not None:
 
-                    db_result = E55_Type.objects.get_or_create(name=attr_dict["name_type"])
+                    if attr_dict["name_type"] is not None:
 
-                    enities_list.append(handle_after_creation(db_result, {}))
+                        db_result = E55_Type.objects.get_or_create(name=attr_dict["name_type"])
 
-                if attr_dict["name_subtype"] is not None:
+                        enities_list.append(handle_after_creation(db_result, {}))
 
-                    db_result = E55_Type.objects.get_or_create(name=attr_dict["name_subtype"])
+                    if attr_dict["name_subtype"] is not None:
 
-                    enities_list.append(handle_after_creation(db_result, {}))
+                        db_result = E55_Type.objects.get_or_create(name=attr_dict["name_subtype"])
+
+                        enities_list.append(handle_after_creation(db_result, {}))
 
                 return enities_list
 
@@ -369,15 +384,19 @@ class TreesManager:
 
                             name = xml_elem_child.text
 
-                else:
-
-                    return None
-
-                return {
+                attr_dict = {
                     "idno": idno,
                     "name": name,
                     "gnd_url": gnd_url,
                 }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
 
 
             def sub_main(path_node):
@@ -607,11 +626,7 @@ class TreesManager:
 
                             name = xml_elem_child.text
 
-                else:
-
-                    return None
-
-                return {
+                attr_dict = {
                     "bibl_id": bibl_id,
                     "name": name,
                     "title_in_note": title_in_note,
@@ -623,6 +638,14 @@ class TreesManager:
                     "ref_accessed": ref_accessed,
                     "text_language": text_language,
                 }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
 
             def sub_main(path_node):
 
@@ -724,13 +747,17 @@ class TreesManager:
 
                     name = xml_elem.text.replace("pubPlace", "")
 
+                attr_dict = {
+                    "name": name
+                }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
                 else:
 
                     return None
-
-                return {
-                    "name": name
-                }
 
             def sub_main(path_node: PathNode):
 
@@ -858,17 +885,21 @@ class TreesManager:
 
                             gnd_url = xml_elem_child.attrib.get("target")
 
-                else:
-
-                    return None
-
-                return {
+                attr_dict = {
                     "pers_id": pers_id,
                     "name": name,
                     "forename": forename,
                     "surname": surname,
                     "gnd_url": gnd_url,
                 }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
 
             def sub_main(path_node):
 
@@ -957,14 +988,18 @@ class TreesManager:
 
                             idno = xml_elem_child.text
 
-                else:
-
-                    return None
-
-                return {
+                attr_dict = {
                     "name": name,
                     "idno": idno,
                 }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
 
             def sub_main(path_node: PathNode):
 
@@ -1083,14 +1118,18 @@ class TreesManager:
 
                             idno = xml_elem_child.text
 
-                else:
-
-                    return None
-
-                return {
+                attr_dict = {
                     "name": name,
                     "idno": idno,
                 }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
 
 
             def sub_main(path_node):
@@ -1188,14 +1227,18 @@ class TreesManager:
 
                         name = "Unknown recording date"
 
-                else:
-
-                    return None
-
-                return {
+                attr_dict = {
                     "name": name,
                     "airing_date": airing_date,
                 }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
 
 
             def sub_main(path_node):
@@ -1310,12 +1353,20 @@ class TreesManager:
 
                     name = f"Bei {institution}"
 
-                return {
+                attr_dict = {
                     "name": name,
                     "note": note,
                     "category": category,
                     "start_date_written": start_date_written,
                 }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
 
             def sub_main(path_node: PathNode):
 
@@ -1349,6 +1400,7 @@ class TreesManager:
                 xml_elem = path_node.xml_elem
 
                 chapter_number = None
+                name = None
 
                 if (
                     path_node.path_node_parent is not None
@@ -1362,14 +1414,18 @@ class TreesManager:
                     chapter_number = xml_elem.attrib.get("n")
                     name = xml_elem.text
 
-                else:
-
-                    return None
-
-                return {
+                attr_dict = {
                     "chapter_number": chapter_number,
                     "name": name
                 }
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
 
 
             def sub_main(path_node):
@@ -1644,7 +1700,8 @@ class TreesManager:
 
                 if entity_found is None and (name_subtype is not None or name_type is not None):
 
-                    raise Exception("Found a type, but no correspondingly created entity for it")
+                    # TODO : Check how often this is the case
+                    print("Found a type, but no correspondingly created entity for it")
 
                 if entity_found is not None:
 
