@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import xml.etree.ElementTree
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element as XmlElement
 from typing import Type, List
@@ -9,6 +11,9 @@ from django.core.management.base import BaseCommand, CommandError
 from os import listdir
 from os.path import isfile, join
 
+
+# The main logic of parsing xml nodes and correlating them with apis models probably would have
+# been better with xpath expressions instead of python if-else checks. I thought too late of this.
 
 class PathNode():
 
@@ -1453,7 +1458,7 @@ class TreesManager:
             return sub_main(path_node)
 
 
-        def sub_main(path_node):
+        def main_parse_for_entities(path_node):
 
             print(f"\nParsing: tag: {path_node.xml_elem.tag}, attrib: {path_node.xml_elem.attrib}, text: {path_node.xml_elem.text.__repr__()}")
 
@@ -1505,7 +1510,7 @@ class TreesManager:
 
             return path_node
 
-        return sub_main(path_node)
+        return main_parse_for_entities(path_node)
 
 
     @classmethod
@@ -2044,7 +2049,7 @@ class TreesManager:
             triple_to_all(entity_xml_file, path_node)
 
 
-        def sub_main(path_node):
+        def main_parse_for_triples(path_node):
 
             for entity in path_node.entities_list:
 
@@ -2080,10 +2085,10 @@ class TreesManager:
 
                     parse_triples_from_xml_file(entity, path_node)
 
-        sub_main(path_node)
+        main_parse_for_triples(path_node)
 
 
-def parse_xml_entity_tmp(xml_file_path):
+def parse_xml_as_entity(xml_file_path):
     # Temporary helper method to parse the xml_file path to create an entity representing the xml file
     # for help in curation
 
@@ -2167,11 +2172,7 @@ def run(*args, **options):
                 crawl_xml_tree_for_triples(child_path_node, trees_manager)
 
 
-        def sub_main(xml_file_list):
-
-            # Probably this algorithm could be done better with xpaths.
-            # I did not think of them early enough until development had been already mostly done.
-            # Should this be refactored, then implementing the several path-finding steps with xpaths might be more elegant.
+        def main_crawl_xml_list(xml_file_list):
 
             trees_manager = TreesManager
 
@@ -2179,49 +2180,57 @@ def run(*args, **options):
 
                 print(f"\nParsing {xml_file_path}")
 
-                tree = ET.parse(xml_file_path)
+                try:
 
-                xml_entity = parse_xml_entity_tmp(xml_file_path)
+                    tree = ET.parse(xml_file_path)
 
-                path_node_root = PathNode(tree.getroot(), None)
-                path_node_root.entities_list.append(xml_entity)
+                except xml.etree.ElementTree.ParseError:
 
-                current_type = None
-
-                if "005_TextefürHörspiele" in xml_file_path:
-
-                    current_type = "005_TextefürHörspiele"
-
-                elif "006_DrehbücherundTextefürFilme" in xml_file_path:
-
-                    current_type = "006_DrehbücherundTextefürFilme"
-
-                elif "007_Kompositionen" in xml_file_path:
-
-                    current_type = "007_Kompositionen"
-
-                elif "009_LibrettiOper" in xml_file_path:
-
-                    current_type = "009_LibrettiOper"
-
-
-                elif "013_TextefürInstallationenundProjektionenFotoarbeiten" in xml_file_path:
-
-                    current_type = "013_TextefürInstallationenundProjektionenFotoarbeiten"
+                    print(f"Parse error in file {xml_file_path}")
 
                 else:
 
-                    current_type = "work"
+                    xml_entity = parse_xml_as_entity(xml_file_path)
 
-                trees_manager.helper_dict["current_type"] = current_type
+                    path_node_root = PathNode(tree.getroot(), None)
+                    path_node_root.entities_list.append(xml_entity)
 
-                path_node_root = crawl_xml_tree_for_entities(path_node_root, trees_manager)
-                crawl_xml_tree_for_triples(path_node_root, trees_manager)
+                    current_type = None
 
-        sub_main(xml_file_list)
+                    if "005_TextefürHörspiele" in xml_file_path:
+
+                        current_type = "005_TextefürHörspiele"
+
+                    elif "006_DrehbücherundTextefürFilme" in xml_file_path:
+
+                        current_type = "006_DrehbücherundTextefürFilme"
+
+                    elif "007_Kompositionen" in xml_file_path:
+
+                        current_type = "007_Kompositionen"
+
+                    elif "009_LibrettiOper" in xml_file_path:
+
+                        current_type = "009_LibrettiOper"
 
 
-    def sub_main():
+                    elif "013_TextefürInstallationenundProjektionenFotoarbeiten" in xml_file_path:
+
+                        current_type = "013_TextefürInstallationenundProjektionenFotoarbeiten"
+
+                    else:
+
+                        current_type = "work"
+
+                    trees_manager.helper_dict["current_type"] = current_type
+
+                    path_node_root = crawl_xml_tree_for_entities(path_node_root, trees_manager)
+                    crawl_xml_tree_for_triples(path_node_root, trees_manager)
+
+        main_crawl_xml_list(xml_file_list)
+
+
+    def main_run():
 
         reset_all()
 
@@ -2233,4 +2242,4 @@ def run(*args, **options):
 
         crawl_xml_list(xml_file_list)
 
-    sub_main()
+    main_run()
