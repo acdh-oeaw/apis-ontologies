@@ -1782,7 +1782,13 @@ class TreesManager:
                                             prop=Property.objects.get(name="R13 is realised in"),
                                         )
 
+            def triple_from_f21_to_chapter(entity_recording_work, path_node: PathNode):
+
+                # TODO Barbara und Katharina: relate to chapter
+                pass
+
             triple_from_f21_to_f26(entity_recording_work, path_node)
+            triple_from_f21_to_chapter(entity_recording_work, path_node)
 
             parse_triples_from_f1_work(entity_recording_work, path_node)
 
