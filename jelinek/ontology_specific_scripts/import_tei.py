@@ -488,10 +488,14 @@ class TreesManager:
 
                             attr_dict["name"] = xml_elem_child.text
 
+                        elif xml_elem_child.tag.endswith("edition"):
+
+                            attr_dict["edition"] = xml_elem_child.text
+
                 elif (
                     xml_elem.tag.endswith("bibl")
-                    and xml_elem.get("ref") is not None
-                    and xml_elem.get("ref").startswith("bibls:")
+                    and xml_elem.attrib.get("ref") is not None
+                    and xml_elem.attrib.get("ref").startswith("bibls:")
                 ):
                     # TODO : When there is time check these following lines for redundancy and potential clean-ups
 
@@ -2133,10 +2137,15 @@ def run(*args, **options):
         reset_all()
 
         xml_file_list = []
+
+        # For full import, use this
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
         xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
+
+        # For partial import, just append one path
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
 
         crawl_xml_list(xml_file_list)
 
