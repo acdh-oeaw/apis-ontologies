@@ -9,7 +9,7 @@ from apis_core.apis_relations.models import Triple, TempTriple, Property
 from apis_core.apis_vocabularies.models import *
 from django.core.management.base import BaseCommand, CommandError
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, isdir, join
 
 
 # The main logic of parsing xml nodes and correlating them with apis models probably would have
@@ -2043,11 +2043,11 @@ def run(*args, **options):
 
             path = folder + "/" + f
 
-            if isfile(path) and f.endswith(".xml") and not f.endswith(".swp"):
+            if isfile(path) and f.endswith(".xml"):
 
                 list_current.append(path)
 
-            else:
+            elif isdir(path):
 
                 list_current.extend(get_flat_file_list(path))
 
