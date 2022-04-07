@@ -1269,7 +1269,7 @@ class TreesManager:
 
                     db_result = None
 
-                    if attr_dict["name"] != "":
+                    if attr_dict["name"] is not None:
 
                         db_result = F31_Performance.objects.get_or_create(name=attr_dict["name"])
 
