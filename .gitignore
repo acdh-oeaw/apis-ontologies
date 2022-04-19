@@ -1,4 +1,9 @@
-# Byte-compiled
-__pycache__/
-*.pyc
+# ----- OS, IDEs, tooling
+.DS_Store
+.idea/
+.python-version
 myenv
+
+# ---- Python-specific
+.*.pyc
+__pycache__/
