@@ -293,11 +293,12 @@ class TreesManager:
             def parse_attr(path_node: PathNode):
 
                 xml_elem = path_node.xml_elem
-
+                
                 attr_dict = {
                     "idno": None,
                     "name": None,
                     "gnd_url": None,
+                    "index_in_chapter": None
                 }
 
                 if (
@@ -305,6 +306,16 @@ class TreesManager:
                     and xml_elem.attrib.get("ana") == "frbroo:work"
                     and trees_manager.helper_dict["current_type"] == "work"
                 ):
+
+                    if path_node.path_node_parent != None:
+                        parent = path_node.path_node_parent
+                        while parent.path_node_parent != None:
+                            parent = parent.path_node_parent
+                        if len(parent.entities_list) > 0:
+                            xml = [f for f in parent.entities_list if "xml" in f.name]
+                            if len(xml) > 0:
+                                xml_file_name = xml[0].name
+                                attr_dict["index_in_chapter"] = int(xml_file_name.split("_")[0])
 
                     for xml_elem_child in xml_elem:
 
@@ -1927,6 +1938,9 @@ class TreesManager:
 
                 for entity_other in path_node_current.entities_list:
 
+                    if entity_other is None:
+                        continue
+
                     if not entity_other.__class__ is entity_xml_file.__class__:
 
                         create_triple(
@@ -2012,7 +2026,7 @@ def parse_xml_as_entity(xml_file_path):
 
         name = xml_file_path.split("/")[-1]
 
-        with open(xml_file_path, "r") as f:
+        with open(xml_file_path, "r", encoding="UTF-8") as f:
 
             file_content = f.read()
 
@@ -2146,12 +2160,20 @@ def run(*args, **options):
 
         # For full import, use this
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
-        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
-        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
-        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
-
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
+        #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
+        
+        #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
+        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik"))
+        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        
+        
         # For partial import, just append one path
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
+        #xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/001_Buchpublikationen/001_LisasSchatten.xml")
+        #xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane/002_Michael.xml")
+        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane"))
 
         crawl_xml_list(xml_file_list)
 
