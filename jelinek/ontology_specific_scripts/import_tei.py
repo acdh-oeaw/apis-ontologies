@@ -314,8 +314,12 @@ class TreesManager:
                         if len(parent.entities_list) > 0:
                             xml = [f for f in parent.entities_list if "xml" in f.name]
                             if len(xml) > 0:
-                                xml_file_name = xml[0].name
-                                attr_dict["index_in_chapter"] = int(xml_file_name.split("_")[0])
+                                xml_file_name = xml[0].name.replace(".xml", "")
+                                if len(xml_file_name) > 0:
+                                    if xml_file_name.split("_")[0] == "interview":
+                                        attr_dict["index_in_chapter"] = int(xml_file_name.split("_")[1])
+                                    else:
+                                        attr_dict["index_in_chapter"] = int(xml_file_name.split("_")[0])
 
                     for xml_elem_child in xml_elem:
 
@@ -2159,7 +2163,9 @@ def run(*args, **options):
         xml_file_list = []
 
         # For full import, use this
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
@@ -2178,3 +2184,5 @@ def run(*args, **options):
         crawl_xml_list(xml_file_list)
 
     main_run()
+
+   
