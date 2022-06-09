@@ -172,7 +172,7 @@ def construct_properties():
 
     TextType.objects.all().delete()
     tt = TextType.objects.create(entity="E1_Crm_Entity")
-    tt.collections.add(Collection.objects.create(name="manually created entity"))
+    tt.collections.add(Collection.objects.get_or_create(name="manually created entity"))
 
     AnnotationProject.objects.create(name="test__annotation_project_1")
     Project.objects.create(name="test__project_1", user=User.objects.first())
