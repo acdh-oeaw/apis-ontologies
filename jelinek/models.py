@@ -162,6 +162,10 @@ class Chapter(TempEntityClass):
 
     chapter_number = models.CharField(max_length=1024, blank=True, null=True)
 
+@reversion.register(follow=["tempentityclass_ptr"])
+class Keyword(TempEntityClass):
+    pass
+
 
 def construct_properties():
 
@@ -186,6 +190,7 @@ def construct_properties():
     )
     data_read_from.subj_class.add(ContentType.objects.get(model=E1_Crm_Entity.__name__))
     data_read_from.subj_class.add(ContentType.objects.get(model=Chapter.__name__))
+    data_read_from.subj_class.add(ContentType.objects.get(model=Keyword.__name__))
     data_read_from.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
 
     was_defined_primarily_in = Property.objects.create(
@@ -332,3 +337,10 @@ def construct_properties():
     )
     r13_is_realised_in.subj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
     r13_is_realised_in.obj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
+
+    has_keyword = Property.objects.create(
+        name="has keyword",
+        name_reverse="is keyword of",
+    )
+    has_keyword.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    has_keyword.obj_class.add(ContentType.objects.get(model=Keyword.__name__))

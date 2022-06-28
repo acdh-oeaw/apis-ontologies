@@ -1362,6 +1362,56 @@ class TreesManager:
 
             return sub_main(path_node)
 
+        def parse_keyword(path_node):
+
+            def parse_attr(path_node: PathNode):
+
+                xml_elem = path_node.xml_elem
+
+                attr_dict = {
+                    "name": None
+                }
+
+                if (
+                    path_node.path_node_parent is not None
+                    and xml_elem.tag.endswith("term")
+                    and xml_elem.attrib.get("n") is None
+                    and is_valid_text(xml_elem.text)
+                ):
+                    attr_dict["name"] = xml_elem.text
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
+
+            def sub_main(path_node):
+
+                enities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    db_result = None
+
+                    if attr_dict["name"] is not None:
+
+                        db_result = Keyword.objects.get_or_create(name=attr_dict["name"])
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    enities_list.append(handle_after_creation(db_result, attr_dict))
+
+                return enities_list
+
+            return sub_main(path_node)
+
 
         def main_parse_for_entities(path_node):
 
@@ -1389,6 +1439,8 @@ class TreesManager:
             path_node.entities_list.extend(parse_f31_performance(path_node))
 
             path_node.entities_list.extend(parse_chapter(path_node))
+
+            path_node.entities_list.extend(parse_keyword(path_node))
 
 
             # cls.parse_f17_aggregation_work(path_node.xml_elem)
@@ -1461,6 +1513,11 @@ class TreesManager:
 
                 return path_node
 
+        def get_uppermost_parent(path_node):
+            parent = path_node.path_node_parent
+            while parent.path_node_parent is not None:
+                parent = parent.path_node_parent
+            return parent
 
         def create_triple(entity_subj, entity_obj, prop):
 
@@ -1942,6 +1999,47 @@ class TreesManager:
 
             triple_from_chapter_to_f1(entity_chapter, path_node)
             triple_from_chapter_to_chapter(entity_chapter, path_node)
+            
+        def parse_triples_from_keyword(entity_keyword, path_node: PathNode):
+
+            path_node_tei = get_uppermost_parent(path_node)
+
+            def triple_from_keyword_to_f1(entity_keyword, path_node: PathNode):
+
+                for path_node_text in path_node_tei.path_node_children_list:
+
+                    if path_node_text.xml_elem.tag.endswith("text"):
+
+                        for path_node_body in path_node_text.path_node_children_list:
+
+                            if path_node_body.xml_elem.tag.endswith("body"):
+
+                                for path_node_div in path_node_body.path_node_children_list:
+
+                                    if path_node_div.xml_elem.tag.endswith("div"):
+
+                                        for path_node_bibl in path_node_div.path_node_children_list:
+
+                                            for entity_work in path_node_bibl.entities_list:
+
+                                                if has_class_as_parent(entity_work.__class__, F1_Work):
+
+                                                    create_triple(
+                                                        entity_subj=entity_work,
+                                                        entity_obj=entity_keyword,
+                                                        prop=Property.objects.get(name="has keyword"),
+                                                    )
+
+                                                break
+
+                                        break
+
+                                break
+
+                        break
+
+
+            triple_from_keyword_to_f1(entity_keyword, path_node)
 
 
         def parse_triples_from_xml_file(entity_xml_file, path_node: PathNode):
@@ -2018,6 +2116,10 @@ class TreesManager:
                 elif entity.__class__ is Xml_File:
 
                     parse_triples_from_xml_file(entity, path_node)
+
+                elif entity.__class__ is Keyword:
+
+                    parse_triples_from_keyword(entity, path_node)
 
         main_parse_for_triples(path_node)
 
