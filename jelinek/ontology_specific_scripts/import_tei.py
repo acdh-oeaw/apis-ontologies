@@ -2184,5 +2184,3 @@ def run(*args, **options):
         crawl_xml_list(xml_file_list)
 
     main_run()
-
-   
