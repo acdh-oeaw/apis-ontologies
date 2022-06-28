@@ -298,7 +298,8 @@ class TreesManager:
                     "idno": None,
                     "name": None,
                     "gnd_url": None,
-                    "index_in_chapter": None
+                    "index_in_chapter": None,
+                    "untertitel": None
                 }
 
                 if (
@@ -330,6 +331,13 @@ class TreesManager:
                         ):
 
                             attr_dict["name"] = xml_elem_child.text
+
+                        if (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "sub"
+                        ):
+
+                            attr_dict["untertitel"] = xml_elem_child.text
 
                         if (
                             xml_elem_child.tag.endswith("idno")
@@ -2180,6 +2188,7 @@ def run(*args, **options):
         #xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik/001_Buchpublikationen/001_LisasSchatten.xml")
         #xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane/002_Michael.xml")
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane"))
+    
 
         crawl_xml_list(xml_file_list)
 
