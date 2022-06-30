@@ -161,6 +161,7 @@ class F31_Performance(E1_Crm_Entity):
 class Chapter(TempEntityClass):
 
     chapter_number = models.CharField(max_length=1024, blank=True, null=True)
+    chapter_type = models.CharField(max_length=1024, blank=True, null=True)
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Keyword(TempEntityClass):
