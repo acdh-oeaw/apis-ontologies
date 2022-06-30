@@ -2289,15 +2289,15 @@ def run(*args, **options):
 
         # For full import, use this
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
         
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen"))
+        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen"))
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
         
         
