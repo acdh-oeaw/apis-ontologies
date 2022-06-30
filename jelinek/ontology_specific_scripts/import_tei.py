@@ -792,6 +792,8 @@ class TreesManager:
                     "forename": None,
                     "surname": None,
                     "gnd_url": None,
+                    "start_date_written": None,
+                    "end_date_written": None,
                 }
 
                 if (
@@ -847,6 +849,17 @@ class TreesManager:
                         ):
 
                             attr_dict["gnd_url"] = xml_elem_child.attrib.get("target")
+
+                        elif (
+                            xml_elem_child.tag.endswith("date")
+                        ):
+                            if xml_elem_child.text.startswith("geb."):
+                                attr_dict["start_date_written"] = xml_elem_child.text.replace("geb. ", "")
+                            elif "-" in xml_elem_child.text:
+                                attr_dict["start_date_written"] = xml_elem_child.text.split("-")[0]
+                                attr_dict["end_date_written"] = xml_elem_child.text.split("-")[1]
+                            else:
+                                print("Strange date: ", xml_elem_child.text)
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -2273,9 +2286,10 @@ def run(*args, **options):
         xml_file_list = []
 
         # For full import, use this
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1"))
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
