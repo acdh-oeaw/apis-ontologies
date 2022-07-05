@@ -23,13 +23,11 @@ class E1_Crm_Entity(TempEntityClass):
 class E40_Legal_Body(E1_Crm_Entity):
 
     # for institutions and publishers
-
-    pass
+    institution_id = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class E55_Type(E1_Crm_Entity):
-
     pass
 
 
@@ -48,6 +46,8 @@ class F1_Work(E1_Crm_Entity):
         verbose_name="Anmerkung"
     )
 
+    short = models.CharField(max_length=1024, blank=True, null=True)
+
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F3_Manifestation_Product_Type(E1_Crm_Entity):
@@ -60,6 +60,7 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
     ref_target = models.URLField(blank=True, null=True)
     ref_accessed = models.CharField(max_length=1024, blank=True, null=True)
     text_language = models.CharField(max_length=1024, blank=True, null=True)
+    short = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -146,12 +147,15 @@ class F21_Recording_Work(F1_Work):
 class F26_Recording(F1_Work):
 
     airing_date = models.CharField(max_length=1024, blank=True, null=True)
+    broadcast_id = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F31_Performance(E1_Crm_Entity):
 
     note = models.CharField(max_length=1024, blank=True, null=True)
+    performance_id = models.CharField(max_length=1024, blank=True, null=True)
+    performance_type = models.CharField(max_length=1024, blank=True, null=True)
 
     # TODO: consider changing this to a e55 relation
     category = models.CharField(max_length=1024, blank=True, null=True)
@@ -241,6 +245,7 @@ def construct_properties():
     is_translator_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
+    is_translator_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_translator_of.save()
 
     is_translator_of = Property.objects.create(
@@ -276,6 +281,30 @@ def construct_properties():
     is_director_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_director_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_director_of.save()
+
+    is_composer_of = Property.objects.create(
+        name="is composer of",
+        name_reverse="has been composed by",
+    )
+    is_composer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_composer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_composer_of.save()
+
+    is_musician_of = Property.objects.create(
+        name="is musician of",
+        name_reverse="has been musically accompanied by",
+    )
+    is_musician_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_musician_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_musician_of.save()
+
+    is_singer_of = Property.objects.create(
+        name="is singer of",
+        name_reverse="has been sung by",
+    )
+    is_singer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_singer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_singer_of.save()
 
     was_published_in = Property.objects.create(
         name="was published in",
