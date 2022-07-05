@@ -12,7 +12,7 @@ class AdditionalSerializer:
 
 additional_serializers_list = [
     AdditionalSerializer( # Keep this example one for now
-        url="addtional/example_serializer",
+        url="additional/example_serializer",
         name="some_example_serializer",
         path_structure={
             F1_Work: [
@@ -53,4 +53,31 @@ additional_serializers_list = [
             ]
         }
     ),
+    AdditionalSerializer( # fuer Gregor zum vergleichen, wird bald wieder geloescht
+        url="additional/example_serializer_2",
+        name="some_example_serializer_2",
+        path_structure={
+            F1_Work: [
+                F1_Work.id,
+                F1_Work.name,
+                F1_Work.idno,
+                {
+                    F1_Work.triple_set_from_subj: [
+                        Triple.subj,
+                        Triple.obj,
+                        {
+                            Triple.prop: [
+                                Property.name,
+                                {
+                                    Property.subj_class: [
+                                        ContentType.model
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    )
 ]
