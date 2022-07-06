@@ -216,7 +216,7 @@ class TreesManager:
                     #and is_valid_text(xml_elem.text)
                 ):
                     for child in xml_elem:
-                        if child.tag.endswith("orgName"):
+                        if child.tag.endswith("orgName") or child.tag.endswith("title"):
                             attr_dict["name"] = child.text
                     if attr_dict["name"] is None and is_valid_text(xml_elem.text):
                         attr_dict["name"] = remove_whitespace(xml_elem.text)
