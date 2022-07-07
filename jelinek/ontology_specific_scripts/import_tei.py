@@ -49,6 +49,12 @@ def is_valid_text(var_str):
 
     return not re.match(r"^$|^[ \n]*$", var_str)
 
+def remove_whitespace(var_str):
+    regex = re.compile(r"^\s+", re.MULTILINE)
+    return regex.sub("", var_str)
+
+
+
 
 # TODO : Check all object creations for redundant data creation
 class TreesManager:
@@ -188,7 +194,8 @@ class TreesManager:
                 xml_elem = path_node.xml_elem
 
                 attr_dict = {
-                    "name": None
+                    "name": None,
+                    "institution_id": None
                 }
 
                 if (
@@ -197,18 +204,27 @@ class TreesManager:
                         or xml_elem.tag.endswith("institution")
                         or (
                             xml_elem.tag.endswith("rs")
-                            and xml_elem.attrib.get("type") == "institution"
+                            and (xml_elem.attrib.get("type") == "institution"
+                            or xml_elem.attrib.get("type") == "theater")
                         )
-                        or xml_elem.tag.endswith("orgName")
+                        #or xml_elem.tag.endswith("orgName")
                     )
                     and not (
                         xml_elem.attrib.get("ref") is not None
                         and xml_elem.attrib.get("ref").startswith("bibls:")
                     )
-                    and is_valid_text(xml_elem.text)
+                    #and is_valid_text(xml_elem.text)
                 ):
+                    for child in xml_elem:
+                        if child.tag.endswith("orgName") or child.tag.endswith("title"):
+                            attr_dict["name"] = child.text
+                    if attr_dict["name"] is None and is_valid_text(xml_elem.text):
+                        attr_dict["name"] = remove_whitespace(xml_elem.text)
 
-                    attr_dict["name"] = xml_elem.text
+                    if xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None:
+                        attr_dict["institution_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+                    elif xml_elem.attrib.get("ref") is not None:
+                        attr_dict["institution_id"] = xml_elem.attrib.get("ref").replace("insti:", "")
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -226,7 +242,7 @@ class TreesManager:
 
                 if attr_dict is not None:
 
-                    db_result = E40_Legal_Body.objects.get_or_create(name=attr_dict["name"])
+                    db_result = E40_Legal_Body.objects.get_or_create(institution_id=attr_dict["institution_id"], name=attr_dict["name"])
 
                     entities_list.append(handle_after_creation(db_result, {}))
 
@@ -330,7 +346,7 @@ class TreesManager:
                             and xml_elem_child.attrib.get("type") == "main"
                         ):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                         if (
                             xml_elem_child.tag.endswith("title")
@@ -362,7 +378,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                         elif (
                             xml_elem_child.tag.endswith("ref")
@@ -386,7 +402,7 @@ class TreesManager:
 
                         if xml_elem_child.tag.endswith("title"):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -491,7 +507,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                 elif (
                     xml_elem.tag.endswith("bibl")
@@ -509,7 +525,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                         elif xml_elem_child.tag.endswith("edition"):
 
@@ -531,14 +547,14 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                         elif (
                             xml_elem_child.tag.endswith("hi")
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                         elif xml_elem_child.tag.endswith("series"):
 
@@ -629,7 +645,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -709,7 +725,7 @@ class TreesManager:
                     and is_valid_text(xml_elem.text)
                 ):
 
-                    attr_dict["name"] = xml_elem.text.replace("pubPlace", "")
+                    attr_dict["name"] = remove_whitespace(xml_elem.text).replace("pubPlace", "")
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -749,17 +765,17 @@ class TreesManager:
                     and is_valid_text(xml_elem.text)
                 ):
 
-                    name = xml_elem.text
+                    name = remove_whitespace(xml_elem.text)
 
                 for xml_elem_child in xml_elem:
 
                     if xml_elem_child.tag.endswith("forename") and is_valid_text(xml_elem_child.text):
 
-                        forename = xml_elem_child.text
+                        forename = remove_whitespace(xml_elem_child.text)
 
                     if xml_elem_child.tag.endswith("surname") and is_valid_text(xml_elem_child.text):
 
-                        surname = xml_elem_child.text
+                        surname = remove_whitespace(xml_elem_child.text)
 
                 if name is None:
 
@@ -950,7 +966,7 @@ class TreesManager:
                             and xml_elem_child.attrib.get("type") == "main"
                         ):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                         if (
                             xml_elem_child.tag.endswith("idno")
@@ -1051,7 +1067,7 @@ class TreesManager:
                             and xml_elem_child.attrib.get("type") == "main"
                         ):
 
-                            attr_dict["name"] = xml_elem_child.text
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                         if (
                             xml_elem_child.tag.endswith("idno")
@@ -1127,17 +1143,22 @@ class TreesManager:
                 attr_dict = {
                     "name": None,
                     "airing_date": None,
+                    "broadcast_id": None
                 }
                 helper_org = None
 
                 if (
-                    xml_elem.tag.endswith("item")
+                    (xml_elem.tag.endswith("item") or xml_elem.tag.endswith("event"))
                     and xml_elem.attrib.get("type") == "broadcast"
                 ):
 
+                    if (
+                        xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
+                    ):
+                        attr_dict["broadcast_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+
                     for xml_elem_child in xml_elem:
 
-                        # TODO : Check if there are titles without 'type="main"'
                         if (
                             xml_elem_child.tag.endswith("date")
                         ):
@@ -1145,8 +1166,10 @@ class TreesManager:
                             airing_date = xml_elem_child.text
 
                         elif (
-                            xml_elem_child.tag.endswith("orgName")
-                            and xml_elem_child.attrib["role"] == "broadcaster"
+                            (xml_elem_child.tag.endswith("orgName")
+                            and xml_elem_child.attrib["role"] == "broadcaster") or
+                            (xml_elem_child.tag.endswith("rs")
+                            and xml_elem_child.attrib["type"] == "broadcaster")
                         ):
 
                             helper_org = xml_elem_child.text
@@ -1186,10 +1209,10 @@ class TreesManager:
 
                     db_result = None
 
-                    if attr_dict["name"] is not None:
+                    if attr_dict["broadcast_id"] is not None:
 
                         # db_result = F26_Recording.objects.get_or_create(name=attr_dict["name"])
-                        db_hit = F26_Recording.objects.filter(name=attr_dict["name"])
+                        db_hit = F26_Recording.objects.filter(broadcast_id=attr_dict["broadcast_id"])
                         if len(db_hit) > 1:
 
                             # TODO : Check how often this is the case
@@ -1203,7 +1226,7 @@ class TreesManager:
                         elif len(db_hit) == 0:
 
                             db_result = [
-                                F26_Recording.objects.create(name=attr_dict["name"]),
+                                F26_Recording.objects.create(broadcast_id=attr_dict["broadcast_id"]),
                                 True
                             ]
 
@@ -1229,13 +1252,21 @@ class TreesManager:
                     "note": None,
                     "category": None,
                     "start_date_written": None,
+                    "performance_id": None,
+                    "performance_type": None
                 }
                 institution = None
 
                 if (
-                    xml_elem.tag.endswith("item")
-                    and xml_elem.attrib.get("ana") == "staging"
+                    (xml_elem.tag.endswith("event") or xml_elem.tag.endswith("item"))
+                    and (xml_elem.attrib.get("ana") == "staging" or xml_elem.attrib.get("ana") == "UA")
                 ):
+
+                    if (xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None):
+                            attr_dict["performance_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+
+                    if xml_elem.attrib.get("ana") == "UA":
+                            attr_dict["performance_type"] = "UA"
 
                     for xml_elem_child in xml_elem:
 
@@ -1247,8 +1278,10 @@ class TreesManager:
                             attr_dict["start_date_written"] = xml_elem_child.text
 
                         elif (
-                            xml_elem_child.tag.endswith("rs")
-                            and xml_elem_child.attrib.get("type") == "institution"
+                            (xml_elem_child.tag.endswith("rs")
+                            and xml_elem_child.attrib.get("type") == "institution")
+                            or ((xml_elem_child.tag.endswith("note")
+                            and xml_elem_child.attrib.get("type") == "institutions"))
                             and is_valid_text(xml_elem_child.text)
                         ):
 
@@ -1305,9 +1338,9 @@ class TreesManager:
 
                     db_result = None
 
-                    if attr_dict["name"] is not None:
+                    if attr_dict["performance_id"] is not None:
 
-                        db_result = F31_Performance.objects.get_or_create(name=attr_dict["name"])
+                        db_result = F31_Performance.objects.get_or_create(performance_id=attr_dict["performance_id"])
 
                         entities_list.append(handle_after_creation(db_result, attr_dict))
 
@@ -1343,7 +1376,7 @@ class TreesManager:
 
                     attr_dict["chapter_number"] = xml_elem.attrib.get("n").replace("-",".")
                     attr_dict["chapter_type"] = xml_elem.attrib.get("type")
-                    attr_dict["name"] = xml_elem.text
+                    attr_dict["name"] = remove_whitespace(xml_elem.text)
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -1393,7 +1426,7 @@ class TreesManager:
                     and xml_elem.attrib.get("n") is None
                     and is_valid_text(xml_elem.text)
                 ):
-                    attr_dict["name"] = xml_elem.text
+                    attr_dict["name"] = remove_whitespace(xml_elem.text)
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -1647,7 +1680,7 @@ class TreesManager:
                         for neighbour_path_node_child in neighbour_path_node.path_node_children_list:
 
                             if (
-                                neighbour_path_node_child.xml_elem.tag.endswith("list")
+                                (neighbour_path_node_child.xml_elem.tag.endswith("list") or neighbour_path_node_child.xml_elem.tag.endswith("listEvent"))
                                 and neighbour_path_node_child.xml_elem.attrib.get("type") == "stagings"
                             ):
 
@@ -1666,7 +1699,7 @@ class TreesManager:
 
             triple_from_f1_to_f3(entity_work, path_node)
             triple_from_f1_to_f10(entity_work, path_node)
-            triple_from_f1_to_f31(entity_work, path_node)
+            #triple_from_f1_to_f31(entity_work, path_node)
 
         def parse_triples_from_f3_manifestation(entity_manifestation, path_node):
 
@@ -1903,6 +1936,50 @@ class TreesManager:
                                 prop=Property.objects.get(name="has been performed at"),
                             )
 
+                    if len(path_node_child.entities_list) == 0 and path_node_child.xml_elem.attrib.get("type") == "institutions":
+
+                        for path_node_child in path_node_child.path_node_children_list:
+
+                            for entity_other in path_node_child.entities_list:
+
+                                if entity_other.__class__ is E40_Legal_Body:
+
+                                    create_triple(
+                                        entity_subj=entity_performance,
+                                        entity_obj=entity_other,
+                                        prop=Property.objects.get(name="has been performed at"),
+                                    )
+
+            def triple_from_f31_to_f1(entity_performance, path_node: PathNode):
+
+                for path_node_child in path_node.path_node_children_list:
+
+                    for entity_other in path_node_child.entities_list:
+
+                        if entity_other.__class__ is F1_Work:
+
+                            create_triple(
+                                entity_obj=entity_performance,
+                                entity_subj=entity_other,
+                                prop=Property.objects.get(name="has been performed in"),
+                            )
+
+                    if len(path_node_child.entities_list) == 0 and path_node_child.xml_elem.attrib.get("type") == "basedOn":
+                        
+                        for path_node_child in path_node_child.path_node_children_list:
+
+                            for entity_other in path_node_child.entities_list:
+
+                                if entity_other.__class__ is F1_Work:
+
+                                    create_triple(
+                                        entity_obj=entity_performance,
+                                        entity_subj=entity_other,
+                                        prop=Property.objects.get(name="has been performed in"),
+                                    )
+
+                    
+
 
             def triple_from_f31_to_f10(entity_performance, path_node: PathNode):
 
@@ -1943,7 +2020,37 @@ class TreesManager:
 
                             elif role == "translator":
 
+                                """ create_triple(
+                                    entity_subj=entity_person,
+                                    entity_obj=entity_performance,
+                                    prop=Property.objects.get(name="is translator of"),
+                                ) """
+
                                 pass # to be ignored, because a translated theatre play needs to have its own work
+
+                            elif role == "composer":
+
+                                create_triple(
+                                    entity_subj=entity_person,
+                                    entity_obj=entity_performance,
+                                    prop=Property.objects.get(name="is composer of"),
+                                )
+
+                            elif role == "singer":
+
+                                create_triple(
+                                    entity_subj=entity_person,
+                                    entity_obj=entity_performance,
+                                    prop=Property.objects.get(name="is singer of"),
+                                )
+
+                            elif role == "musician":
+
+                                create_triple(
+                                    entity_subj=entity_person,
+                                    entity_obj=entity_performance,
+                                    prop=Property.objects.get(name="is musician of"),
+                                )
 
                             else:
 
@@ -1957,6 +2064,7 @@ class TreesManager:
 
             triple_from_f31_to_e40(entity_performance, path_node)
             triple_from_f31_to_f10(entity_performance, path_node)
+            triple_from_f31_to_f1(entity_performance, path_node)
 
 
         def parse_triples_from_chapter(entity_chapter, path_node: PathNode):
@@ -2145,7 +2253,7 @@ def parse_xml_as_entity(xml_file_path):
 
     db_result = Xml_File.objects.get_or_create(file_path=xml_file_path)
 
-    if db_result[1] is False:
+    if db_result[1] is False and False: #remove and False!!!
 
         raise Exception("XML file already parsed.")
 
@@ -2289,11 +2397,25 @@ def run(*args, **options):
 
         # For full import, use this
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1"))
+
+
+
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
-        #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
+
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/institution_index.xml")
+        
+        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+
+
+
+
+
+        #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
         
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
