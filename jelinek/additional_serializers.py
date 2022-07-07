@@ -4,14 +4,14 @@ from apis_core.apis_relations.models import *
 from apis_core.apis_metainfo.models import *
 
 @dataclass
-class AdditionalSerializer:
+class AdditionalSerializerConfig:
     url: str # For now, it is recommended to prefix the url with 'additional'
     name: str # unique name for django
     path_structure: dict # see example structure
     viewset = None # will be programmatically generated
 
 additional_serializers_list = [
-    AdditionalSerializer( # Keep this example one for now
+    AdditionalSerializerConfig( # Keep this example one for now
         url="additional/example_serializer",
         name="some_example_serializer",
         path_structure={
@@ -49,11 +49,11 @@ additional_serializers_list = [
                             ]
                         },
                     ]
-                }
+                },
             ]
         }
     ),
-    AdditionalSerializer( # fuer Gregor zum vergleichen, wird bald wieder geloescht
+    AdditionalSerializerConfig( # fuer Gregor zum vergleichen, wird bald wieder geloescht
         url="additional/example_serializer_2",
         name="some_example_serializer_2",
         path_structure={
@@ -79,5 +79,5 @@ additional_serializers_list = [
                 }
             ]
         }
-    )
+    ),
 ]
