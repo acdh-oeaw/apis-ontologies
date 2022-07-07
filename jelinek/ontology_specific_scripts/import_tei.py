@@ -2391,7 +2391,7 @@ def run(*args, **options):
 
     def main_run():
 
-        #reset_all()
+        reset_all()
 
         xml_file_list = []
 
@@ -2400,10 +2400,10 @@ def run(*args, **options):
 
 
 
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
@@ -2415,7 +2415,7 @@ def run(*args, **options):
 
 
 
-        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
+        #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
         
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
