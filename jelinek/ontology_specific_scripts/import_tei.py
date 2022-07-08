@@ -53,6 +53,10 @@ def remove_whitespace(var_str):
     regex = re.compile(r"^\s+", re.MULTILINE)
     return regex.sub("", var_str)
 
+def remove_xml_tags(var_str):
+    regex = re.compile(r"<.*?>", re.MULTILINE)
+    return regex.sub("", var_str)
+
 
 
 
@@ -205,7 +209,8 @@ class TreesManager:
                         or (
                             xml_elem.tag.endswith("rs")
                             and (xml_elem.attrib.get("type") == "institution"
-                            or xml_elem.attrib.get("type") == "theater")
+                            or xml_elem.attrib.get("type") == "theater"
+                            or xml_elem.attrib.get("type") == "broadcaster")
                         )
                         #or xml_elem.tag.endswith("orgName")
                     )
@@ -1076,6 +1081,26 @@ class TreesManager:
 
                             attr_dict["idno"] = xml_elem_child.text
 
+                if (
+                    (
+                        trees_manager.helper_dict["current_type"] == "broadcast_index"
+                    )
+                    and xml_elem.tag.endswith("rs")
+                    and xml_elem.attrib.get("ref") is not None
+                    and xml_elem.attrib.get("ref").startswith("works:")
+                ):
+                    attr_dict["idno"] = xml_elem.attrib.get("ref").replace("works:","")
+                            
+                    for xml_elem_child in xml_elem:
+
+                        # TODO : Check if there are titles without 'type="main"'
+                        if (
+                            xml_elem_child.tag.endswith("title")
+                        ):
+
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+
+
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
                     return attr_dict
@@ -1143,7 +1168,9 @@ class TreesManager:
                 attr_dict = {
                     "name": None,
                     "airing_date": None,
-                    "broadcast_id": None
+                    "broadcast_id": None,
+                    "start_date_written": None,
+                    "note": None
                 }
                 helper_org = None
 
@@ -1164,6 +1191,8 @@ class TreesManager:
                         ):
 
                             airing_date = xml_elem_child.text
+                            attr_dict["airing_date"] = xml_elem_child.text
+                            attr_dict["start_date_written"] = xml_elem_child.text
 
                         elif (
                             (xml_elem_child.tag.endswith("orgName")
@@ -1174,21 +1203,28 @@ class TreesManager:
 
                             helper_org = xml_elem_child.text
 
-                    if attr_dict["airing_date"] is not None and helper_org is not None:
+                        elif xml_elem_child.tag.endswith("title"):
+                            attr_dict["name"] = remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode"))
+                        elif xml_elem_child.tag.endswith("note"):
+                            attr_dict["note"] = remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode"))
 
-                        attr_dict["name"] = "aired on " + airing_date + " at " + helper_org
+                    if attr_dict["name"] is None:
 
-                    elif attr_dict["airing_date"] is not None:
+                        if attr_dict["airing_date"] is not None and helper_org is not None:
 
-                        attr_dict["name"] = "aired on " + airing_date
+                            attr_dict["name"] = "aired on " + airing_date + " at " + helper_org
 
-                    elif helper_org is not None:
+                        elif attr_dict["airing_date"] is not None:
 
-                        attr_dict["name"] = "aired at " + helper_org
+                            attr_dict["name"] = "aired on " + airing_date
 
-                    else:
+                        elif helper_org is not None:
 
-                        attr_dict["name"] = "Unknown recording date"
+                            attr_dict["name"] = "aired at " + helper_org
+
+                        else:
+
+                            attr_dict["name"] = "Unknown recording date"
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -2066,6 +2102,52 @@ class TreesManager:
             triple_from_f31_to_f10(entity_performance, path_node)
             triple_from_f31_to_f1(entity_performance, path_node)
 
+        def parse_triples_from_f26_recording(entity_broadcast, path_node: PathNode):
+
+            def triple_from_f26_to_f21(entity_broadcast, path_node: PathNode):
+
+                for path_node_child in path_node.path_node_children_list:
+
+                    for entity_other in path_node_child.entities_list:
+
+                        if entity_other.__class__ is F21_Recording_Work:
+
+                            create_triple(
+                                entity_obj=entity_broadcast,
+                                entity_subj=entity_other,
+                                prop=Property.objects.get(name="R13 is realised in"),
+                            )
+
+                    if len(path_node_child.entities_list) == 0 and path_node_child.xml_elem.attrib.get("type") == "basedOn":
+                        
+                        for path_node_child in path_node_child.path_node_children_list:
+
+                            for entity_other in path_node_child.entities_list:
+
+                                if entity_other.__class__ is F21_Recording_Work:
+
+                                    create_triple(
+                                        entity_obj=entity_broadcast,
+                                        entity_subj=entity_other,
+                                        prop=Property.objects.get(name="R13 is realised in"),
+                                    )
+            def triple_from_f26_to_e40(entity_broadcast, path_node: PathNode):
+
+                for path_node_child in path_node.path_node_children_list:
+
+                    for entity_other in path_node_child.entities_list:
+
+                        if entity_other.__class__ is E40_Legal_Body:
+
+                            create_triple(
+                                entity_subj=entity_broadcast,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="has been performed at"),
+                            )                
+                    
+            triple_from_f26_to_f21(entity_broadcast, path_node)
+            triple_from_f26_to_e40(entity_broadcast, path_node)
+
 
         def parse_triples_from_chapter(entity_chapter, path_node: PathNode):
 
@@ -2232,6 +2314,10 @@ class TreesManager:
 
                     parse_triples_from_f31_performance(entity, path_node)
 
+                elif entity.__class__ is F26_Recording:
+
+                    parse_triples_from_f26_recording(entity, path_node)
+
                 elif entity.__class__ is Chapter:
 
                     parse_triples_from_chapter(entity, path_node)
@@ -2343,7 +2429,8 @@ def run(*args, **options):
 
                     tree = ET.parse(xml_file_path)
 
-                except xml.etree.ElementTree.ParseError:
+                except xml.etree.ElementTree.ParseError as e:
+                    print(e)
 
                     print(f"Parse error in file {xml_file_path}")
 
@@ -2377,6 +2464,10 @@ def run(*args, **options):
 
                         current_type = "013_TextefürInstallationenundProjektionenFotoarbeiten"
 
+                    elif "broadcast_index" in xml_file_path:
+
+                        current_type = "broadcast_index"
+
                     else:
 
                         current_type = "work"
@@ -2404,18 +2495,12 @@ def run(*args, **options):
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
-
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/institution_index.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/007_Kompositionen"))
         
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
-
-
-
-
-
-        #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/work_index.xml")
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/person_index.xml")
         
         #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")

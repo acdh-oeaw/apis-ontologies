@@ -28,6 +28,17 @@ def generate_short_text():
                     work.short = short
         return work
 
+    def short_text_Hoerspiele_und_Drehbuecher(work):
+        relations = Triple.objects.filter(subj=work, prop__name="R13 is realised in")
+        if len(relations) > 0:
+            recordings = [r.obj for r in relations]
+            recordings.sort(key=lambda r: r.start_date)
+            places = Triple.objects.filter(subj=recordings[0], prop__name="has been performed at")
+            if len(places) > 0:
+                short = "Erstsendung | {} {}".format(recordings[0].start_date_written, places[0].obj.name)
+                work.short = short
+        return work
+
     def short_text_Theatertexte(work):
         relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.performance_type == "UA"]
         if len(relations) > 0:
@@ -45,11 +56,21 @@ def generate_short_text():
             publishers = Triple.objects.filter(prop__name="is publisher of", obj=translation)
             if authors.count() > 0 and places.count() > 0 and publishers.count() > 0:
                 short = "<span rendition=\"#it\">{}</span>. Ü: {}. {}: {} {}".format(translation.name, authors[0].subj.name, places[0].obj.name, publishers[0].subj.name, publishers[0].temptriple.start_date_written)
-                work.short = short
+                translation.short = short
+                translation.save()
         return work
             
     def main():
-        short_text_generators = [("Romane", short_text_Romane), ("Theatertexte", short_text_Theatertexte), ("Übersetzte Werke", short_text_Uebersetzte_Werke)]
+        short_text_generators = [
+            ("Romane", short_text_Romane), 
+            ("Texte für Hörspiele", short_text_Hoerspiele_und_Drehbuecher), 
+            ("Drehbücher und Texte für Filme", short_text_Hoerspiele_und_Drehbuecher), 
+            ("Theatertexte", short_text_Theatertexte), 
+            ("Kompositionen", short_text_Theatertexte), 
+            ("Texte für Kompositionen", short_text_Theatertexte), 
+            ("Libretti", short_text_Theatertexte), 
+            ("Übersetzte Werke", short_text_Uebersetzte_Werke)
+            ]
         for short_text_generator in short_text_generators:
             print("_____{}_____".format(short_text_generator[0]))
             works = [rel.subj for rel in Triple.objects.filter(prop__name="is in chapter", obj__name__contains=short_text_generator[0])]

@@ -145,7 +145,7 @@ class F21_Recording_Work(F1_Work):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F26_Recording(F1_Work):
-
+    note = models.CharField(max_length=1024, blank=True, null=True)
     airing_date = models.CharField(max_length=1024, blank=True, null=True)
     broadcast_id = models.CharField(max_length=1024, blank=True, null=True)
 
@@ -319,6 +319,7 @@ def construct_properties():
         name_reverse="has had performance",
     )
     has_been_performed_at.subj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    has_been_performed_at.subj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
     has_been_performed_at.obj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     has_been_performed_at.save()
 
