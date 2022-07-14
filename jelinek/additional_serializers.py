@@ -101,6 +101,34 @@ additional_serializers_list = [
                                     F1_Work.id,
                                     F1_Work.index_in_chapter,                                
                                     F1_Work.idno,                                
+                                    F1_Work.genre,                                
+                            ]
+                        },
+                        
+                    ]
+                }
+            ]            
+        }
+    ),
+    AdditionalSerializerConfig( # Lade Kapitel für Werk
+        url="additional/work_chapters",
+        name="work_chapters",
+        path_structure={
+            F1_Work: [
+                F1_Work.id,
+                F1_Work.name,
+                {
+                    F1_Work.triple_set_from_subj: [
+                        {
+                            Triple.prop: [
+                                Property.name,
+                            ]
+                        },
+                        {
+                            Triple.obj: [
+                                    Chapter.id,                              
+                                    Chapter.name,                              
+                                    Chapter.chapter_number
                             ]
                         },
                         
@@ -134,14 +162,12 @@ additional_serializers_list = [
                                     { 
                                         F3_Manifestation_Product_Type.triple_set_from_subj: [
                                             {
-                                                TempTriple.prop: [
+                                                Triple.prop: [
                                                     Property.name,
                                                 ]
                                             },
-                                            
-                                            TempTriple.start_date_written,
                                             {
-                                                TempTriple.obj: [
+                                                Triple.obj: [
                                                         TempEntityClass.id,
                                                         TempEntityClass.name
                                                 ]
@@ -150,15 +176,14 @@ additional_serializers_list = [
                                     },
                                     { 
                                         F3_Manifestation_Product_Type.triple_set_from_obj: [
+                                            
                                             {
-                                                TempTriple.prop: [
+                                                Triple.prop: [
                                                     Property.name,
                                                 ]
                                             },
-                                            
-                                            TempTriple.start_date_written,
                                             {
-                                                TempTriple.subj: [
+                                                Triple.subj: [
                                                         TempEntityClass.id,
                                                         TempEntityClass.name
                                                 ]
@@ -188,14 +213,13 @@ additional_serializers_list = [
                                     { 
                                         F3_Manifestation_Product_Type.triple_set_from_subj: [
                                             {
-                                                TempTriple.prop: [
+                                                Triple.prop: [
                                                     Property.name,
                                                 ]
                                             },
                                             
-                                            TempTriple.start_date_written,
                                             {
-                                                TempTriple.obj: [
+                                                Triple.obj: [
                                                         TempEntityClass.id,
                                                         TempEntityClass.name
                                                 ]
@@ -205,14 +229,12 @@ additional_serializers_list = [
                                     { 
                                         F3_Manifestation_Product_Type.triple_set_from_obj: [
                                             {
-                                                TempTriple.prop: [
+                                                Triple.prop: [
                                                     Property.name,
                                                 ]
                                             },
-                                            
-                                            TempTriple.start_date_written,
                                             {
-                                                TempTriple.subj: [
+                                                Triple.subj: [
                                                         TempEntityClass.id,
                                                         TempEntityClass.name
                                                 ]
@@ -227,25 +249,28 @@ additional_serializers_list = [
             ]            
         }
     ),
-    AdditionalSerializerConfig( # Lade Kapitel für Werk
-        url="additional/work_chapters",
-        name="work_chapters",
+    AdditionalSerializerConfig( # Lade Werke pro Keyword
+        url="additional/work_for_keyword",
+        name="work_for_keyword",
         path_structure={
-            F1_Work: [
-                F1_Work.id,
-                F1_Work.name,
+            Keyword: [
+                Keyword.id,
+                Keyword.name,
                 {
-                    F1_Work.triple_set_from_subj: [
+                    Keyword.triple_set_from_obj: [
                         {
                             Triple.prop: [
-                                Property.name,
+                                Property.name
                             ]
                         },
                         {
-                            Triple.obj: [
-                                    Chapter.id,                              
-                                    Chapter.name,                              
-                                    Chapter.chapter_number
+                            Triple.subj: [
+                                    F1_Work.name,
+                                    F1_Work.short,
+                                    F1_Work.id,
+                                    F1_Work.index_in_chapter,                                
+                                    F1_Work.idno,                                
+                                    F1_Work.genre,                                
                             ]
                         },
                         
