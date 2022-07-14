@@ -50,8 +50,9 @@ def is_valid_text(var_str):
     return not re.match(r"^$|^[ \n]*$", var_str)
 
 def remove_whitespace(var_str):
-    regex = re.compile(r"^\s+", re.MULTILINE)
-    return regex.sub("", var_str)
+    white_space_beginning_regex = re.compile(r"^\s+", re.MULTILINE)
+    multiple_white_spaces_in_middle_regex = re.compile(r"(\s\s+|\n)", re.MULTILINE)
+    return multiple_white_spaces_in_middle_regex.sub(" ", white_space_beginning_regex.sub("", var_str))
 
 def remove_xml_tags(var_str):
     regex = re.compile(r"<.*?>", re.MULTILINE)
