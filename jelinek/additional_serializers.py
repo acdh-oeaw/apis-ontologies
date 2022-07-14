@@ -279,4 +279,153 @@ additional_serializers_list = [
             ]            
         }
     ),
+    AdditionalSerializerConfig( # Lade Werke pro Institution
+        url="additional/work_for_institution",
+        name="work_for_institution",
+        path_structure={
+            E40_Legal_Body: [
+                E40_Legal_Body.id,
+                E40_Legal_Body.name,
+                {
+                    E40_Legal_Body.triple_set_from_obj: [
+                        {
+                            Triple.prop: [
+                                Property.name
+                            ]
+                        },
+                        {
+                            Triple.subj: [
+                                    F31_Performance.name,                             
+                                    F31_Performance.id,  
+                                    {
+                                        F31_Performance.triple_set_from_obj: [
+                                            {
+                                                Triple.prop: [
+                                                    Property.name
+                                                ]
+                                            },
+                                            {
+                                                Triple.subj: [
+                                                        F1_Work.name,
+                                                        F1_Work.short,
+                                                        F1_Work.id,
+                                                        F1_Work.index_in_chapter,                                
+                                                        F1_Work.idno,                                
+                                                        F1_Work.genre,                             
+                                                ]
+                                            },
+                                            
+                                        ]
+                                    }                           
+                            ]
+                        },
+                        
+                    ]
+                },
+                {
+                    E40_Legal_Body.triple_set_from_subj: [
+                        {
+                            Triple.prop: [
+                                Property.name
+                            ]
+                        },
+                        {
+                            Triple.obj: [
+                                    F31_Performance.name,                             
+                                    F31_Performance.id,  
+                                    {
+                                        F31_Performance.triple_set_from_obj: [
+                                            {
+                                                Triple.prop: [
+                                                    Property.name
+                                                ]
+                                            },
+                                            {
+                                                Triple.subj: [
+                                                        F1_Work.name,
+                                                        F1_Work.short,
+                                                        F1_Work.id,
+                                                        F1_Work.index_in_chapter,                                
+                                                        F1_Work.idno,                                
+                                                        F1_Work.genre,                             
+                                                ]
+                                            },
+                                            
+                                        ]
+                                    }                           
+                            ]
+                        },
+                        
+                    ]
+                }
+            ]            
+        }
+    ),
+    AdditionalSerializerConfig( # Lade nested triples
+        url="additional/nested_triples_to_work",
+        name="nested_triples",
+        path_structure={
+            Triple: [
+            {
+                Triple.subj: [
+                    E1_Crm_Entity.name,
+                    E1_Crm_Entity.id,
+                    E1_Crm_Entity.self_content_type,
+                    {
+                        E1_Crm_Entity.triple_set_from_obj: [
+                            {
+                                Triple.subj: [
+                                    F1_Work.name,
+                                    F1_Work.short,
+                                    F1_Work.id,
+                                    F1_Work.index_in_chapter,                                
+                                    F1_Work.idno,                                
+                                    F1_Work.genre,
+                                    F1_Work.self_content_type
+                                ]
+                            },
+                            {
+                                Triple.prop: [
+                                    Property.name
+                                ]
+                            },
+                        ]
+                    },
+                ]
+            },
+            {
+                Triple.prop: [
+                    Property.name
+                ]
+            },
+            {
+                Triple.obj: [
+                    E1_Crm_Entity.name,
+                    E1_Crm_Entity.id,
+                    E1_Crm_Entity.self_content_type,
+                    {
+                        E1_Crm_Entity.triple_set_from_obj: [
+                            {
+                                Triple.subj: [
+                                    F1_Work.name,
+                                    F1_Work.short,
+                                    F1_Work.id,
+                                    F1_Work.index_in_chapter,                                
+                                    F1_Work.idno,                                
+                                    F1_Work.genre,
+                                    F1_Work.self_content_type
+                                ]
+                            },
+                            {
+                                Triple.prop: [
+                                    Property.name
+                                ]
+                            },
+                        ]
+                    },
+                ]
+            },
+            ]
+        }
+    ),
 ]
