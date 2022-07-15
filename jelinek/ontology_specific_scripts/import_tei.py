@@ -326,7 +326,7 @@ class TreesManager:
 
                 if (
                     xml_elem.tag.endswith("bibl")
-                    and xml_elem.attrib.get("ana") == "frbroo:work"
+                    and (xml_elem.attrib.get("ana") == "frbroo:work" or xml_elem.attrib.get("ana") == "frbroo:aggregation_work")
                     and trees_manager.helper_dict["current_type"] == "work"
                 ):
 
@@ -359,7 +359,7 @@ class TreesManager:
                             and xml_elem_child.attrib.get("type") == "sub"
                         ):
 
-                            attr_dict["untertitel"] = xml_elem_child.text
+                            attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
 
                         if (
                             xml_elem_child.tag.endswith("idno")
@@ -404,11 +404,11 @@ class TreesManager:
                     attr_dict["idno"] = xml_elem.attrib.get("ref").replace("works:", "")
 
                     # TODO : 'ref type="category"'
-                    for xml_elem_child in xml_elem:
+                    # for xml_elem_child in xml_elem:
 
-                        if xml_elem_child.tag.endswith("title"):
+                    #     if xml_elem_child.tag.endswith("title"):
 
-                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+                    #         attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -1683,6 +1683,31 @@ class TreesManager:
                                                 prop=Property.objects.get(name="is translation of")
                                             )
 
+                    # contained manifestations (aggregation_work)
+                    elif (
+                        neighbour_path_node.xml_elem.tag.endswith("div")
+                        and neighbour_path_node.xml_elem.attrib.get("type") == "content"
+                    ):
+
+                        for list_bibl_path_node in neighbour_path_node.path_node_children_list:
+
+                            for list_bibl_child_path_node in list_bibl_path_node.path_node_children_list:
+
+                                if (
+                                    list_bibl_child_path_node.xml_elem.tag is not None
+                                    and list_bibl_child_path_node.xml_elem.tag.endswith("bibl")
+                                ):
+
+                                    for entity_manifestation in list_bibl_child_path_node.entities_list:
+
+                                        if entity_manifestation.__class__ is F3_Manifestation_Product_Type:
+
+                                            create_triple(
+                                                entity_subj=entity_work,
+                                                entity_obj=entity_manifestation,
+                                                prop=Property.objects.get(name="contains")
+                                            )
+
 
             def triple_from_f1_to_f10(entity_work, path_node):
 
@@ -2496,6 +2521,8 @@ def run(*args, **options):
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+
+        
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele"))

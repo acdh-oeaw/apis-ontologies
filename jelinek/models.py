@@ -337,7 +337,9 @@ def construct_properties():
         name_reverse="is contained in",
     )
     contains.subj_class.add(ContentType.objects.get(model=F17_Aggregation_Work.__name__))
+    contains.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     contains.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    contains.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     contains.save()
 
     is_expressed_in = Property.objects.create(
