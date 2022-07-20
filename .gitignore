@@ -1,4 +1,20 @@
-# Byte-compiled
-__pycache__/
-*.pyc
+# ----- OS, IDEs, tooling
+.DS_Store
+.idea/
+.python-version
 myenv
+
+# ----- misc. files
+*~
+*.bak
+*.log
+*.sqlite
+*cache*
+*foo*
+*local*
+*temp*
+!*template*
+
+# ---- Python-specific
+.*.pyc
+__pycache__/
