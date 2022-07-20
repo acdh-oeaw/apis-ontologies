@@ -23,13 +23,11 @@ class E1_Crm_Entity(TempEntityClass):
 class E40_Legal_Body(E1_Crm_Entity):
 
     # for institutions and publishers
-
-    pass
+    institution_id = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class E55_Type(E1_Crm_Entity):
-
     pass
 
 
@@ -38,7 +36,9 @@ class F1_Work(E1_Crm_Entity):
 
     untertitel = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
     idno = models.CharField(max_length=1024, blank=True, null=True)
+    index_in_chapter = models.IntegerField(blank=True, null=True)
     gnd_url = models.URLField(blank=True, null=True)
+    genre = models.CharField(max_length=1024, blank=True, null=True)
 
     anmerkung = models.CharField(
         max_length=1024,
@@ -46,6 +46,8 @@ class F1_Work(E1_Crm_Entity):
         null=True,
         verbose_name="Anmerkung"
     )
+
+    short = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -59,6 +61,7 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
     ref_target = models.URLField(blank=True, null=True)
     ref_accessed = models.CharField(max_length=1024, blank=True, null=True)
     text_language = models.CharField(max_length=1024, blank=True, null=True)
+    short = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -143,14 +146,17 @@ class F21_Recording_Work(F1_Work):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F26_Recording(F1_Work):
-
+    note = models.CharField(max_length=1024, blank=True, null=True)
     airing_date = models.CharField(max_length=1024, blank=True, null=True)
+    broadcast_id = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F31_Performance(E1_Crm_Entity):
 
     note = models.CharField(max_length=1024, blank=True, null=True)
+    performance_id = models.CharField(max_length=1024, blank=True, null=True)
+    performance_type = models.CharField(max_length=1024, blank=True, null=True)
 
     # TODO: consider changing this to a e55 relation
     category = models.CharField(max_length=1024, blank=True, null=True)
@@ -160,6 +166,11 @@ class F31_Performance(E1_Crm_Entity):
 class Chapter(TempEntityClass):
 
     chapter_number = models.CharField(max_length=1024, blank=True, null=True)
+    chapter_type = models.CharField(max_length=1024, blank=True, null=True)
+
+@reversion.register(follow=["tempentityclass_ptr"])
+class Keyword(TempEntityClass):
+    pass
 
 
 def construct_properties():
@@ -172,7 +183,7 @@ def construct_properties():
 
     TextType.objects.all().delete()
     tt = TextType.objects.create(entity="E1_Crm_Entity")
-    tt.collections.add(Collection.objects.create(name="manually created entity"))
+    #tt.collections.add(Collection.objects.get_or_create(name="manually created entity"))
 
     AnnotationProject.objects.create(name="test__annotation_project_1")
     Project.objects.create(name="test__project_1", user=User.objects.first())
@@ -185,6 +196,7 @@ def construct_properties():
     )
     data_read_from.subj_class.add(ContentType.objects.get(model=E1_Crm_Entity.__name__))
     data_read_from.subj_class.add(ContentType.objects.get(model=Chapter.__name__))
+    data_read_from.subj_class.add(ContentType.objects.get(model=Keyword.__name__))
     data_read_from.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
 
     was_defined_primarily_in = Property.objects.create(
@@ -234,6 +246,7 @@ def construct_properties():
     is_translator_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
+    is_translator_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_translator_of.save()
 
     is_translator_of = Property.objects.create(
@@ -270,6 +283,30 @@ def construct_properties():
     is_director_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_director_of.save()
 
+    is_composer_of = Property.objects.create(
+        name="is composer of",
+        name_reverse="has been composed by",
+    )
+    is_composer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_composer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_composer_of.save()
+
+    is_musician_of = Property.objects.create(
+        name="is musician of",
+        name_reverse="has been musically accompanied by",
+    )
+    is_musician_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_musician_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_musician_of.save()
+
+    is_singer_of = Property.objects.create(
+        name="is singer of",
+        name_reverse="has been sung by",
+    )
+    is_singer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_singer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_singer_of.save()
+
     was_published_in = Property.objects.create(
         name="was published in",
         name_reverse="is publication place of",
@@ -283,6 +320,7 @@ def construct_properties():
         name_reverse="has had performance",
     )
     has_been_performed_at.subj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    has_been_performed_at.subj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
     has_been_performed_at.obj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     has_been_performed_at.save()
 
@@ -299,7 +337,9 @@ def construct_properties():
         name_reverse="is contained in",
     )
     contains.subj_class.add(ContentType.objects.get(model=F17_Aggregation_Work.__name__))
+    contains.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     contains.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    contains.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     contains.save()
 
     is_expressed_in = Property.objects.create(
@@ -331,3 +371,10 @@ def construct_properties():
     )
     r13_is_realised_in.subj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
     r13_is_realised_in.obj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
+
+    has_keyword = Property.objects.create(
+        name="has keyword",
+        name_reverse="is keyword of",
+    )
+    has_keyword.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    has_keyword.obj_class.add(ContentType.objects.get(model=Keyword.__name__))
