@@ -48,6 +48,7 @@ class F1_Work(E1_Crm_Entity):
     )
 
     short = models.CharField(max_length=1024, blank=True, null=True)
+    #note = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -58,10 +59,14 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
     note = models.CharField(max_length=1024, blank=True, null=True)
     series = models.CharField(max_length=1024, blank=True, null=True)
     edition = models.CharField(max_length=1024, blank=True, null=True)
+    page = models.CharField(max_length=1024, blank=True, null=True)
+    issue = models.CharField(max_length=1024, blank=True, null=True)
+    volume = models.CharField(max_length=1024, blank=True, null=True)
     ref_target = models.URLField(blank=True, null=True)
     ref_accessed = models.CharField(max_length=1024, blank=True, null=True)
     text_language = models.CharField(max_length=1024, blank=True, null=True)
     short = models.CharField(max_length=1024, blank=True, null=True)
+    untertitel = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
