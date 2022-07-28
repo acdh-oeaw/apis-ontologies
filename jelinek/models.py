@@ -243,6 +243,33 @@ def construct_properties():
     is_author_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_author_of.save()
 
+    is_interviewer_of = Property.objects.create(
+        name="is interviewer of",
+        name_reverse="has been interviewed by",
+    )
+    is_interviewer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_interviewer_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_interviewer_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_interviewer_of.save()
+
+    is_interviewee_of = Property.objects.create(
+        name="is interviewee of",
+        name_reverse="has interviewee",
+    )
+    is_interviewee_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_interviewee_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_interviewee_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_interviewee_of.save()
+
+    is_adaptioner_of = Property.objects.create(
+        name="is adaptioner of",
+        name_reverse="has adaptioner",
+    )
+    is_adaptioner_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_adaptioner_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_adaptioner_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_adaptioner_of.save()
+
     is_translator_of = Property.objects.create(
         name="is translator of",
         name_reverse="has been translated by",
@@ -280,6 +307,14 @@ def construct_properties():
     is_publisher_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_publisher_of.save()
 
+    is_posessor_of = Property.objects.create(
+        name="is posessor of",
+        name_reverse="is possessed by",
+    )
+    is_posessor_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
+    is_posessor_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_posessor_of.save()
+
     is_director_of = Property.objects.create(
         name="is director of",
         name_reverse="has been directed by",
@@ -297,6 +332,15 @@ def construct_properties():
     is_composer_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_composer_of.save()
 
+    is_voice_actor_of = Property.objects.create(
+        name="is voice actor of",
+        name_reverse="has been voice acted by",
+    )
+    is_voice_actor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_voice_actor_of.save()
+
     is_musician_of = Property.objects.create(
         name="is musician of",
         name_reverse="has been musically accompanied by",
@@ -312,6 +356,22 @@ def construct_properties():
     is_singer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_singer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_singer_of.save()
+
+    is_musical_director_of = Property.objects.create(
+        name="is musical director of",
+        name_reverse="has been musically directed by",
+    )
+    is_musical_director_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_musical_director_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_musical_director_of.save()
+
+    is_choreographer_of = Property.objects.create(
+        name="is choreographer of",
+        name_reverse="has choreographer",
+    )
+    is_choreographer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_choreographer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_choreographer_of.save()
 
     was_published_in = Property.objects.create(
         name="was published in",
@@ -329,6 +389,15 @@ def construct_properties():
     has_been_performed_at.subj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
     has_been_performed_at.obj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     has_been_performed_at.save()
+
+    is_organizer_of = Property.objects.create(
+        name="is organizer of",
+        name_reverse="has organizer",
+    )
+    is_organizer_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
+    is_organizer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_organizer_of.obj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
+    is_organizer_of.save()
 
     has_been_performed_in = Property.objects.create(
         name="has been performed in",

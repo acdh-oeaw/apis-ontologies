@@ -1946,14 +1946,41 @@ class TreesManager:
 
                                 if (
                                         child_child_path_node.xml_elem.tag.endswith("persName")
-                                        and child_child_path_node.xml_elem.attrib.get("role") == "author"
                                 ):
 
-                                    create_triple(
-                                        entity_subj=entity_other,
-                                        entity_obj=entity_work,
-                                        prop=Property.objects.get(name="is author of")
-                                    )
+                                    if child_child_path_node.xml_elem.attrib.get("role") == "author":
+
+                                        create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is author of")
+                                        )
+
+                                    elif (child_child_path_node.xml_elem.attrib.get("role") == "interviewer"):
+
+                                        create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is interviewer of")
+                                        )
+
+                                    elif (child_child_path_node.xml_elem.attrib.get("role") == "interviewee"):
+
+                                        create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is interviewee of")
+                                        )
+
+                                    elif (child_child_path_node.xml_elem.attrib.get("role") == "adaptioner"):
+
+                                        create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is adaptioner of")
+                                        )
+                                    
+                                
 
             def triple_from_f1_to_f31(entity_work, path_node):
 
@@ -2187,6 +2214,38 @@ class TreesManager:
                                             prop=Property.objects.get(name="is editor of")
                                         )
 
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "interviewer"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is interviewer of")
+                                        )
+
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "interviewee"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is interviewee of")
+                                        )
+
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "translator"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is translator of")
+                                        )
+
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "voice_actor"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is voice actor of")
+                                        )
+
             def triple_from_f10_to_f21(entity_person, path_node: PathNode):
 
                 if path_node.path_node_parent.xml_elem.tag.endswith("bibl"):
@@ -2261,11 +2320,21 @@ class TreesManager:
 
                                 if entity_other.__class__ is E40_Legal_Body:
 
+                                    for path_node_child_child in path_node_child.path_node_children_list:
+
+                                        if (path_node_child_child.xml_elem.attrib.get("role") == "organizer"):
+
+                                            create_triple(
+                                                entity_obj=entity_performance,
+                                                entity_subj=entity_other,
+                                                prop=Property.objects.get(name="is organizer of"),
+                                            )
+
                                     create_triple(
-                                        entity_subj=entity_performance,
-                                        entity_obj=entity_other,
-                                        prop=Property.objects.get(name="has been performed at"),
-                                    )
+                                                entity_subj=entity_performance,
+                                                entity_obj=entity_other,
+                                                prop=Property.objects.get(name="has been performed at"),
+                                            )
 
             def triple_from_f31_to_f1(entity_performance, path_node: PathNode):
 
@@ -2337,13 +2406,13 @@ class TreesManager:
 
                             elif role == "translator":
 
-                                """ create_triple(
+                                create_triple(
                                     entity_subj=entity_person,
                                     entity_obj=entity_performance,
                                     prop=Property.objects.get(name="is translator of"),
-                                ) """
+                                )
 
-                                pass # to be ignored, because a translated theatre play needs to have its own work
+                                #pass # to be ignored, because a translated theatre play needs to have its own work
 
                             elif role == "composer":
 
@@ -2367,6 +2436,22 @@ class TreesManager:
                                     entity_subj=entity_person,
                                     entity_obj=entity_performance,
                                     prop=Property.objects.get(name="is musician of"),
+                                )
+
+                            elif role == "musical_direction":
+
+                                create_triple(
+                                    entity_subj=entity_person,
+                                    entity_obj=entity_performance,
+                                    prop=Property.objects.get(name="is musical director of"),
+                                )
+
+                            elif role == "choreographer":
+
+                                create_triple(
+                                    entity_subj=entity_person,
+                                    entity_obj=entity_performance,
+                                    prop=Property.objects.get(name="is choreographer of"),
                                 )
 
                             else:
@@ -2763,19 +2848,20 @@ def run(*args, **options):
 
     def main_run():
 
-       # reset_all()
+        reset_all()
 
         xml_file_list = []
 
 
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte/001_Sammelbände"))
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
-        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_sw90.xml")
+        #xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0002.xml")
+        #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         
     
 
