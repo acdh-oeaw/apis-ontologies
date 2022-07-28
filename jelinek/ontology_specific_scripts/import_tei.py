@@ -2730,7 +2730,7 @@ def run(*args, **options):
 
     def main_run():
 
-        #reset_all()
+        reset_all()
 
         xml_file_list = []
 
