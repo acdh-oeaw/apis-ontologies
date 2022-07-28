@@ -708,6 +708,20 @@ class TreesManager:
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
+                elif (
+                    xml_elem.tag.endswith("relatedItem")
+                    and xml_elem.attrib.get("type") == "host"
+                ):
+                    for xml_elem_child in xml_elem:
+
+                        if (
+                            xml_elem_child.tag.endswith("ptr")
+                            and xml_elem_child.attrib.get("type") == "bibl"
+                            and xml_elem_child.attrib.get("target") is not None
+                        ):
+
+                            attr_dict["bibl_id"] = xml_elem_child.attrib.get("target").replace("bibls:", "")
+
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
                     return attr_dict
@@ -2006,7 +2020,7 @@ class TreesManager:
 
                             entity_found = entity_other
 
-                if entity_found is None and (name_subtype is not None or name_type is not None):
+                if entity_found is None and (name_subtype is not None or name_type is not None) and name_type != "host":
 
                     # TODO : Check how often this is the case
                     print("Found a type, but no correspondingly created entity for it")
@@ -2028,20 +2042,19 @@ class TreesManager:
                         and path_node_child.xml_elem.attrib.get("type") == "host"
                     ):
 
-                        for path_node_child_child in path_node_child.path_node_children_list:
+                        #for path_node_child_child in path_node_child.path_node_children_list:
 
-                            for entity_other in path_node_child_child.entities_list:
+                        for entity_other in path_node_child.entities_list:
 
-                                if (
-                                    path_node_child_child.xml_elem.tag.endswith("bibl")
-                                    and entity_other.__class__ is F3_Manifestation_Product_Type
-                                ):
+                            if (
+                                entity_other.__class__ is F3_Manifestation_Product_Type
+                            ):
 
-                                    create_triple(
-                                        entity_subj=entity_manifestation,
-                                        entity_obj=entity_other,
-                                        prop=Property.objects.get(name="host")
-                                    )
+                                create_triple(
+                                    entity_subj=entity_manifestation,
+                                    entity_obj=entity_other,
+                                    prop=Property.objects.get(name="host")
+                                )
 
             def triples_from_f3_to_f9(entity_manifestation, path_node: PathNode):
 
@@ -2148,11 +2161,31 @@ class TreesManager:
 
                         if entity_other.__class__ is F3_Manifestation_Product_Type:
 
-                            create_triple(
-                                entity_subj=entity_person,
-                                entity_obj=entity_other,
-                                prop=Property.objects.get(name="is author of")
-                            )
+                            for child_path_node in path_node.path_node_children_list:
+
+                                if (child_path_node.xml_elem.tag.endswith("persName")):
+
+                                    if (child_path_node.xml_elem.attrib.get("role") == "author"):
+                                        
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is author of")
+                                        )
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "composer"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is composer of")
+                                        )
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "editor"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is editor of")
+                                        )
 
             def triple_from_f10_to_f21(entity_person, path_node: PathNode):
 
@@ -2730,18 +2763,19 @@ def run(*args, **options):
 
     def main_run():
 
-        reset_all()
+       # reset_all()
 
         xml_file_list = []
 
 
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte/001_Sammelbände"))
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_sw90.xml")
         
     
 

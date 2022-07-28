@@ -294,6 +294,7 @@ def construct_properties():
     )
     is_composer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_composer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_composer_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_composer_of.save()
 
     is_musician_of = Property.objects.create(
