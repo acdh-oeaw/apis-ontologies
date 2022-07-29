@@ -144,6 +144,7 @@ additional_serializers_list = [
             F1_Work: [
                 F1_Work.id,
                 F1_Work.name,
+                F1_Work.genre,
                 {
                     F1_Work.triple_set_from_subj: [
                         {
@@ -153,10 +154,10 @@ additional_serializers_list = [
                         },
                         {
                             Triple.obj: [
-                                    TempEntityClass.id,                              
-                                    TempEntityClass.name,                              
-                                    TempEntityClass.start_date,
-                                    TempEntityClass.start_date_written,
+                                    F3_Manifestation_Product_Type.id,                              
+                                    F3_Manifestation_Product_Type.name,                              
+                                    F3_Manifestation_Product_Type.start_date,
+                                    F3_Manifestation_Product_Type.start_date_written,
                                     F3_Manifestation_Product_Type.edition,
                                     F3_Manifestation_Product_Type.bibl_id,
                                     { 

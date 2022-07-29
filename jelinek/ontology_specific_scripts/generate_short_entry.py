@@ -24,7 +24,7 @@ def generate_short_text():
                 publisher = manifestations_and_years[0][1]
                 places = Triple.objects.filter(subj__id=manifestation.id, prop__name="was published in")
                 if places.count() > 0:
-                    short = "Erstdruck | {}: {}. {}".format(places[0].obj.name, publisher.subj.name, publisher.temptriple.start_date_written)
+                    short = "Erstdruck | {}: {} {}.".format(places[0].obj.name, publisher.subj.name, publisher.temptriple.start_date_written)
                     work.short = short
         return work
 
