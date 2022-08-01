@@ -150,7 +150,7 @@ class F21_Recording_Work(F1_Work):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class F26_Recording(F1_Work):
+class F26_Recording(E1_Crm_Entity):
     note = models.CharField(max_length=1024, blank=True, null=True)
     airing_date = models.CharField(max_length=1024, blank=True, null=True)
     broadcast_id = models.CharField(max_length=1024, blank=True, null=True)
@@ -321,7 +321,17 @@ def construct_properties():
     )
     is_director_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_director_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_director_of.obj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
     is_director_of.save()
+
+    is_contributor_of = Property.objects.create(
+        name="is contributor of",
+        name_reverse="has been contributed by",
+    )
+    is_contributor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_contributor_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_contributor_of.obj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
+    is_contributor_of.save()
 
     is_composer_of = Property.objects.create(
         name="is composer of",
@@ -340,6 +350,16 @@ def construct_properties():
     is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_voice_actor_of.save()
+
+    is_actor_of = Property.objects.create(
+        name="is actor of",
+        name_reverse="has been acted by",
+    )
+    is_actor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_actor_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_actor_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_actor_of.obj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
+    is_actor_of.save()
 
     is_musician_of = Property.objects.create(
         name="is musician of",

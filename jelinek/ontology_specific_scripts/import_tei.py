@@ -1547,7 +1547,7 @@ class TreesManager:
 
                 if (
                     (xml_elem.tag.endswith("event") or xml_elem.tag.endswith("item"))
-                    and (xml_elem.attrib.get("ana") == "staging" or xml_elem.attrib.get("ana") == "UA")
+                    and (xml_elem.attrib.get("ana") == "staging" or xml_elem.attrib.get("ana") == "UA" or xml_elem.attrib.get("ana") == "cinemarelease")
                 ):
 
                     if (xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None):
@@ -1555,6 +1555,8 @@ class TreesManager:
 
                     if xml_elem.attrib.get("ana") == "UA":
                             attr_dict["performance_type"] = "UA"
+                    elif xml_elem.attrib.get("ana") == "cinemarelease":
+                            attr_dict["performance_type"] = "cinemarelease"
 
                     for xml_elem_child in xml_elem:
 
@@ -1591,6 +1593,13 @@ class TreesManager:
                                 ):
 
                                     attr_dict["category"] = xml_elem_child_child.text
+                elif (
+                    xml_elem.tag.endswith("ptr")
+                    and (xml_elem.attrib.get("type") == "staging" or xml_elem.attrib.get("type") == "UA" or xml_elem.attrib.get("type") == "cinemarelease")
+                    and xml_elem.attrib.get("target").startswith("insz")
+                ):
+                    attr_dict["performance_id"] = xml_elem.attrib.get("target").replace("insz:", "")
+                    attr_dict["performance_type"] = xml_elem.attrib.get("type")
 
 
                 if (
@@ -2005,41 +2014,52 @@ class TreesManager:
                                             entity_obj=entity_work,
                                             prop=Property.objects.get(name="is adaptioner of")
                                         )
+
+                                    # elif (child_child_path_node.xml_elem.attrib.get("role") == "contributor"):
+
+                                    #     create_triple(
+                                    #         entity_subj=entity_other,
+                                    #         entity_obj=entity_work,
+                                    #         prop=Property.objects.get(name="is contributor of")
+                                    #     )
+
+                                    # elif (child_child_path_node.xml_elem.attrib.get("role") == "actor"):
+
+                                    #     create_triple(
+                                    #         entity_subj=entity_other,
+                                    #         entity_obj=entity_work,
+                                    #         prop=Property.objects.get(name="is actor of")
+                                    #     )
+
+                                    # elif (child_child_path_node.xml_elem.attrib.get("role") == "director"):
+
+                                    #     create_triple(
+                                    #         entity_subj=entity_other,
+                                    #         entity_obj=entity_work,
+                                    #         prop=Property.objects.get(name="is director of")
+                                    #     )
                                     
                                 
 
             def triple_from_f1_to_f31(entity_work, path_node):
-
                 for neighbour_path_node in path_node.path_node_parent.path_node_children_list:
-
-                    if (
-                        neighbour_path_node.xml_elem.tag.endswith("div")
-                        and neighbour_path_node.xml_elem.attrib.get("type") == "stagings"
-                    ):
-
-                        for neighbour_path_node_child in neighbour_path_node.path_node_children_list:
-
-                            if (
-                                (neighbour_path_node_child.xml_elem.tag.endswith("list") or neighbour_path_node_child.xml_elem.tag.endswith("listEvent"))
-                                and neighbour_path_node_child.xml_elem.attrib.get("type") == "stagings"
-                            ):
-
-                                for item_path_node in neighbour_path_node_child.path_node_children_list:
-
-                                    for entity_other in item_path_node.entities_list:
-
-                                        if entity_other.__class__ is F31_Performance:
-
+                    for child_path_node in neighbour_path_node.path_node_children_list:
+                        for child_child_path_node in child_path_node.path_node_children_list:
+                            if child_child_path_node.xml_elem.tag.endswith("item"):
+                                for child_child_child_path_node in child_child_path_node.path_node_children_list:
+                                    for entity_other in child_child_child_path_node.entities_list:
+                                        if entity_other.__class__ == F31_Performance:
                                             create_triple(
-                                                entity_subj=entity_work,
-                                                entity_obj=entity_other,
-                                                prop=Property.objects.get(name="has been performed in"),
-                                            )
+                                                        entity_obj=entity_other,
+                                                        entity_subj=entity_work,
+                                                        prop=Property.objects.get(name="has been performed in")
+                                                    )
+                
 
 
             triple_from_f1_to_f3(entity_work, path_node)
             triple_from_f1_to_f10(entity_work, path_node)
-            #triple_from_f1_to_f31(entity_work, path_node)
+            triple_from_f1_to_f31(entity_work, path_node)
 
         def parse_triples_from_f3_manifestation(entity_manifestation, path_node):
 
@@ -2292,6 +2312,43 @@ class TreesManager:
 
         def parse_triples_from_f21_recording_work(entity_recording_work, path_node: PathNode):
 
+            def triple_from_f21_to_f10(entity_work, path_node):
+
+                for neighbor_path_node in path_node.path_node_parent.path_node_children_list:
+                    for child_path_node in neighbor_path_node.path_node_children_list:
+                        for child_child_path_node in child_path_node.path_node_children_list:
+                            for entity_other in child_child_path_node.entities_list:
+                                if entity_other.__class__ == F10_Person:
+                                    for child_child_child_path_node in child_child_path_node.path_node_children_list:
+                                        if (
+                                                child_child_child_path_node.xml_elem.tag.endswith("persName")
+                                        ):
+
+                                            if (child_child_child_path_node.xml_elem.attrib.get("role") == "contributor"):
+
+                                                create_triple(
+                                                    entity_subj=entity_other,
+                                                    entity_obj=entity_work,
+                                                    prop=Property.objects.get(name="is contributor of")
+                                                )
+
+                                            elif (child_child_child_path_node.xml_elem.attrib.get("role") == "actor"):
+
+                                                create_triple(
+                                                    entity_subj=entity_other,
+                                                    entity_obj=entity_work,
+                                                    prop=Property.objects.get(name="is actor of")
+                                                )
+
+                                            elif (child_child_child_path_node.xml_elem.attrib.get("role") == "director"):
+
+                                                create_triple(
+                                                    entity_subj=entity_other,
+                                                    entity_obj=entity_work,
+                                                    prop=Property.objects.get(name="is director of")
+                                                )
+                    
+
             def triple_from_f21_to_f26(entity_recording_work, path_node: PathNode):
 
                 for path_node_neighbour in path_node.path_node_parent.path_node_children_list:
@@ -2319,6 +2376,7 @@ class TreesManager:
 
             triple_from_f21_to_f26(entity_recording_work, path_node)
             triple_from_f21_to_chapter(entity_recording_work, path_node)
+            triple_from_f21_to_f10(entity_recording_work, path_node)
 
             parse_triples_from_f1_work(entity_recording_work, path_node)
 
@@ -2879,15 +2937,16 @@ def run(*args, **options):
         xml_file_list = []
 
 
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme"))
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
-        #xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0002.xml")
-        #xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0002.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         
     
 
