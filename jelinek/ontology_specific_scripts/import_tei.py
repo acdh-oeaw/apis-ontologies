@@ -52,11 +52,11 @@ def is_valid_text(var_str):
 def remove_whitespace(var_str):
     white_space_beginning_regex = re.compile(r"^\s+", re.MULTILINE)
     multiple_white_spaces_in_middle_regex = re.compile(r"(\s\s+|\n)", re.MULTILINE)
-    return multiple_white_spaces_in_middle_regex.sub(" ", white_space_beginning_regex.sub("", var_str))
+    return multiple_white_spaces_in_middle_regex.sub(" ", white_space_beginning_regex.sub("", var_str)).strip()
 
 def remove_xml_tags(var_str):
     regex = re.compile(r"<.*?>", re.MULTILINE)
-    return regex.sub("", var_str)
+    return regex.sub("", var_str).strip()
 
 
 
@@ -231,6 +231,11 @@ class TreesManager:
                         attr_dict["institution_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
                     elif xml_elem.attrib.get("ref") is not None:
                         attr_dict["institution_id"] = xml_elem.attrib.get("ref").replace("insti:", "")
+                elif (
+                    xml_elem.tag.endswith("orgName")
+                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is None
+                ):
+                    attr_dict["name"] = remove_whitespace(xml_elem.text)
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -501,6 +506,9 @@ class TreesManager:
                     and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is None
                 ):
 
+                    if xml_elem.attrib.get("n") is not None:
+                        attr_dict["edition"] = xml_elem.attrib.get("n")
+
                     for xml_elem_child in xml_elem:
 
                         if (
@@ -520,7 +528,7 @@ class TreesManager:
                             if (xml_elem_child.attrib.get("type") == "sub"):
                                 attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
                             else:
-                                attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
 
                         elif (
                             xml_elem_child.tag is not None
@@ -536,7 +544,7 @@ class TreesManager:
                                     if (xml_elem_child_child.attrib.get("type") == "sub"):
                                         attr_dict["untertitel"] = remove_whitespace(xml_elem_child_child.text)
                                     else:
-                                        attr_dict["name"] = remove_whitespace(xml_elem_child_child.text)
+                                        attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
 
                         elif (
                             xml_elem_child.tag is not None
@@ -551,6 +559,8 @@ class TreesManager:
                 ):
 
                     attr_dict["bibl_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+                    if xml_elem.attrib.get("n") is not None:
+                        attr_dict["edition"] = xml_elem.attrib.get("n")
 
                     for xml_elem_child in xml_elem:
 
@@ -562,7 +572,7 @@ class TreesManager:
                             if (xml_elem_child.attrib.get("type") == "sub"):
                                 attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
                             else:
-                                attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
 
                         elif xml_elem_child.tag.endswith("edition"):
 
@@ -585,9 +595,20 @@ class TreesManager:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
 
+                        elif xml_elem_child.tag.endswith("ref"):
+
+                            attr_dict["ref_target"] = xml_elem_child.attrib.get("target")
+                            attr_dict["series"] = xml_elem_child.text
+
                         elif xml_elem_child.tag.endswith("textLang"):
 
                             attr_dict["text_language"] = xml_elem_child.text
+
+                        elif (
+                            xml_elem_child.tag is not None
+                            and xml_elem_child.tag.endswith("note")
+                        ):
+                            attr_dict["note"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
 
                 elif (
                     xml_elem.tag.endswith("bibl")
@@ -608,8 +629,7 @@ class TreesManager:
                             if (xml_elem_child.attrib.get("type") == "sub"):
                                 attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
                             else:
-                                attr_dict["name"] = remove_whitespace(xml_elem_child.text)
-
+                                attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
                         elif (
                             xml_elem_child.tag.endswith("hi")
                             and is_valid_text(xml_elem_child.text)
@@ -719,8 +739,18 @@ class TreesManager:
                             and xml_elem_child.attrib.get("type") == "bibl"
                             and xml_elem_child.attrib.get("target") is not None
                         ):
-
                             attr_dict["bibl_id"] = xml_elem_child.attrib.get("target").replace("bibls:", "")
+                        elif (
+                            xml_elem_child.tag.endswith("bibl")
+                            and xml_elem_child.attrib.get("ana") == "frbroo:manifestation"
+                        ):
+                            for xml_elem_child_child in xml_elem_child:
+                                if (
+                                    xml_elem_child_child.tag.endswith("ptr")
+                                    and xml_elem_child_child.attrib.get("type") == "bibl"
+                                    and xml_elem_child_child.attrib.get("target") is not None
+                                ):
+                                    attr_dict["bibl_id"] = xml_elem_child_child.attrib.get("target").replace("bibls:", "")
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -1547,7 +1577,7 @@ class TreesManager:
 
                 if (
                     (xml_elem.tag.endswith("event") or xml_elem.tag.endswith("item"))
-                    and (xml_elem.attrib.get("ana") == "staging" or xml_elem.attrib.get("ana") == "UA" or xml_elem.attrib.get("ana") == "cinemarelease")
+                    and (xml_elem.attrib.get("ana") == "staging" or xml_elem.attrib.get("ana") == "UA" or xml_elem.attrib.get("ana") == "EA" or xml_elem.attrib.get("ana") == "cinemarelease")
                 ):
 
                     if (xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None):
@@ -1557,6 +1587,8 @@ class TreesManager:
                             attr_dict["performance_type"] = "UA"
                     elif xml_elem.attrib.get("ana") == "cinemarelease":
                             attr_dict["performance_type"] = "cinemarelease"
+                    elif xml_elem.attrib.get("ana") == "EA":
+                            attr_dict["performance_type"] = "EA"
 
                     for xml_elem_child in xml_elem:
 
@@ -2168,7 +2200,8 @@ class TreesManager:
 
                         if (
                             entity_other.__class__ is E40_Legal_Body
-                            and child_path_node.xml_elem.attrib.get("role") == "editor"
+                            and (child_path_node.xml_elem.attrib.get("role") == "editor"
+                            or child_path_node.xml_elem.attrib.get("role") == "possessor")
                         ):
 
                             triple = create_triple(
@@ -2942,11 +2975,15 @@ def run(*args, **options):
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme"))
+        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik"))
+        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/011_EssayistischeTexteRedenundStatements/011_ZurbildendenKunstArchitekturundFotografie"))
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0002.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_sw90.xml")
         
     
 

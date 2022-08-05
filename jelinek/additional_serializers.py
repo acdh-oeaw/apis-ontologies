@@ -371,6 +371,10 @@ additional_serializers_list = [
                 Triple.subj: [
                     E1_Crm_Entity.name,
                     E1_Crm_Entity.id,
+                    F1_Work.short,
+                    F1_Work.index_in_chapter,                                
+                    F1_Work.idno,                                
+                    F1_Work.genre,
                     E1_Crm_Entity.self_content_type,
                     {
                         E1_Crm_Entity.triple_set_from_obj: [
@@ -403,6 +407,10 @@ additional_serializers_list = [
                 Triple.obj: [
                     E1_Crm_Entity.name,
                     E1_Crm_Entity.id,
+                    F1_Work.short,
+                    F1_Work.index_in_chapter,                                
+                    F1_Work.idno,                                
+                    F1_Work.genre,
                     E1_Crm_Entity.self_content_type,
                     {
                         E1_Crm_Entity.triple_set_from_obj: [

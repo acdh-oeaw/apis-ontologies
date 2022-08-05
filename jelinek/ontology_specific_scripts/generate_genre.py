@@ -35,11 +35,11 @@ def generate_genre():
                     elif "011_EssayistischeTexteRedenundStatements" in xml_file.file_path:
                         work.genre = "Essayistische Texte, Reden und Statements"
                     elif "012_Übersetzungen/001_Lyrik" in xml_file.file_path:
-                        work.genre = "Lyrik"
+                        work.genre = "Übersetzungen, Lyrik"
                     elif "012_Übersetzungen/002_Prosatexte" in xml_file.file_path:
-                        work.genre = "Prosatexte"
+                        work.genre = "Übersetzungen, Prosatexte"
                     elif "012_Übersetzungen/003_Theaterstücke" in xml_file.file_path:
-                        work.genre = "Theaterstücke"
+                        work.genre = "Übersetzungen, Theaterstücke"
                     elif "013_TextefürInstallationenundProjektionenFotoarbeiten" in xml_file.file_path:
                         work.genre = "Texte für Installationen und Projektionen, Fotoarbeiten"
                     elif "014_HerausgeberinundRedaktionstätigkeit" in xml_file.file_path:
