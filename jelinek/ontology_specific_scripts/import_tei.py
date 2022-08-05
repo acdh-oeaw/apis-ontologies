@@ -528,7 +528,7 @@ class TreesManager:
                             if (xml_elem_child.attrib.get("type") == "sub"):
                                 attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
                             else:
-                                attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
+                                attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif (
                             xml_elem_child.tag is not None
@@ -544,7 +544,7 @@ class TreesManager:
                                     if (xml_elem_child_child.attrib.get("type") == "sub"):
                                         attr_dict["untertitel"] = remove_whitespace(xml_elem_child_child.text)
                                     else:
-                                        attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
+                                        attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif (
                             xml_elem_child.tag is not None
@@ -572,7 +572,7 @@ class TreesManager:
                             if (xml_elem_child.attrib.get("type") == "sub"):
                                 attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
                             else:
-                                attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
+                                attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif xml_elem_child.tag.endswith("edition"):
 
@@ -608,7 +608,7 @@ class TreesManager:
                             xml_elem_child.tag is not None
                             and xml_elem_child.tag.endswith("note")
                         ):
-                            attr_dict["note"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
+                            attr_dict["note"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                 elif (
                     xml_elem.tag.endswith("bibl")
@@ -629,7 +629,7 @@ class TreesManager:
                             if (xml_elem_child.attrib.get("type") == "sub"):
                                 attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
                             else:
-                                attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode")))
+                                attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                         elif (
                             xml_elem_child.tag.endswith("hi")
                             and is_valid_text(xml_elem_child.text)
@@ -1486,9 +1486,9 @@ class TreesManager:
                             helper_org = xml_elem_child.text
 
                         elif xml_elem_child.tag.endswith("title"):
-                            attr_dict["name"] = remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode"))
+                            attr_dict["name"] = remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail))
                         elif xml_elem_child.tag.endswith("note"):
-                            attr_dict["note"] = remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode"))
+                            attr_dict["note"] = remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail))
 
                     if attr_dict["name"] is None:
 
@@ -2965,15 +2965,15 @@ def run(*args, **options):
 
     def main_run():
 
-        reset_all()
+        #reset_all()
 
         xml_file_list = []
 
 
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik"))
         #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
@@ -2983,7 +2983,7 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_sw90.xml")
+        xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
         
     
 
