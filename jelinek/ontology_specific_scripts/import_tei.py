@@ -752,6 +752,9 @@ class TreesManager:
                                 ):
                                     attr_dict["bibl_id"] = xml_elem_child_child.attrib.get("target").replace("bibls:", "")
 
+                if attr_dict["name"] is not None:
+                    attr_dict["name"] = attr_dict["name"][:255]
+                
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
                     return attr_dict
@@ -2965,25 +2968,25 @@ def run(*args, **options):
 
     def main_run():
 
-        #reset_all()
+        reset_all()
 
         xml_file_list = []
 
 
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik"))
-        #xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/011_EssayistischeTexteRedenundStatements/011_ZurbildendenKunstArchitekturundFotografie"))
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0002.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
-        xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
         
     
 
