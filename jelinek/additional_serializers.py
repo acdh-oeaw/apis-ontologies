@@ -100,6 +100,7 @@ additional_serializers_list = [
                                     F1_Work.short,
                                     F1_Work.id,
                                     F1_Work.index_in_chapter,                                
+                                    F1_Work.index_desc,                                
                                     F1_Work.idno,                                
                                     F1_Work.genre,                                
                             ]
@@ -270,6 +271,7 @@ additional_serializers_list = [
                                     F1_Work.short,
                                     F1_Work.id,
                                     F1_Work.index_in_chapter,                                
+                                    F1_Work.index_desc,                                
                                     F1_Work.idno,                                
                                     F1_Work.genre,                                
                             ]
@@ -311,6 +313,7 @@ additional_serializers_list = [
                                                         F1_Work.short,
                                                         F1_Work.id,
                                                         F1_Work.index_in_chapter,                                
+                                                        F1_Work.index_desc,                                
                                                         F1_Work.idno,                                
                                                         F1_Work.genre,                             
                                                 ]
@@ -347,6 +350,7 @@ additional_serializers_list = [
                                                         F1_Work.short,
                                                         F1_Work.id,
                                                         F1_Work.index_in_chapter,                                
+                                                        F1_Work.index_desc,                                
                                                         F1_Work.idno,                                
                                                         F1_Work.genre,                             
                                                 ]
@@ -373,6 +377,7 @@ additional_serializers_list = [
                     E1_Crm_Entity.id,
                     F1_Work.short,
                     F1_Work.index_in_chapter,                                
+                    F1_Work.index_desc,                                
                     F1_Work.idno,                                
                     F1_Work.genre,
                     E1_Crm_Entity.self_content_type,
@@ -384,6 +389,7 @@ additional_serializers_list = [
                                     F1_Work.short,
                                     F1_Work.id,
                                     F1_Work.index_in_chapter,                                
+                                    F1_Work.index_desc,                                
                                     F1_Work.idno,                                
                                     F1_Work.genre,
                                     F1_Work.self_content_type
@@ -409,6 +415,7 @@ additional_serializers_list = [
                     E1_Crm_Entity.id,
                     F1_Work.short,
                     F1_Work.index_in_chapter,                                
+                    F1_Work.index_desc,                                
                     F1_Work.idno,                                
                     F1_Work.genre,
                     E1_Crm_Entity.self_content_type,
@@ -420,6 +427,7 @@ additional_serializers_list = [
                                     F1_Work.short,
                                     F1_Work.id,
                                     F1_Work.index_in_chapter,                                
+                                    F1_Work.index_desc,                                
                                     F1_Work.idno,                                
                                     F1_Work.genre,
                                     F1_Work.self_content_type
