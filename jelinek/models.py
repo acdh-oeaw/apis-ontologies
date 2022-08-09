@@ -37,6 +37,7 @@ class F1_Work(E1_Crm_Entity):
     untertitel = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
     idno = models.CharField(max_length=1024, blank=True, null=True)
     index_in_chapter = models.IntegerField(blank=True, null=True)
+    index_desc = models.CharField(max_length=1024, blank=True, null=True)
     gnd_url = models.URLField(blank=True, null=True)
     genre = models.CharField(max_length=1024, blank=True, null=True)
 
