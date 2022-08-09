@@ -37,7 +37,7 @@ def generate_short_text():
                     places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
                     if places.count() > 0:
                         place = places[0].obj
-                        short = "<b><i>{}.<i><b> {}: {} {}".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
+                        short = "<b><i>{}.</i></b> {}: {} {}".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
                             short = short + "({})".format(first_manifestation.series)
                         work.short = short
@@ -319,7 +319,7 @@ def generate_short_text():
                     places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
                     if places.count() > 0:
                         place = places[0].obj
-                        short = "<b><i>{}.<i><b> {}. {}: {} {}".format(first_manifestation.name,first_manifestation.untertitel, place.name, publisher.name, first_manifestation.start_date_written)
+                        short = "<b><i>{}.</i></b> {}. {}: {} {}".format(first_manifestation.name,first_manifestation.untertitel, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
                             short = short + "({})".format(first_manifestation.series)
                         work.short = short

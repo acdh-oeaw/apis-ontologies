@@ -445,4 +445,90 @@ additional_serializers_list = [
             ]
         }
     ),
+    AdditionalSerializerConfig( # Lade Details pro Manifestation
+        url="additional/manifestation_details",
+        name="manifestation_details",
+        path_structure={
+            F3_Manifestation_Product_Type: [
+                F3_Manifestation_Product_Type.id,
+                F3_Manifestation_Product_Type.name,
+                F3_Manifestation_Product_Type.start_date,
+                F3_Manifestation_Product_Type.start_date_written,
+                F3_Manifestation_Product_Type.notes,
+                F3_Manifestation_Product_Type.bibl_id,
+                F3_Manifestation_Product_Type.series,
+                F3_Manifestation_Product_Type.edition,
+                F3_Manifestation_Product_Type.page,
+                F3_Manifestation_Product_Type.issue,
+                F3_Manifestation_Product_Type.volume,
+                F3_Manifestation_Product_Type.ref_target,
+                F3_Manifestation_Product_Type.ref_accessed,
+                F3_Manifestation_Product_Type.text_language,
+                F3_Manifestation_Product_Type.short,
+                F3_Manifestation_Product_Type.untertitel,
+                {
+                    F3_Manifestation_Product_Type.triple_set_from_subj: [
+                        {
+                            Triple.prop: [
+                                Property.name,
+                            ]
+                        },
+                        {
+                            Triple.obj: [
+                                    F3_Manifestation_Product_Type.id,
+                                    F3_Manifestation_Product_Type.name,
+                                    F3_Manifestation_Product_Type.start_date,
+                                    F3_Manifestation_Product_Type.start_date_written,
+                                    F3_Manifestation_Product_Type.notes,
+                                    F3_Manifestation_Product_Type.bibl_id,
+                                    F3_Manifestation_Product_Type.series,
+                                    F3_Manifestation_Product_Type.edition,
+                                    F3_Manifestation_Product_Type.page,
+                                    F3_Manifestation_Product_Type.issue,
+                                    F3_Manifestation_Product_Type.volume,
+                                    F3_Manifestation_Product_Type.ref_target,
+                                    F3_Manifestation_Product_Type.ref_accessed,
+                                    F3_Manifestation_Product_Type.text_language,
+                                    F3_Manifestation_Product_Type.short,
+                                    F3_Manifestation_Product_Type.untertitel,
+                            ]
+                        },
+                        
+                    ]
+                },
+                {
+                    F3_Manifestation_Product_Type.triple_set_from_obj: [
+                        {
+                            Triple.prop: [
+                                Property.name,
+                            ]
+                        },
+                        {
+                            Triple.subj: [
+                                    F3_Manifestation_Product_Type.id,
+                                    F3_Manifestation_Product_Type.name,
+                                    F3_Manifestation_Product_Type.start_date,
+                                    F3_Manifestation_Product_Type.start_date_written,
+                                    F3_Manifestation_Product_Type.notes,
+                                    F3_Manifestation_Product_Type.bibl_id,
+                                    F3_Manifestation_Product_Type.series,
+                                    F3_Manifestation_Product_Type.edition,
+                                    F3_Manifestation_Product_Type.page,
+                                    F3_Manifestation_Product_Type.issue,
+                                    F3_Manifestation_Product_Type.volume,
+                                    F3_Manifestation_Product_Type.ref_target,
+                                    F3_Manifestation_Product_Type.ref_accessed,
+                                    F3_Manifestation_Product_Type.text_language,
+                                    F3_Manifestation_Product_Type.short,
+                                    F3_Manifestation_Product_Type.untertitel,
+                            ]
+                        },
+                        
+                    ]
+                }
+            ]
+        }
+    ),
+    
+
 ]
