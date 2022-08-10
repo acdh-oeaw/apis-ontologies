@@ -506,6 +506,7 @@ class TreesManager:
                     "ref_accessed": None,
                     "text_language": None,
                     "untertitel": None,
+                    "scope_style": None,
                 }
 
                 if (
@@ -593,6 +594,10 @@ class TreesManager:
 
                             attr_dict[xml_elem_child.attrib.get("unit")] = xml_elem_child.text
 
+                            if (xml_elem_child.attrib.get("style") is not None):
+
+                                attr_dict["scope_style"] = xml_elem_child.attrib.get("style")
+
                         elif xml_elem_child.tag.endswith("date"):
 
                             if xml_elem_child.attrib.get("type") == "lastAccessed":
@@ -611,6 +616,14 @@ class TreesManager:
                         elif xml_elem_child.tag.endswith("textLang"):
 
                             attr_dict["text_language"] = xml_elem_child.text
+
+                        elif xml_elem_child.tag.endswith("series"):
+
+                            attr_dict["series"] = xml_elem_child.text
+
+                        elif xml_elem_child.tag.endswith("edition"):
+
+                            attr_dict["edition"] = xml_elem_child.text
 
                         elif (
                             xml_elem_child.tag is not None
@@ -2993,7 +3006,7 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0002.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
         
     

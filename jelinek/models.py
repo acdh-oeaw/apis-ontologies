@@ -68,6 +68,7 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
     text_language = models.CharField(max_length=1024, blank=True, null=True)
     short = models.CharField(max_length=1024, blank=True, null=True)
     untertitel = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
+    scope_style = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
