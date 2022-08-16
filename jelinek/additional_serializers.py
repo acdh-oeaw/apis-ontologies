@@ -87,6 +87,7 @@ additional_serializers_list = [
             Chapter: [
                 Chapter.id,
                 Chapter.name,
+                Chapter.chapter_number,
                 {
                     Chapter.triple_set_from_obj: [
                         {
@@ -454,7 +455,7 @@ additional_serializers_list = [
                 F3_Manifestation_Product_Type.name,
                 F3_Manifestation_Product_Type.start_date,
                 F3_Manifestation_Product_Type.start_date_written,
-                F3_Manifestation_Product_Type.notes,
+                F3_Manifestation_Product_Type.note,
                 F3_Manifestation_Product_Type.bibl_id,
                 F3_Manifestation_Product_Type.series,
                 F3_Manifestation_Product_Type.edition,
@@ -466,6 +467,7 @@ additional_serializers_list = [
                 F3_Manifestation_Product_Type.text_language,
                 F3_Manifestation_Product_Type.short,
                 F3_Manifestation_Product_Type.untertitel,
+                F3_Manifestation_Product_Type.scope_style,
                 {
                     F3_Manifestation_Product_Type.triple_set_from_subj: [
                         {
@@ -479,7 +481,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.name,
                                     F3_Manifestation_Product_Type.start_date,
                                     F3_Manifestation_Product_Type.start_date_written,
-                                    F3_Manifestation_Product_Type.notes,
+                                    F3_Manifestation_Product_Type.note,
                                     F3_Manifestation_Product_Type.bibl_id,
                                     F3_Manifestation_Product_Type.series,
                                     F3_Manifestation_Product_Type.edition,
@@ -491,6 +493,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.text_language,
                                     F3_Manifestation_Product_Type.short,
                                     F3_Manifestation_Product_Type.untertitel,
+                                    F3_Manifestation_Product_Type.scope_style,
                             ]
                         },
                         
@@ -509,7 +512,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.name,
                                     F3_Manifestation_Product_Type.start_date,
                                     F3_Manifestation_Product_Type.start_date_written,
-                                    F3_Manifestation_Product_Type.notes,
+                                    F3_Manifestation_Product_Type.note,
                                     F3_Manifestation_Product_Type.bibl_id,
                                     F3_Manifestation_Product_Type.series,
                                     F3_Manifestation_Product_Type.edition,
@@ -521,6 +524,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.text_language,
                                     F3_Manifestation_Product_Type.short,
                                     F3_Manifestation_Product_Type.untertitel,
+                                    F3_Manifestation_Product_Type.scope_style,
                             ]
                         },
                         

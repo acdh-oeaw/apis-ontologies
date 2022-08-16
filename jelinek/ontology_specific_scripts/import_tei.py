@@ -559,7 +559,7 @@ class TreesManager:
                             xml_elem_child.tag is not None
                             and xml_elem_child.tag.endswith("note")
                         ):
-                            attr_dict["note"] = xml_elem_child.text
+                            attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
 
                 elif (
                     xml_elem.tag.endswith("bibl")
@@ -629,7 +629,7 @@ class TreesManager:
                             xml_elem_child.tag is not None
                             and xml_elem_child.tag.endswith("note")
                         ):
-                            attr_dict["note"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
+                            attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
 
                 elif (
                     xml_elem.tag.endswith("bibl")
@@ -684,7 +684,7 @@ class TreesManager:
 
                                     attr_dict["title_in_note"] = xml_elem_child_child.text
 
-                            attr_dict["note"] = xml_elem_child.text
+                            attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
 
                         elif xml_elem_child.tag.endswith("ref"):
 
@@ -1512,7 +1512,7 @@ class TreesManager:
                         elif xml_elem_child.tag.endswith("title"):
                             attr_dict["name"] = remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail))
                         elif xml_elem_child.tag.endswith("note"):
-                            attr_dict["note"] = remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail))
+                            attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
 
                     if attr_dict["name"] is None:
 
@@ -1635,10 +1635,11 @@ class TreesManager:
 
                         elif (
                             xml_elem_child.tag.endswith("note")
-                            and is_valid_text(xml_elem_child.text)
+                            # and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["note"] = xml_elem_child.text
+                            attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
+                            categories = ""
 
                             for xml_elem_child_child in xml_elem_child:
 
@@ -1648,7 +1649,11 @@ class TreesManager:
                                     and is_valid_text(xml_elem_child_child.text)
                                 ):
 
-                                    attr_dict["category"] = xml_elem_child_child.text
+                                    categories += xml_elem_child_child.text + "; "
+
+                            if len(categories) > 0:
+
+                                attr_dict["category"] = categories
                 elif (
                     xml_elem.tag.endswith("ptr")
                     and (xml_elem.attrib.get("type") == "staging" or xml_elem.attrib.get("type") == "UA" or xml_elem.attrib.get("type") == "cinemarelease")
