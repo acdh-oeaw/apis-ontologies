@@ -57,7 +57,7 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
 
     idno = models.CharField(max_length=1024, blank=True, null=True)
     bibl_id = models.CharField(max_length=1024, blank=True, null=True) # TODO __sresch__ : Maybe replace with idno?
-    note = models.CharField(max_length=1024, blank=True, null=True)
+    note = models.TextField(blank=True)
     series = models.CharField(max_length=1024, blank=True, null=True)
     edition = models.CharField(max_length=1024, blank=True, null=True)
     page = models.CharField(max_length=1024, blank=True, null=True)
@@ -153,7 +153,7 @@ class F21_Recording_Work(F1_Work):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F26_Recording(E1_Crm_Entity):
-    note = models.CharField(max_length=1024, blank=True, null=True)
+    note = models.TextField(blank=True)
     airing_date = models.CharField(max_length=1024, blank=True, null=True)
     broadcast_id = models.CharField(max_length=1024, blank=True, null=True)
 
@@ -161,7 +161,7 @@ class F26_Recording(E1_Crm_Entity):
 @reversion.register(follow=["tempentityclass_ptr"])
 class F31_Performance(E1_Crm_Entity):
 
-    note = models.CharField(max_length=1024, blank=True, null=True)
+    note = models.TextField(blank=True)
     performance_id = models.CharField(max_length=1024, blank=True, null=True)
     performance_type = models.CharField(max_length=1024, blank=True, null=True)
 
