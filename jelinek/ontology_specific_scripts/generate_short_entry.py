@@ -370,7 +370,7 @@ def generate_short_text():
             ("Texte für Kompositionen", short_text_Theatertexte), 
             ("Libretti", short_text_Theatertexte), 
             ("Übersetzte Werke", short_text_Uebersetzte_Werke),
-            ("Übersetzungen", short_text_Essays)
+            ("Übersetzungen", short_text_Essays),
             ("Interviews", short_text_Interviews)
             ]
         for short_text_generator in short_text_generators:
