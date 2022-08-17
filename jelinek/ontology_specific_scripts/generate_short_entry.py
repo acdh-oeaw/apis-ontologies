@@ -301,6 +301,9 @@ def generate_short_text():
     def short_text_Theatertexte(work):
         def short_text_Einzeltext(work):
             relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.performance_type == "UA"]
+            if len(relations) == 0:
+                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.start_date is not None]
+                relations.sort(key=lambda rel: rel.obj.start_date)
             if len(relations) > 0:
                 perf = relations[0].obj
                 institutions = [rel.obj for rel in Triple.objects.filter(prop__name="has been performed at", subj=perf)]
@@ -337,9 +340,21 @@ def generate_short_text():
             places = Triple.objects.filter(prop__name="was published in", subj=translation)
             publishers = Triple.objects.filter(prop__name="is publisher of", obj=translation)
             if authors.count() > 0 and places.count() > 0 and publishers.count() > 0:
-                short = "<span rendition=\"#it\">{}</span>. Ü: {}. {}: {} {}".format(translation.name, authors[0].subj.name, places[0].obj.name, publishers[0].subj.name, publishers[0].temptriple.start_date_written)
+                short = "<i>{}</i>. Ü: {}. {}: {} {}".format(translation.name, authors[0].subj.name, places[0].obj.name, publishers[0].subj.name, publishers[0].temptriple.start_date_written)
                 translation.short = short
                 translation.save()
+        return work
+
+    def short_text_Interviews(work):
+        work = short_text_Essays(work)
+        work.short.replace("Erstdruck | ", "")
+        interviewers = [t.subj for t in Triple.objects.filter(obj=work, prop__name="is interviewer of")]
+        if len(interviewers) > 0:
+            point = "."
+            if work.name.endswith((".", "!", "?", ".\"")):
+                point = ""
+            short = "<b>{}, {}: <i>{}</i>{}</b> {}".format(interviewers[0].surname, interviewers[0].forename, work.name, point, work.short)
+            work.short = short            
         return work
             
     def main():
@@ -356,6 +371,7 @@ def generate_short_text():
             ("Libretti", short_text_Theatertexte), 
             ("Übersetzte Werke", short_text_Uebersetzte_Werke),
             ("Übersetzungen", short_text_Essays)
+            ("Interviews", short_text_Interviews)
             ]
         for short_text_generator in short_text_generators:
             print("_____{}_____".format(short_text_generator[0]))
