@@ -347,14 +347,34 @@ def generate_short_text():
 
     def short_text_Interviews(work):
         work = short_text_Essays(work)
-        work.short.replace("Erstdruck | ", "")
+        if work.short is None:
+            work.short = ""
+        new_short = work.short.replace("Erstdruck | ", "")
         interviewers = [t.subj for t in Triple.objects.filter(obj=work, prop__name="is interviewer of")]
+        point = "."
+        if work.name.endswith((".", "!", "?", ".\"")):
+            point = ""
+        short = ""
         if len(interviewers) > 0:
-            point = "."
-            if work.name.endswith((".", "!", "?", ".\"")):
-                point = ""
-            short = "<b>{}, {}: <i>{}</i>{}</b> {}".format(interviewers[0].surname, interviewers[0].forename, work.name, point, work.short)
-            work.short = short            
+            short = "<b>{}, {}: <i>{}</i>{}</b> {}".format(interviewers[0].surname, interviewers[0].forename, work.name, point, new_short)
+        else:
+            short = "<b>N., N.: <i>{}</i>{}</b> {}".format(work.name, point, new_short)
+        work.short = short
+        return work
+
+    def short_text_Installationen(work):
+        relations = Triple.objects.filter(subj=work, prop__name="R13 is realised in")
+        if len(relations) > 0:
+            recordings = [r.obj for r in relations]
+            recordings.sort(key=lambda r: r.start_date)
+            places = Triple.objects.filter(subj=recordings[0], prop__name="has been performed at")
+            if len(places) > 0:
+                short = "Erstpräsentation | {} {}".format(recordings[0].start_date_written, places[0].obj.name)
+                work.short = short
+        return work
+
+    def short_text_Herausgeberin(work):
+        # TODO finish
         return work
             
     def main():
@@ -371,6 +391,8 @@ def generate_short_text():
             ("Libretti", short_text_Theatertexte), 
             ("Übersetzte Werke", short_text_Uebersetzte_Werke),
             ("Übersetzungen", short_text_Essays),
+            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
+            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
             ("Interviews", short_text_Interviews)
             ]
         for short_text_generator in short_text_generators:

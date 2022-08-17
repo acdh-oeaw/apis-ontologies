@@ -475,3 +475,10 @@ def construct_properties():
     )
     has_keyword.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     has_keyword.obj_class.add(ContentType.objects.get(model=Keyword.__name__))
+
+    is_about = Property.objects.create(
+        name="is about",
+        name_reverse="is discussed in",
+    )
+    is_about.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_about.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))

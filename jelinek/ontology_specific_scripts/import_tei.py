@@ -1945,6 +1945,26 @@ class TreesManager:
 
         def parse_triples_from_f1_work(entity_work, path_node):
 
+            def triple_from_f1_to_f1(entity_work, path_node):
+                if (
+                            path_node.path_node_parent is not None
+                            and path_node.path_node_parent.xml_elem.tag.endswith("div")
+                            and path_node.path_node_parent.xml_elem.attrib.get("type") == "entry"
+                            and path_node.path_node_parent.path_node_parent.xml_elem.tag.endswith("body")
+                            and path_node.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("text")
+                    ):
+                        parent = get_uppermost_parent(path_node)
+                        teiHeader = parent.path_node_children_list[0]
+                        textClass = teiHeader.path_node_children_list[1].path_node_children_list[0]
+                        for keywords in textClass.path_node_children_list:
+                            if keywords.xml_elem.attrib.get("ana") == "about":
+                                for term in keywords.path_node_children_list:
+                                    for rs in term.path_node_children_list:
+                                        for entity_other in rs.entities_list:
+                                            if entity_other != entity_work:
+                                                create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+
+                
             def triple_from_f1_to_f3(entity_work, path_node):
 
                 def check_and_create_triple_to_f3(entity_work, path_node_other):
@@ -2118,6 +2138,7 @@ class TreesManager:
                 
 
 
+            triple_from_f1_to_f1(entity_work, path_node)
             triple_from_f1_to_f3(entity_work, path_node)
             triple_from_f1_to_f10(entity_work, path_node)
             triple_from_f1_to_f31(entity_work, path_node)
@@ -2999,10 +3020,10 @@ def run(*args, **options):
         xml_file_list = []
 
 
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
