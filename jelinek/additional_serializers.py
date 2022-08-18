@@ -156,14 +156,14 @@ additional_serializers_list = [
                         },
                         {
                             Triple.obj: [
-                                    F3_Manifestation_Product_Type.id,                              
-                                    F3_Manifestation_Product_Type.name,                              
-                                    F3_Manifestation_Product_Type.start_date,
-                                    F3_Manifestation_Product_Type.start_date_written,
-                                    F3_Manifestation_Product_Type.edition,
-                                    F3_Manifestation_Product_Type.bibl_id,
+                                    F31_Performance.id,                              
+                                    F31_Performance.name,                              
+                                    F31_Performance.start_date,
+                                    F31_Performance.start_date_written,
+                                    F31_Performance.note,
+                                    F31_Performance.category,
                                     { 
-                                        F3_Manifestation_Product_Type.triple_set_from_subj: [
+                                        F31_Performance.triple_set_from_subj: [
                                             {
                                                 Triple.prop: [
                                                     Property.name,
@@ -178,7 +178,7 @@ additional_serializers_list = [
                                         ]
                                     },
                                     { 
-                                        F3_Manifestation_Product_Type.triple_set_from_obj: [
+                                        F31_Performance.triple_set_from_obj: [
                                             
                                             {
                                                 Triple.prop: [
@@ -211,10 +211,10 @@ additional_serializers_list = [
                                     TempEntityClass.name,                              
                                     TempEntityClass.start_date,
                                     TempEntityClass.start_date_written,
-                                    F3_Manifestation_Product_Type.edition,
-                                    F3_Manifestation_Product_Type.bibl_id,
+                                    F31_Performance.note,
+                                    F31_Performance.category,
                                     { 
-                                        F3_Manifestation_Product_Type.triple_set_from_subj: [
+                                        F31_Performance.triple_set_from_subj: [
                                             {
                                                 Triple.prop: [
                                                     Property.name,
@@ -230,7 +230,7 @@ additional_serializers_list = [
                                         ]
                                     },
                                     { 
-                                        F3_Manifestation_Product_Type.triple_set_from_obj: [
+                                        F31_Performance.triple_set_from_obj: [
                                             {
                                                 Triple.prop: [
                                                     Property.name,
