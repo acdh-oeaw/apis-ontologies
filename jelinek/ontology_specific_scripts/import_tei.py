@@ -3020,12 +3020,12 @@ def run(*args, **options):
         xml_file_list = []
 
 
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/001_Lyrik"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/011_EssayistischeTexteRedenundStatements"))

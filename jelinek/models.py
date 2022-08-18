@@ -482,3 +482,4 @@ def construct_properties():
     )
     is_about.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_about.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_about.obj_class.add(ContentType.objects.get(model=F10_Person.__name__))
