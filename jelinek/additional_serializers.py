@@ -139,6 +139,120 @@ additional_serializers_list = [
             ]            
         }
     ),
+    AdditionalSerializerConfig( # Lade Details pro F21 Recording Work
+        url="additional/f21_details",
+        name="f21_details",
+        path_structure={
+            F21_Recording_Work: [
+                F21_Recording_Work.id,
+                F21_Recording_Work.name,
+                F21_Recording_Work.genre,
+                {
+                    F21_Recording_Work.triple_set_from_subj: [
+                        {
+                            Triple.prop: [
+                                Property.name,
+                            ]
+                        },
+                        {
+                            Triple.obj: [
+                                    F31_Performance.id,                              
+                                    F31_Performance.name,                              
+                                    F31_Performance.start_date,
+                                    F31_Performance.start_date_written,
+                                    F31_Performance.note,
+                                    F31_Performance.category,
+                                    { 
+                                        F31_Performance.triple_set_from_subj: [
+                                            {
+                                                Triple.prop: [
+                                                    Property.name,
+                                                ]
+                                            },
+                                            {
+                                                Triple.obj: [
+                                                        TempEntityClass.id,
+                                                        TempEntityClass.name
+                                                ]
+                                            },
+                                        ]
+                                    },
+                                    { 
+                                        F31_Performance.triple_set_from_obj: [
+                                            
+                                            {
+                                                Triple.prop: [
+                                                    Property.name,
+                                                ]
+                                            },
+                                            {
+                                                Triple.subj: [
+                                                        TempEntityClass.id,
+                                                        TempEntityClass.name
+                                                ]
+                                            },
+                                        ]
+                                    }
+                            ]
+                        },
+                        
+                    ]
+                },
+                {
+                    F21_Recording_Work.triple_set_from_obj: [
+                        {
+                            Triple.prop: [
+                                Property.name,
+                            ]
+                        },
+                        {
+                            Triple.subj: [
+                                    TempEntityClass.id,                              
+                                    TempEntityClass.name,                              
+                                    TempEntityClass.start_date,
+                                    TempEntityClass.start_date_written,
+                                    F31_Performance.note,
+                                    F31_Performance.category,
+                                    { 
+                                        F31_Performance.triple_set_from_subj: [
+                                            {
+                                                Triple.prop: [
+                                                    Property.name,
+                                                ]
+                                            },
+                                            
+                                            {
+                                                Triple.obj: [
+                                                        TempEntityClass.id,
+                                                        TempEntityClass.name
+                                                ]
+                                            },
+                                        ]
+                                    },
+                                    { 
+                                        F31_Performance.triple_set_from_obj: [
+                                            {
+                                                Triple.prop: [
+                                                    Property.name,
+                                                ]
+                                            },
+                                            {
+                                                Triple.subj: [
+                                                        TempEntityClass.id,
+                                                        TempEntityClass.name
+                                                ]
+                                            },
+                                        ]
+                                    }
+                            ]
+                        },
+                        
+                    ]
+                }
+            ]            
+        }
+    ),
+    
     AdditionalSerializerConfig( # Lade Details pro Werk
         url="additional/work_details",
         name="work_details",
@@ -252,6 +366,7 @@ additional_serializers_list = [
             ]            
         }
     ),
+    
     AdditionalSerializerConfig( # Lade Werke pro Keyword
         url="additional/work_for_keyword",
         name="work_for_keyword",
