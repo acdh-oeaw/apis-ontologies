@@ -1819,6 +1819,64 @@ class TreesManager:
             return sub_main(path_node)
 
 
+        def parse_note(path_node):
+
+            def parse_attr(path_node: PathNode):
+
+                xml_elem = path_node.xml_elem
+
+                attr_dict = {
+                    "content": None,
+                    "type": None,
+                    "rendition": None,
+                }
+
+                if (
+                    path_node.path_node_parent is not None
+                    and xml_elem.tag.endswith("note")
+                    and is_valid_text(xml_elem.text)
+                ):
+                    attr_dict["content"] = ET.tostring(xml_elem, encoding="unicode").strip(xml_elem.tail)
+
+                    if(xml_elem.attrib.get("rendition") is not None):
+                        attr_dict["rendition"] = xml_elem.attrib.get("rendition")
+                    if(xml_elem.attrib.get("type") is not None):
+                        attr_dict["type"] = xml_elem.attrib.get("type")
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
+
+            def sub_main(path_node):
+
+                enities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    db_result = None
+
+                    # if attr_dict["name"] is not None:
+
+                    #db_result = XMLNote.objects.get_or_create(attr_dict)
+                    db_result = [XMLNote.objects.create(), True]
+
+                    # else:
+
+                        # print("Entity found without a uniquely identifying attribute")
+
+                    enities_list.append(handle_after_creation(db_result, attr_dict))
+
+                return enities_list
+
+            return sub_main(path_node)
+
+
         def main_parse_for_entities(path_node):
 
             print(f"\nParsing: tag: {path_node.xml_elem.tag}, attrib: {path_node.xml_elem.attrib}, text: {path_node.xml_elem.text.__repr__()}")
@@ -1847,6 +1905,8 @@ class TreesManager:
             path_node.entities_list.extend(parse_chapter(path_node))
 
             path_node.entities_list.extend(parse_keyword(path_node))
+
+            path_node.entities_list.extend(parse_note(path_node))
 
 
             # cls.parse_f17_aggregation_work(path_node.xml_elem)
@@ -2272,10 +2332,28 @@ class TreesManager:
                         triple.start_date_written = date
                     triple.save()
 
+            def triples_from_f3_to_note(entity_manifestation, path_node: PathNode):
+
+                for child_path_node in path_node.path_node_children_list:
+
+                    for entity_other in child_path_node.entities_list:
+
+                        if (
+                            entity_other.__class__ is XMLNote
+                            and child_path_node.xml_elem.tag.endswith("note")
+                        ):
+
+                            create_triple(
+                                entity_subj=entity_manifestation,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="has note")
+                            )
+
             triples_from_f3_to_e55(entity_manifestation, path_node)
             triples_from_f3_to_f3(entity_manifestation, path_node)
             triples_from_f3_to_f9(entity_manifestation, path_node)
             triples_from_f3_to_e40(entity_manifestation, path_node)
+            triples_from_f3_to_note(entity_manifestation, path_node)
 
         def parse_triples_from_e55_manifestation(entity_e55, path_node):
 
@@ -2631,9 +2709,27 @@ class TreesManager:
                             # TODO : Check how often this is the case
                             print("Found a relation to a person without a role")
 
+            def triples_from_f31_to_note(entity_manifestation, path_node: PathNode):
+
+                for child_path_node in path_node.path_node_children_list:
+
+                    for entity_other in child_path_node.entities_list:
+
+                        if (
+                            entity_other.__class__ is XMLNote
+                            and child_path_node.xml_elem.tag.endswith("note")
+                        ):
+
+                            create_triple(
+                                entity_subj=entity_manifestation,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="has note")
+                            )
+
             triple_from_f31_to_e40(entity_performance, path_node)
             triple_from_f31_to_f10(entity_performance, path_node)
             triple_from_f31_to_f1(entity_performance, path_node)
+            triples_from_f31_to_note(entity_performance, path_node)
 
         def parse_triples_from_f26_recording(entity_broadcast, path_node: PathNode):
 
@@ -2677,9 +2773,27 @@ class TreesManager:
                                 entity_obj=entity_other,
                                 prop=Property.objects.get(name="has been performed at"),
                             )                
+
+            def triples_from_f26_to_note(entity_manifestation, path_node: PathNode):
+
+                for child_path_node in path_node.path_node_children_list:
+
+                    for entity_other in child_path_node.entities_list:
+
+                        if (
+                            entity_other.__class__ is XMLNote
+                            and child_path_node.xml_elem.tag.endswith("note")
+                        ):
+
+                            create_triple(
+                                entity_subj=entity_manifestation,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="has note")
+                            )
                     
             triple_from_f26_to_f21(entity_broadcast, path_node)
             triple_from_f26_to_e40(entity_broadcast, path_node)
+            triples_from_f26_to_note(entity_broadcast, path_node)
 
 
         def parse_triples_from_chapter(entity_chapter, path_node: PathNode):

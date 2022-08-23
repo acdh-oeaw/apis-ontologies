@@ -179,6 +179,12 @@ class Chapter(TempEntityClass):
 class Keyword(TempEntityClass):
     pass
 
+@reversion.register(follow=["tempentityclass_ptr"])
+class XMLNote(TempEntityClass):
+    content = models.TextField(blank=True, null=True)
+    rendition = models.CharField(max_length=1024, blank=True, null=True)
+    type = models.CharField(max_length=1024, blank=True, null=True)
+
 
 def construct_properties():
 
@@ -205,6 +211,7 @@ def construct_properties():
     data_read_from.subj_class.add(ContentType.objects.get(model=Chapter.__name__))
     data_read_from.subj_class.add(ContentType.objects.get(model=Keyword.__name__))
     data_read_from.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
+    data_read_from.subj_class.add(ContentType.objects.get(model=XMLNote.__name__))
 
     was_defined_primarily_in = Property.objects.create(
         name="was defined primarily in",
@@ -475,6 +482,13 @@ def construct_properties():
     )
     has_keyword.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     has_keyword.obj_class.add(ContentType.objects.get(model=Keyword.__name__))
+    
+    has_note = Property.objects.create(
+        name="has note",
+        name_reverse="is note of",
+    )
+    has_note.subj_class.add(ContentType.objects.get(model=E1_Crm_Entity.__name__))
+    has_note.obj_class.add(ContentType.objects.get(model=XMLNote.__name__))
 
     is_about = Property.objects.create(
         name="is about",
