@@ -218,6 +218,7 @@ def construct_properties():
         name_reverse="defined primarily",
     )
     was_defined_primarily_in.subj_class.add(ContentType.objects.get(model=E1_Crm_Entity.__name__))
+    was_defined_primarily_in.subj_class.add(ContentType.objects.get(model=XMLNote.__name__))
     was_defined_primarily_in.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
 
     p2_has_type = Property.objects.create(
