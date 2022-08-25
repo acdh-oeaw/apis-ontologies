@@ -1826,6 +1826,7 @@ class TreesManager:
                 xml_elem = path_node.xml_elem
 
                 attr_dict = {
+                    "name": None,
                     "content": None,
                     "type": None,
                     "rendition": None,
@@ -1834,8 +1835,8 @@ class TreesManager:
                 if (
                     path_node.path_node_parent is not None
                     and xml_elem.tag.endswith("note")
-                    and is_valid_text(xml_elem.text)
                 ):
+
                     attr_dict["content"] = ET.tostring(xml_elem, encoding="unicode").strip(xml_elem.tail)
 
                     if(xml_elem.attrib.get("rendition") is not None):
@@ -2348,6 +2349,17 @@ class TreesManager:
                                 entity_obj=entity_other,
                                 prop=Property.objects.get(name="has note")
                             )
+                if path_node.xml_elem.tag.endswith("ptr"):
+                    for path_node_sibling in path_node.path_node_parent.path_node_children_list:
+                        for entity_other in path_node_sibling.entities_list:
+                            if (
+                                entity_other.__class__ is XMLNote
+                            ):
+                                create_triple(
+                                    entity_subj=entity_manifestation,
+                                    entity_obj=entity_other,
+                                    prop=Property.objects.get(name="has note")
+                                )
 
             triples_from_f3_to_e55(entity_manifestation, path_node)
             triples_from_f3_to_f3(entity_manifestation, path_node)
@@ -2725,6 +2737,17 @@ class TreesManager:
                                 entity_obj=entity_other,
                                 prop=Property.objects.get(name="has note")
                             )
+                if path_node.xml_elem.tag.endswith("ptr"):
+                    for path_node_sibling in path_node.path_node_parent.path_node_children_list:
+                        for entity_other in path_node_sibling.entities_list:
+                            if (
+                                entity_other.__class__ is XMLNote
+                            ):
+                                create_triple(
+                                    entity_subj=entity_manifestation,
+                                    entity_obj=entity_other,
+                                    prop=Property.objects.get(name="has note")
+                                )
 
             triple_from_f31_to_e40(entity_performance, path_node)
             triple_from_f31_to_f10(entity_performance, path_node)
@@ -2777,19 +2800,29 @@ class TreesManager:
             def triples_from_f26_to_note(entity_manifestation, path_node: PathNode):
 
                 for child_path_node in path_node.path_node_children_list:
-
                     for entity_other in child_path_node.entities_list:
-
                         if (
                             entity_other.__class__ is XMLNote
                             and child_path_node.xml_elem.tag.endswith("note")
                         ):
-
                             create_triple(
                                 entity_subj=entity_manifestation,
                                 entity_obj=entity_other,
                                 prop=Property.objects.get(name="has note")
                             )
+
+                if path_node.xml_elem.tag.endswith("ptr"):
+                    for path_node_sibling in path_node.path_node_parent.path_node_children_list:
+                        for entity_other in path_node_sibling.entities_list:
+                            if (
+                                entity_other.__class__ is XMLNote
+                            ):
+                                create_triple(
+                                    entity_subj=entity_manifestation,
+                                    entity_obj=entity_other,
+                                    prop=Property.objects.get(name="has note")
+                                )
+
                     
             triple_from_f26_to_f21(entity_broadcast, path_node)
             triple_from_f26_to_e40(entity_broadcast, path_node)
@@ -3139,6 +3172,7 @@ def run(*args, **options):
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
