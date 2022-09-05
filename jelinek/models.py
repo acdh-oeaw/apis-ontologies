@@ -332,6 +332,7 @@ def construct_properties():
     is_director_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_director_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_director_of.obj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
+    is_director_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_director_of.save()
 
     is_contributor_of = Property.objects.create(

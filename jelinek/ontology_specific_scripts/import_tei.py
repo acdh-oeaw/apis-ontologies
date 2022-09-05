@@ -2465,6 +2465,14 @@ class TreesManager:
                                             prop=Property.objects.get(name="is voice actor of")
                                         )
 
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "director"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is director of")
+                                        )
+
             def triple_from_f10_to_f21(entity_person, path_node: PathNode):
 
                 if path_node.path_node_parent.xml_elem.tag.endswith("bibl"):
