@@ -53,33 +53,6 @@ additional_serializers_list = [
             ]
         }
     ),
-    AdditionalSerializerConfig( # fuer Gregor zum vergleichen, wird bald wieder geloescht
-        url="additional/example_serializer_2",
-        name="some_example_serializer_2",
-        path_structure={
-            F1_Work: [
-                F1_Work.id,
-                F1_Work.name,
-                F1_Work.idno,
-                {
-                    F1_Work.triple_set_from_subj: [
-                        Triple.subj,
-                        Triple.obj,
-                        {
-                            Triple.prop: [
-                                Property.name,
-                                {
-                                    Property.subj_class: [
-                                        ContentType.model
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-    ),
     AdditionalSerializerConfig( # Lade Werke pro Kapitel
         url="additional/work_for_chapter",
         name="work_for_chapter",
