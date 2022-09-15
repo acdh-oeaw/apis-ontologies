@@ -3042,7 +3042,8 @@ def parse_xml_as_entity(xml_file_path):
             file_content = f.read()
 
         xml_ent.name = name
-        xml_ent.file_content = file_content
+        if len(file_content) < 4000000:
+            xml_ent.file_content = file_content
         xml_ent.save()
 
     return db_result[0]
@@ -3178,6 +3179,7 @@ def run(*args, **options):
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane"))
@@ -3188,7 +3190,7 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0002.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_2.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
         
     
