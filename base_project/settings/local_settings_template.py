@@ -46,4 +46,5 @@ APIS_BIBSONOMY = [{
     'user': 'example_user',
     'API key': 'example_key',
 }]
-
+# then append the bibsonomy module:
+INSTALLED_APPS.append("apis_bibsonomy")
