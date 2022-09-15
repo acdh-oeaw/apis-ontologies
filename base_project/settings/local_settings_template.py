@@ -29,3 +29,21 @@ DATABASES = {
         "PORT": "3306",
     }
 }
+
+
+# Bibsonomy example settings
+APIS_BIBSONOMY = [{
+    'type': 'zotero',
+    'url': 'https://api.zotero.org/',
+    'user': 'exmaple_user_id', # fill in the API user ID, not the user-name
+    'API key': 'example_key',
+}]
+# Zotero example settings (note that code-wise the module and settings are 
+# called bibsonomy eventhough they also support zotero)
+APIS_BIBSONOMY = [{
+    'type': 'bibsonomy',
+    'url': 'https://www.bibsonomy.org/',
+    'user': 'example_user',
+    'API key': 'example_key',
+}]
+
