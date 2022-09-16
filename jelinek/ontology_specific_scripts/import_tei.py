@@ -445,10 +445,14 @@ class TreesManager:
 
                     if attr_dict["idno"] is not None:
 
-                        db_result = F1_Work.objects.get_or_create(
-                            idno=attr_dict["idno"],
-                            self_content_type=F1_Work.get_content_type()
-                        )
+                        if len(F1_Work.objects.filter(idno=attr_dict["idno"])) <= 1:
+                            
+                            db_result = F1_Work.objects.get_or_create(
+                                idno=attr_dict["idno"],
+                                self_content_type=F1_Work.get_content_type()
+                            )
+                        else:
+                            print("Multiple entries using the same idno found - that shouldn't happen")
 
                     elif attr_dict["name"] is not None:
 
@@ -2577,7 +2581,7 @@ class TreesManager:
                                 prop=Property.objects.get(name="has been performed at"),
                             )
 
-                    if len(path_node_child.entities_list) == 0 and path_node_child.xml_elem.attrib.get("type") == "institutions":
+                    if len(path_node_child.entities_list) <= 1 and path_node_child.xml_elem.attrib.get("type") == "institutions":
 
                         for path_node_child in path_node_child.path_node_children_list:
 
