@@ -1605,7 +1605,7 @@ class TreesManager:
 
                 if (
                     (xml_elem.tag.endswith("event") or xml_elem.tag.endswith("item"))
-                    and (xml_elem.attrib.get("ana") == "staging" or xml_elem.attrib.get("ana") == "UA" or xml_elem.attrib.get("ana") == "EA" or xml_elem.attrib.get("ana") == "cinemarelease")
+                    and (xml_elem.attrib.get("ana") == "staging" or xml_elem.attrib.get("ana") == "UA" or xml_elem.attrib.get("ana") == "EA" or xml_elem.attrib.get("ana") == "cinemarelease" or xml_elem.attrib.get("ana") == "EP")
                 ):
 
                     if (xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None):
@@ -1617,6 +1617,8 @@ class TreesManager:
                             attr_dict["performance_type"] = "cinemarelease"
                     elif xml_elem.attrib.get("ana") == "EA":
                             attr_dict["performance_type"] = "EA"
+                    elif xml_elem.attrib.get("ana") == "EP":
+                            attr_dict["performance_type"] = "EP"
 
                     for xml_elem_child in xml_elem:
 
@@ -2192,6 +2194,13 @@ class TreesManager:
                     for child_path_node in neighbour_path_node.path_node_children_list:
                         for child_child_path_node in child_path_node.path_node_children_list:
                             if child_child_path_node.xml_elem.tag.endswith("item"):
+                                for entity_other in child_child_path_node.entities_list:
+                                        if entity_other.__class__ == F31_Performance:
+                                            create_triple(
+                                                        entity_obj=entity_other,
+                                                        entity_subj=entity_work,
+                                                        prop=Property.objects.get(name="has been performed in")
+                                                    )
                                 for child_child_child_path_node in child_child_path_node.path_node_children_list:
                                     for entity_other in child_child_child_path_node.entities_list:
                                         if entity_other.__class__ == F31_Performance:
@@ -3196,6 +3205,7 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_2.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme/006_DieSchöpfung.xml")
         
     
 
