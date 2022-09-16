@@ -37,9 +37,9 @@ def generate_short_text():
                     places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
                     if places.count() > 0:
                         place = places[0].obj
-                        short = "<b><i>{}.</i></b> {}: {} {}".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
+                        short = "{}: {} {}".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
-                            short = short + "({})".format(first_manifestation.series)
+                            short = short + " ({})".format(first_manifestation.series)
                         work.short = short
                 else:
                     print("No publishers")
@@ -255,7 +255,10 @@ def generate_short_text():
                         if publishers.count() > 0 and places.count() > 0:
                             publisher = publishers[0].subj
                             place = places[0].obj
-                            short = "Erstdruck | {}. {}: {} {}. {}".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written, first_manifestation.note)
+                            manifestation_name = ""
+                            if len(first_manifestation.name) > 0:
+                                manifestation_name = "{}. ".format(first_manifestation.name)
+                            short = "Erstdruck | {}{}: {} {}".format(manifestation_name, place.name, publisher.name, first_manifestation.start_date_written)
                             work.short = short
                         else:
                             print("No publishers")
@@ -287,7 +290,7 @@ def generate_short_text():
                 work.short = short
         return work
 
-    def short_text_Hoerspiele_und_Drehbuecher(work):
+    def short_text_Hoerspiele(work):
         relations = Triple.objects.filter(subj=work, prop__name="R13 is realised in")
         if len(relations) > 0:
             recordings = [r.obj for r in relations]
@@ -296,6 +299,42 @@ def generate_short_text():
             if len(places) > 0:
                 short = "Erstsendung | {} {}".format(recordings[0].start_date_written, places[0].obj.name)
                 work.short = short
+        return work
+
+    def short_text_Drehbuecher(work):
+        # Kinostart, Erstsendung, Erstabdruck, UA, Erstpräsentation
+        relations = Triple.objects.filter(subj=work, prop__name__in=["R13 is realised in", "is expressed in", "has been performed in"])
+        if len(relations) > 0:
+            recordings = [r.obj for r in relations if r.obj.start_date is not None]
+            recordings.sort(key=lambda r: r.start_date)
+            if len(recordings) > 0:
+                first = recordings[0]
+                if first.__class__ == F26_Recording:
+                    places = Triple.objects.filter(subj=first, prop__name="has been performed at")
+                    if len(places) > 0:
+                        short = "Erstsendung | {} {}".format(first.start_date_written, places[0].obj.name)
+                elif first.__class__ == F3_Manifestation_Product_Type:
+                    editors = Triple.objects.filter(obj=first, prop__name="is editor of")
+                    editor_string = ""
+                    if len(editors) > 0:
+                        editor_string = "Hg. v. {}. ".format(" und ".join([e.subj.name for e in editors]))
+                    publishers = Triple.objects.filter(obj=first, prop__name="is publisher of")
+                    places = Triple.objects.filter(subj=first, prop__name="was published in")
+                    if len(publishers) > 0 and len(places) > 0:
+                        short = "Erstdruck | {}. {}{}: {} {}.".format(first.name, editor_string, places[0].obj.name, publishers[0].subj.name, first.start_date_written)
+                    elif first.ref_target is not None:
+                        short = "Erstdruck | {}, datiert mit {} (= {})".format(first.ref_target, first.start_date_written, first.series)
+                elif first.__class__ == F31_Performance:
+                    if first.performance_type == "cinemarelease":
+                        short = "Kinostart | {}".format(first.start_date_written)
+                    elif first.performance_type == "UA":
+                        institutions = [rel.obj for rel in Triple.objects.filter(prop__name="has been performed at", subj=first)]
+                        short = "UA | {} {}".format(first.start_date_written, ", ".join([inst.name for inst in institutions]))
+                    else:
+                        short = ""
+                else:
+                    short = ""
+        work.short = short
         return work
 
     def short_text_Theatertexte(work):
@@ -322,9 +361,9 @@ def generate_short_text():
                     places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
                     if places.count() > 0:
                         place = places[0].obj
-                        short = "<b><i>{}.</i></b> {}. {}: {} {}".format(first_manifestation.name,first_manifestation.untertitel, place.name, publisher.name, first_manifestation.start_date_written)
+                        short = "{}: {} {}".format(place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
-                            short = short + "({})".format(first_manifestation.series)
+                            short = short + " ({})".format(first_manifestation.series)
                         work.short = short
             return work
         if Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Sammelbände").count() > 0:
@@ -356,9 +395,9 @@ def generate_short_text():
             point = ""
         short = ""
         if len(interviewers) > 0:
-            short = "<b>{}, {}: <i>{}</i>{}</b> {}".format(interviewers[0].surname, interviewers[0].forename, work.name, point, new_short)
+            short = "{}".format(new_short)
         else:
-            short = "<b>N., N.: <i>{}</i>{}</b> {}".format(work.name, point, new_short)
+            short = "{}".format(point, new_short)
         work.short = short
         return work
 
@@ -383,8 +422,8 @@ def generate_short_text():
             ("Kurzprosa", short_text_Kurzprosa), 
             ("Essayistische Texte, Reden und Statements", short_text_Essays), 
             ("Romane", short_text_Romane), 
-            ("Texte für Hörspiele", short_text_Hoerspiele_und_Drehbuecher), 
-            ("Drehbücher und Texte für Filme", short_text_Hoerspiele_und_Drehbuecher), 
+            ("Texte für Hörspiele", short_text_Hoerspiele), 
+            ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
             ("Theatertexte", short_text_Theatertexte), 
             ("Kompositionen", short_text_Theatertexte), 
             ("Texte für Kompositionen", short_text_Theatertexte), 
