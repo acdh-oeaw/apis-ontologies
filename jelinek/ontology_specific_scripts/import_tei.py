@@ -444,8 +444,10 @@ class TreesManager:
                     db_result = None
 
                     if attr_dict["idno"] is not None:
+                        db_hit = F1_Work.objects.filter(idno=attr_dict["idno"],
+                            self_content_type=F1_Work.get_content_type())
 
-                        if len(F1_Work.objects.filter(idno=attr_dict["idno"])) <= 1:
+                        if len(db_hit) <= 1:
                             
                             db_result = F1_Work.objects.get_or_create(
                                 idno=attr_dict["idno"],
@@ -453,6 +455,7 @@ class TreesManager:
                             )
                         else:
                             print("Multiple entries using the same idno found - that shouldn't happen")
+                            db_result = [db_hit[0], False]
 
                     elif attr_dict["name"] is not None:
 
@@ -2029,7 +2032,10 @@ class TreesManager:
                                     for rs in term.path_node_children_list:
                                         for entity_other in rs.entities_list:
                                             if entity_other != entity_work:
-                                                create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                                                if entity_other is None or entity_work is None:
+                                                    print("One of the two entities is none, this shouldn't happen")
+                                                else:
+                                                    create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
 
                 
             def triple_from_f1_to_f3(entity_work, path_node):
@@ -3200,7 +3206,7 @@ def run(*args, **options):
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/011_EssayistischeTexteRedenundStatements"))
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0002.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0024.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_2.xml")
