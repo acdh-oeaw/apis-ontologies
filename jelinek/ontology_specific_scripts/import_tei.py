@@ -1608,7 +1608,13 @@ class TreesManager:
 
                 if (
                     (xml_elem.tag.endswith("event") or xml_elem.tag.endswith("item"))
-                    and (xml_elem.attrib.get("ana") == "staging" or xml_elem.attrib.get("ana") == "UA" or xml_elem.attrib.get("ana") == "EA" or xml_elem.attrib.get("ana") == "cinemarelease" or xml_elem.attrib.get("ana") == "EP")
+                    and (
+                        xml_elem.attrib.get("ana") == "staging" 
+                        or xml_elem.attrib.get("ana") == "UA" 
+                        or xml_elem.attrib.get("ana") == "EA" 
+                        or xml_elem.attrib.get("ana") == "cinemarelease" 
+                        or xml_elem.attrib.get("ana") == "EP"
+                        )
                 ):
 
                     if (xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None):
@@ -1708,6 +1714,12 @@ class TreesManager:
                     if attr_dict["performance_id"] is not None:
 
                         db_result = F31_Performance.objects.get_or_create(performance_id=attr_dict["performance_id"])
+
+                        entities_list.append(handle_after_creation(db_result, attr_dict))
+
+                    elif attr_dict["name"] is not None:
+
+                        db_result = F31_Performance.objects.get_or_create(name=attr_dict["name"])
 
                         entities_list.append(handle_after_creation(db_result, attr_dict))
 
@@ -3212,6 +3224,7 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_2.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme/006_DieSchöpfung.xml")
+        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme/007_DasFallenDieFalle.xml")
         
     
 
