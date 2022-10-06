@@ -50,6 +50,8 @@ def is_valid_text(var_str):
     return not re.match(r"^$|^[ \n]*$", var_str)
 
 def remove_whitespace(var_str):
+    if var_str is None:
+        return ""
     white_space_beginning_regex = re.compile(r"^\s+", re.MULTILINE)
     multiple_white_spaces_in_middle_regex = re.compile(r"(\s\s+|\n)", re.MULTILINE)
     return multiple_white_spaces_in_middle_regex.sub(" ", white_space_beginning_regex.sub("", var_str)).strip()
@@ -253,10 +255,38 @@ class TreesManager:
 
                 if attr_dict is not None:
 
-                    db_result = E40_Legal_Body.objects.get_or_create(institution_id=attr_dict["institution_id"], name=attr_dict["name"])
+                    if attr_dict["institution_id"] is not None:
 
-                    entities_list.append(handle_after_creation(db_result, {}))
+                        db_result = E40_Legal_Body.objects.get_or_create(institution_id=attr_dict["institution_id"])
 
+                    elif attr_dict["name"] is not None:
+
+                        # db_result = F21_Recording_Work.objects.get_or_create(name=attr_dict["name"])
+                        db_hit = E40_Legal_Body.objects.filter(name=attr_dict["name"])
+                        if len(db_hit) > 1:
+
+                            # TODO : Check how often this is the case
+                            print("Multiple occurences found, taking the first")
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 1:
+
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 0:
+
+                            db_result = [
+                                E40_Legal_Body.objects.create(name=attr_dict["name"]),
+                                True
+                            ]
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    entities_list.append(handle_after_creation(db_result, attr_dict))
+
+                
                 return entities_list
 
             return sub_main(path_node)
@@ -356,7 +386,7 @@ class TreesManager:
                         # TODO : Check if there are titles without 'type="main"'
                         if (
                             xml_elem_child.tag.endswith("title")
-                            and xml_elem_child.attrib.get("type") == "main"
+                            and (xml_elem_child.attrib.get("type") == "main" or xml_elem_child.attrib.get("type") == None)
                         ):
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
@@ -1719,9 +1749,24 @@ class TreesManager:
 
                     elif attr_dict["name"] is not None:
 
-                        db_result = F31_Performance.objects.get_or_create(name=attr_dict["name"])
+                        # db_result = F21_Recording_Work.objects.get_or_create(name=attr_dict["name"])
+                        db_hit = F31_Performance.objects.filter(name=attr_dict["name"])
+                        if len(db_hit) > 1:
 
-                        entities_list.append(handle_after_creation(db_result, attr_dict))
+                            # TODO : Check how often this is the case
+                            print("Multiple occurences found, taking the first")
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 1:
+
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 0:
+
+                            db_result = [
+                                F31_Performance.objects.create(name=attr_dict["name"]),
+                                True
+                            ]
 
                     else:
 
@@ -2133,7 +2178,12 @@ class TreesManager:
                                                 entity_obj=entity_manifestation,
                                                 prop=Property.objects.get(name="contains")
                                             )
-
+                # for seklit works + manifestations
+                for path_node_child in path_node.path_node_children_list:
+                    if path_node_child.xml_elem.tag.endswith("listBibl"):
+                        for path_node_child_child in path_node_child.path_node_children_list:
+                            if path_node_child_child.xml_elem.tag.endswith("bibl"):
+                                check_and_create_triple_to_f3(entity_work, path_node_child_child)
 
             def triple_from_f1_to_f10(entity_work, path_node):
 
@@ -2898,13 +2948,17 @@ class TreesManager:
                                                         prop=Property.objects.get(name="is in chapter"),
                                                     )
 
-                                                break
+                                                if not entity_chapter.chapter_number.startswith("6"):
+                                                    break
 
                                         break
 
                                 break
 
                         break
+                
+                
+
 
             def triple_from_chapter_to_chapter(entity_chapter: Chapter, path_node: PathNode):
 
@@ -3224,7 +3278,7 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_2.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme/006_DieSchöpfung.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme/007_DasFallenDieFalle.xml")
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0008_EinzelneGattung/"))
         
     
 
