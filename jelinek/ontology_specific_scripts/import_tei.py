@@ -829,6 +829,9 @@ class TreesManager:
 
                 if attr_dict is not None:
 
+                    if attr_dict["name"] is not None:
+                        attr_dict["name"] = attr_dict["name"][:255]
+
                     db_result = None
 
                     if attr_dict["bibl_id"] is not None:
@@ -3277,7 +3280,7 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_2.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/006_DrehbücherundTextefürFilme/006_DieSchöpfung.xml")
+        # xml_file_list.append("./manuelle-korrektur/outputs/bd2/0006_Sekundärliterat/0008_EinzelneGattung/0002_EigeneWerkeRoma/0002_ZueinzelnenRoma/0003_DieLiebhaberinn.xml")
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0008_EinzelneGattung/"))
         
     
