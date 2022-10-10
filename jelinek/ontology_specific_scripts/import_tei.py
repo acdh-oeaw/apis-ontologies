@@ -10,6 +10,8 @@ from apis_core.apis_vocabularies.models import *
 from django.core.management.base import BaseCommand, CommandError
 from os import listdir
 from os.path import isfile, isdir, join
+from .generate_short_entry import run as generate_short
+from .generate_genre import run as generate_genre
 
 
 # The main logic of parsing xml nodes and correlating them with apis models probably would have
@@ -559,6 +561,9 @@ class TreesManager:
 
                     for xml_elem_child in xml_elem:
 
+                        if xml_elem_child.tag is None:
+                            continue
+                        
                         if (
                             xml_elem_child.tag.endswith("ptr")
                             and xml_elem_child.attrib.get("type") == "bibl"
@@ -569,8 +574,7 @@ class TreesManager:
                             attr_dict["bibl_id"] = xml_elem_child.attrib.get("target").replace("bibls:", "")
 
                         elif (
-                            xml_elem_child.tag is not None
-                            and xml_elem_child.tag.endswith("title")
+                             xml_elem_child.tag.endswith("title")
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
@@ -579,8 +583,7 @@ class TreesManager:
                                 attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif (
-                            xml_elem_child.tag is not None
-                            and xml_elem_child.tag.endswith("rs")
+                             xml_elem_child.tag.endswith("rs")
                             and xml_elem_child.attrib.get("type") == "work"
                         ):
                             for xml_elem_child_child in xml_elem_child:
@@ -595,10 +598,69 @@ class TreesManager:
                                         attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif (
+                             xml_elem_child.tag.endswith("note")
+                        ):
+                            attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
+                        elif xml_elem_child.tag.endswith("edition"):
+
+                            attr_dict["edition"] = xml_elem_child.text
+
+                        elif (
+                            xml_elem_child.tag.endswith("biblScope")
+                            and xml_elem_child.attrib.get("unit") is not None
+                        ):
+
+                            attr_dict[xml_elem_child.attrib.get("unit")] = xml_elem_child.text
+
+                            if (xml_elem_child.attrib.get("style") is not None):
+
+                                attr_dict["scope_style"] = xml_elem_child.attrib.get("style")
+
+                        elif xml_elem_child.tag.endswith("date"):
+
+                            if xml_elem_child.attrib.get("type") == "lastAccessed":
+
+                                attr_dict["ref_accessed"] = xml_elem_child.text
+
+                            else:
+
+                                attr_dict["start_date_written"] = xml_elem_child.text
+
+                        elif xml_elem_child.tag.endswith("ref"):
+
+                            attr_dict["ref_target"] = xml_elem_child.attrib.get("target")
+                            attr_dict["series"] = xml_elem_child.text
+
+                        elif xml_elem_child.tag.endswith("textLang"):
+
+                            attr_dict["text_language"] = xml_elem_child.text
+
+                        elif xml_elem_child.tag.endswith("series"):
+
+                            attr_dict["series"] = xml_elem_child.text
+
+                        elif xml_elem_child.tag.endswith("edition"):
+
+                            attr_dict["edition"] = xml_elem_child.text
+
+                        elif (
                             xml_elem_child.tag is not None
                             and xml_elem_child.tag.endswith("note")
                         ):
                             attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
+
+                    if attr_dict["name"] is None:
+                        for path_node_sibling in path_node.path_node_parent.path_node_parent.path_node_children_list:
+                            if (
+                            path_node_sibling.xml_elem.tag is not None
+                            and path_node_sibling.xml_elem.tag.endswith("title")
+                            and is_valid_text(path_node_sibling.xml_elem.text)
+                            ):
+                                if (path_node_sibling.xml_elem.attrib.get("type") == "sub"):
+                                    attr_dict["untertitel"] = remove_whitespace(path_node_sibling.xml_elem.text)
+                                else:
+                                    attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(path_node_sibling.xml_elem, encoding="unicode").strip(path_node_sibling.xml_elem.tail)))
+
 
                 elif (
                     xml_elem.tag.endswith("bibl")
@@ -2283,12 +2345,29 @@ class TreesManager:
                                                         prop=Property.objects.get(name="has been performed in")
                                                     )
                 
+            def triples_from_f1_to_note(entity_work, path_node: PathNode):
 
+                for child_path_node in path_node.path_node_children_list:
+
+                    for entity_other in child_path_node.entities_list:
+
+                        if (
+                            entity_other.__class__ is XMLNote
+                            and child_path_node.xml_elem.tag.endswith("note")
+                        ):
+
+                            create_triple(
+                                entity_subj=entity_work,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="has note")
+                            )
+                
 
             triple_from_f1_to_f1(entity_work, path_node)
             triple_from_f1_to_f3(entity_work, path_node)
             triple_from_f1_to_f10(entity_work, path_node)
             triple_from_f1_to_f31(entity_work, path_node)
+            triples_from_f1_to_note(entity_work, path_node)
 
         def parse_triples_from_f3_manifestation(entity_manifestation, path_node):
 
@@ -3283,10 +3362,13 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_2.xml")
         # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
         # xml_file_list.append("./manuelle-korrektur/outputs/bd2/0006_Sekundärliterat/0008_EinzelneGattung/0002_EigeneWerkeRoma/0002_ZueinzelnenRoma/0003_DieLiebhaberinn.xml")
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0008_EinzelneGattung/"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0001_Bibliographien/"))
         
     
 
         crawl_xml_list(xml_file_list)
+
+        generate_genre()
+        generate_short()
 
     main_run()

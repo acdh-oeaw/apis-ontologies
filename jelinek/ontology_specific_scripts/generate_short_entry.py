@@ -303,6 +303,7 @@ def generate_short_text():
 
     def short_text_Drehbuecher(work):
         # Kinostart, Erstsendung, Erstabdruck, UA, Erstpräsentation
+        short = ""
         relations = Triple.objects.filter(subj=work, prop__name__in=["R13 is realised in", "is expressed in", "has been performed in"])
         if len(relations) > 0:
             recordings = [r.obj for r in relations if r.obj.start_date is not None]
