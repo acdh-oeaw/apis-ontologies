@@ -472,6 +472,8 @@ class TreesManager:
                 if attr_dict is not None:
 
                     db_result = None
+                    if attr_dict["name"] is not None:
+                        attr_dict["name"] = attr_dict["name"][:255]
 
                     if attr_dict["idno"] is not None:
                         db_hit = F1_Work.objects.filter(idno=attr_dict["idno"],
