@@ -2160,7 +2160,28 @@ class TreesManager:
                                                     print("One of the two entities is none, this shouldn't happen")
                                                 else:
                                                     create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
-
+                elif (  path_node.path_node_parent is not None
+                        and path_node.path_node_parent.xml_elem.tag.endswith("div")
+                        and path_node.path_node_parent.xml_elem.attrib.get("type") == "section"
+                        and path_node.path_node_parent.path_node_parent.xml_elem.tag.endswith("body")
+                        and path_node.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("text")
+                    ):
+                        for sibling in path_node.path_node_parent.path_node_children_list:
+                            if (
+                                sibling.xml_elem.attrib.get("ana") is not None 
+                                and sibling.xml_elem.attrib.get("ana") == "contained"
+                            ):
+                                for sibling_child in sibling.path_node_children_list:
+                                    for entity_other in sibling_child.entities_list:
+                                        if (
+                                            entity_other.__class__ is F3_Manifestation_Product_Type
+                                            or entity_other.__class__ is F1_Work
+                                        ):
+                                            create_triple(
+                                                entity_subj=entity_work,
+                                                entity_obj=entity_other,
+                                                prop=Property.objects.get(name="contains")
+                                            )
                 
             def triple_from_f1_to_f3(entity_work, path_node):
 
@@ -2272,6 +2293,14 @@ class TreesManager:
                                             entity_subj=entity_other,
                                             entity_obj=entity_work,
                                             prop=Property.objects.get(name="is author of")
+                                        )
+
+                                    elif (child_child_path_node.xml_elem.attrib.get("role") == "editor"):
+
+                                        create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is editor of")
                                         )
 
                                     elif (child_child_path_node.xml_elem.attrib.get("role") == "interviewer"):
@@ -3340,18 +3369,18 @@ def run(*args, **options):
 
     def main_run():
 
-        reset_all()
+        # reset_all()
 
         xml_file_list = []
 
 
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2"))
         xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/002_Romane"))
+        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0005_Sammelbände"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))

@@ -63,7 +63,7 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
     page = models.CharField(max_length=1024, blank=True, null=True)
     issue = models.CharField(max_length=1024, blank=True, null=True)
     volume = models.CharField(max_length=1024, blank=True, null=True)
-    ref_target = models.URLField(blank=True, null=True)
+    ref_target = models.URLField(max_length=1024, blank=True, null=True)
     ref_accessed = models.CharField(max_length=1024, blank=True, null=True)
     text_language = models.CharField(max_length=1024, blank=True, null=True)
     short = models.CharField(max_length=1024, blank=True, null=True)
