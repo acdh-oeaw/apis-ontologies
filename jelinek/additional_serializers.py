@@ -621,6 +621,33 @@ additional_serializers_list = [
             ]
         }
     ),
-    
+    AdditionalSerializerConfig( # Lade Notes
+        url="additional/notes",
+        name="note_details",
+        path_structure={
+            XMLNote: [
+                XMLNote.id,
+                XMLNote.content,
+                XMLNote.rendition,
+                XMLNote.type,
+                {
+                    XMLNote.triple_set_from_obj: [
+                        {
+                            Triple.prop: [
+                                Property.name
+                            ]
+                        },
+                        {
+                            Triple.subj: [
+                                    TempEntityClass.id,                              
+                                    TempEntityClass.name,                              
+                            ]
+                        },
+                        
+                    ]
+                }
+            ]            
+        }
+    ),
 
 ]
