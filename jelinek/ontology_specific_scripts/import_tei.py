@@ -12,6 +12,7 @@ from os import listdir
 from os.path import isfile, isdir, join
 from .generate_short_entry import run as generate_short
 from .generate_genre import run as generate_genre
+import os
 
 
 # The main logic of parsing xml nodes and correlating them with apis models probably would have
@@ -3369,16 +3370,29 @@ def run(*args, **options):
 
     def main_run():
 
-        # reset_all()
+        if "RESET" in os.environ and os.environ.get("RESET") == "true":
+            reset_all()
+            print("Reset all")
 
         xml_file_list = []
 
+        if "FILES" in os.environ:
+            for file_string in os.environ.get("FILES").split(" "):
+                xml_file_list.append(file_string)
+            print("Full file list: ", xml_file_list)
 
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2"))
-        xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+        if "DIRECTORIES" in os.environ:
+            for directory_string in os.environ.get("DIRECTORIES").split(" "):
+                xml_file_list.extend(get_flat_file_list(directory_string))
+            print("Full file list: ", xml_file_list)
+
+        if len(xml_file_list) == 0:
+            print("No files nor directories in env found")
+            xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
+            xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
+            xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
+            xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2"))
+            xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
 
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0005_Sammelbände"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
