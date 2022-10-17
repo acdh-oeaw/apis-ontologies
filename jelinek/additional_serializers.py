@@ -700,6 +700,7 @@ additional_serializers_list = [
                         E1_Crm_Entity.self_content_type,
                         E1_Crm_Entity.start_date,
                         E1_Crm_Entity.start_date_written,
+                        F3_Manifestation_Product_Type.text_language,
                          {
                             E1_Crm_Entity.triple_set_from_subj: [
                                 {
