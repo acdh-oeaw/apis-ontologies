@@ -1181,6 +1181,7 @@ class TreesManager:
 
                 attr_dict = {
                     "name": None,
+                    "untertitel": None,
                     "idno": None,
                 }
 
@@ -1210,10 +1211,17 @@ class TreesManager:
 
                         if (
                             xml_elem_child.tag.endswith("title")
-                            and xml_elem_child.attrib.get("type") == "main"
+                            and (xml_elem_child.attrib.get("type") == "main" or xml_elem_child.attrib.get("type") == None)
                         ):
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+
+                        if (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "sub"
+                        ):
+
+                            attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
 
                         if (
                             xml_elem_child.tag.endswith("idno")
@@ -1449,6 +1457,7 @@ class TreesManager:
 
                 attr_dict = {
                     "name": None,
+                    "untertitel": None,
                     "idno": None,
                 }
 
@@ -1480,10 +1489,17 @@ class TreesManager:
                         # TODO : Check if there are titles without 'type="main"'
                         if (
                             xml_elem_child.tag.endswith("title")
-                            and xml_elem_child.attrib.get("type") == "main"
+                            and (xml_elem_child.attrib.get("type") == "main" or xml_elem_child.attrib.get("type") == None)
                         ):
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+
+                        if (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "sub"
+                        ):
+
+                            attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
 
                         if (
                             xml_elem_child.tag.endswith("idno")
@@ -1773,7 +1789,7 @@ class TreesManager:
                     and xml_elem.attrib.get("target").startswith("insz")
                 ):
                     attr_dict["performance_id"] = xml_elem.attrib.get("target").replace("insz:", "")
-                    attr_dict["performance_type"] = xml_elem.attrib.get("type")
+                    # attr_dict["performance_type"] = xml_elem.attrib.get("type")
 
 
                 if (
