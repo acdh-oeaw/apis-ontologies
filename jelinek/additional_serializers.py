@@ -649,5 +649,75 @@ additional_serializers_list = [
             ]            
         }
     ),
+    AdditionalSerializerConfig( # Simple Triple List
+        url="additional/triples",
+        name="triples",
+        path_structure={
+            Triple: [
+                {
+                    Triple.subj: [
+                        E1_Crm_Entity.name,
+                        E1_Crm_Entity.id,
+                        E1_Crm_Entity.self_content_type,
+                    ]
+                },
+                {
+                    Triple.prop: [
+                        Property.name,
+                    ]
+                },
+                {
+                    Triple.obj: [
+                        E1_Crm_Entity.name,
+                        E1_Crm_Entity.id,
+                        E1_Crm_Entity.self_content_type,
+                    ]
+                }
+            ]
+        }
+    ),
+    AdditionalSerializerConfig( # Triples for filters (date, language,)
+        url="additional/search_filter_triples",
+        name="search_filter_triples",
+        path_structure={
+            Triple: [
+                {
+                    Triple.subj: [
+                        E1_Crm_Entity.name,
+                        E1_Crm_Entity.id,
+                        E1_Crm_Entity.self_content_type,
+                    ]
+                },
+                {
+                    Triple.prop: [
+                        Property.name,
+                    ]
+                },
+                {
+                    Triple.obj: [
+                        E1_Crm_Entity.name,
+                        E1_Crm_Entity.id,
+                        E1_Crm_Entity.self_content_type,
+                        E1_Crm_Entity.start_date,
+                        E1_Crm_Entity.start_date_written,
+                         {
+                            E1_Crm_Entity.triple_set_from_subj: [
+                                {
+                                    Triple.obj: [
+                                        F9_Place.name
+                                    ]
+                                },
+                                {
+                                    Triple.prop: [
+                                        Property.name
+                                    ]
+                                },
+                            ]
+                        },
+                    ]
+                }
+            ]
+        }
+    ),
 
 ]
