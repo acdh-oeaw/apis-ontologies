@@ -414,26 +414,49 @@ def generate_short_text():
         return work
 
     def short_text_Herausgeberin(work):
-        # TODO finish
+        relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
+        if len(relations) == 0:
+            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
+            relations.sort(key=lambda rel: rel.obj.start_date)
+        if len(relations) > 0:
+            first_manifestation = relations[0].obj
+            publishers = Triple.objects.filter(prop__name="is publisher of", obj=first_manifestation)
+            publishers = [p for p in publishers]
+            editors = Triple.objects.filter(prop__name="is editor of", obj=first_manifestation)
+            editors = [p.subj for p in editors]
+            editor_string = " / ".join(["{}, {}".format(e.surname, e.forename) for e in editors])
+            if len(publishers) > 0:
+                publisher = publishers[0].subj
+                places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
+                if places.count() > 0:
+                    place = places[0].obj
+                    short = "<b>{} (Hg.): <i>{}.</i></b> {}: {} {}".format(editor_string, first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
+                    if first_manifestation.series is not None:
+                        short = short + " ({})".format(first_manifestation.series)
+                    work.short = short
+            else:
+                print("No publishers")
+        else:
+            print("no manifestations")
         return work
             
     def main():
         short_text_generators = [
-            ("Lyrik", short_text_Lyrik), 
-            ("Kurzprosa", short_text_Kurzprosa), 
-            ("Essayistische Texte, Reden und Statements", short_text_Essays), 
-            ("Romane", short_text_Romane), 
-            ("Texte für Hörspiele", short_text_Hoerspiele), 
-            ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
-            ("Theatertexte", short_text_Theatertexte), 
-            ("Kompositionen", short_text_Theatertexte), 
-            ("Texte für Kompositionen", short_text_Theatertexte), 
-            ("Libretti", short_text_Theatertexte), 
-            ("Übersetzte Werke", short_text_Uebersetzte_Werke),
-            ("Übersetzungen", short_text_Essays),
-            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
+            # ("Lyrik", short_text_Lyrik), 
+            # ("Kurzprosa", short_text_Kurzprosa), 
+            # ("Essayistische Texte, Reden und Statements", short_text_Essays), 
+            # ("Romane", short_text_Romane), 
+            # ("Texte für Hörspiele", short_text_Hoerspiele), 
+            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
+            # ("Theatertexte", short_text_Theatertexte), 
+            # ("Kompositionen", short_text_Theatertexte), 
+            # ("Texte für Kompositionen", short_text_Theatertexte), 
+            # ("Libretti", short_text_Theatertexte), 
+            # ("Übersetzte Werke", short_text_Uebersetzte_Werke),
+            # ("Übersetzungen", short_text_Essays),
+            # ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
             ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
-            ("Interviews", short_text_Interviews)
+            # ("Interviews", short_text_Interviews)
             ]
         for short_text_generator in short_text_generators:
             print("_____{}_____".format(short_text_generator[0]))
