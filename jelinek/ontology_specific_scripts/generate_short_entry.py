@@ -37,7 +37,7 @@ def generate_short_text():
                     places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
                     if places.count() > 0:
                         place = places[0].obj
-                        short = "{}: {} {}".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
+                        short = "<b><i>{}.</i></b> {}: {} {}".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
                             short = short + " ({})".format(first_manifestation.series)
                         work.short = short
@@ -258,7 +258,7 @@ def generate_short_text():
                             manifestation_name = ""
                             if len(first_manifestation.name) > 0:
                                 manifestation_name = "{}. ".format(first_manifestation.name)
-                            short = "Erstdruck | {}{}: {} {}".format(manifestation_name, place.name, publisher.name, first_manifestation.start_date_written)
+                            short = "<b><i>{}</i></b>{}: {} {}".format(manifestation_name, place.name, publisher.name, first_manifestation.start_date_written)
                             work.short = short
                         else:
                             print("No publishers")
@@ -362,7 +362,7 @@ def generate_short_text():
                     places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
                     if places.count() > 0:
                         place = places[0].obj
-                        short = "{}: {} {}".format(place.name, publisher.name, first_manifestation.start_date_written)
+                        short = "<b><i>{}.</i></b> {}: {} {}".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
                             short = short + " ({})".format(first_manifestation.series)
                         work.short = short
@@ -374,15 +374,40 @@ def generate_short_text():
         return work
 
     def short_text_Uebersetzte_Werke(work):
-        translations = [t.subj for t in Triple.objects.filter(obj=work, prop__name="is translation of")]
-        for translation in translations:
-            authors = Triple.objects.filter(prop__name="is author of", obj=translation)
-            places = Triple.objects.filter(prop__name="was published in", subj=translation)
-            publishers = Triple.objects.filter(prop__name="is publisher of", obj=translation)
-            if authors.count() > 0 and places.count() > 0 and publishers.count() > 0:
-                short = "<i>{}</i>. Ü: {}. {}: {} {}".format(translation.name, authors[0].subj.name, places[0].obj.name, publishers[0].subj.name, publishers[0].temptriple.start_date_written)
-                translation.short = short
-                translation.save()
+        def short_text_Sammelbaende(work):
+            relations = [t.subj for t in Triple.objects.filter(obj=work, prop__name="is translation of") if t.subj.start_date is not None]
+            if len(relations) > 0:
+                first_manifestation = relations[0]
+                publishers = Triple.objects.filter(prop__name="is publisher of", obj=first_manifestation)
+                publishers = [p for p in publishers]
+                authors = Triple.objects.filter(prop__name="is author of", obj=first_manifestation)
+                authors = [p.subj for p in authors]
+                if len(publishers) > 0 and len(authors) > 0:
+                    publisher = publishers[0].subj
+                    author = authors[0]
+                    places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
+                    if places.count() > 0:
+                        place = places[0].obj
+                        short = "<b>{}: <i>{}.</i></b> {}: {} {}".format(author.name, first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
+                        if first_manifestation.series is not None:
+                            short = short + " ({})".format(first_manifestation.series)
+                        work.short = short
+            return work
+        def short_text_single(work):
+            translations = [t.subj for t in Triple.objects.filter(obj=work, prop__name="is translation of")]
+            for translation in translations:
+                authors = Triple.objects.filter(prop__name="is author of", obj=translation)
+                places = Triple.objects.filter(prop__name="was published in", subj=translation)
+                publishers = Triple.objects.filter(prop__name="is publisher of", obj=translation)
+                if authors.count() > 0 and places.count() > 0 and publishers.count() > 0:
+                    short = "<i>{}</i>. Ü: {}. {}: {} {}".format(translation.name, authors[0].subj.name, places[0].obj.name, publishers[0].subj.name, publishers[0].temptriple.start_date_written)
+                    translation.short = short
+                    translation.save()
+            return work
+        if Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Sammelbaende").count() > 0:
+            work = short_text_Sammelbaende(work)
+        else:
+            work = short_text_single(work)
         return work
 
     def short_text_Interviews(work):
@@ -396,9 +421,10 @@ def generate_short_text():
             point = ""
         short = ""
         if len(interviewers) > 0:
-            short = "{}".format(new_short)
+            interviewer_string = (" / ").join(["{}, {}".format(i.surname, i.forename) for i in interviewers])
+            short = "<b>{}: <i>{}{}</i></b> {}".format(interviewer_string, work.name, point, new_short)
         else:
-            short = "{}".format(point, new_short)
+            short = "{}{} {}".format(work.name, point, new_short)
         work.short = short
         return work
 
