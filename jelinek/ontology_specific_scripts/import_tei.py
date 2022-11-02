@@ -216,6 +216,7 @@ class TreesManager:
                             xml_elem.tag.endswith("rs")
                             and (xml_elem.attrib.get("type") == "institution"
                             or xml_elem.attrib.get("type") == "theater"
+                            or xml_elem.attrib.get("type") == "festival"
                             or xml_elem.attrib.get("type") == "broadcaster")
                         )
                         #or xml_elem.tag.endswith("orgName")
@@ -367,7 +368,7 @@ class TreesManager:
                 if (
                     xml_elem.tag.endswith("bibl")
                     and (xml_elem.attrib.get("ana") == "frbroo:work" or xml_elem.attrib.get("ana") == "frbroo:aggregation_work")
-                    and trees_manager.helper_dict["current_type"] == "work"
+                    and (trees_manager.helper_dict["current_type"] == "work" or trees_manager.helper_dict["current_type"] == "seklit")
                 ):
 
                     if path_node.path_node_parent != None:
@@ -494,27 +495,35 @@ class TreesManager:
 
                     elif attr_dict["name"] is not None:
 
-                        # db_result = F1_Work.objects.get_or_create(name=attr_dict["name"])
-                        db_hit = F1_Work.objects.filter(
-                            name=attr_dict["name"],
-                            self_content_type=F1_Work.get_content_type()
-                        )
-                        if len(db_hit) > 1:
-
-                            # TODO : Check how often this is the case
-                            print("Multiple occurences found, taking the first")
-                            db_result = [db_hit[0], False]
-
-                        elif len(db_hit) == 1:
-
-                            db_result = [db_hit[0], False]
-
-                        elif len(db_hit) == 0:
-
+                        if (trees_manager.helper_dict["current_type"] == "seklit"):
                             db_result = [
                                 F1_Work.objects.create(name=attr_dict["name"]),
                                 True
                             ]
+                            
+                        else:
+
+                            # db_result = F1_Work.objects.get_or_create(name=attr_dict["name"])
+                            db_hit = F1_Work.objects.filter(
+                                name=attr_dict["name"],
+                                self_content_type=F1_Work.get_content_type()
+                            )
+                            if len(db_hit) > 1:
+
+                                # TODO : Check how often this is the case
+                                print("Multiple occurences found, taking the first")
+                                db_result = [db_hit[0], False]
+
+                            elif len(db_hit) == 1:
+
+                                db_result = [db_hit[0], False]
+
+                            elif len(db_hit) == 0:
+
+                                db_result = [
+                                    F1_Work.objects.create(name=attr_dict["name"]),
+                                    True
+                                ]
 
                     else:
 
@@ -2788,7 +2797,7 @@ class TreesManager:
                                 prop=Property.objects.get(name="has been performed at"),
                             )
 
-                    if len(path_node_child.entities_list) <= 1 and path_node_child.xml_elem.attrib.get("type") == "institutions":
+                    if (len(path_node_child.entities_list) <= 1 and path_node_child.xml_elem.attrib.get("type") == "institutions") or (path_node_child.xml_elem.tag.endswith("note")):
 
                         for path_node_child in path_node_child.path_node_children_list:
 
@@ -3371,6 +3380,10 @@ def run(*args, **options):
                     elif "broadcast_index" in xml_file_path:
 
                         current_type = "broadcast_index"
+                    
+                    elif "0006_Sekundärliterat" in xml_file_path:
+
+                        current_type = "seklit"
 
                     else:
 
