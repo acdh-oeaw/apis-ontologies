@@ -556,6 +556,7 @@ additional_serializers_list = [
                 F3_Manifestation_Product_Type.short,
                 F3_Manifestation_Product_Type.untertitel,
                 F3_Manifestation_Product_Type.scope_style,
+                F3_Manifestation_Product_Type.self_content_type,
                 {
                     F3_Manifestation_Product_Type.triple_set_from_subj: [
                         {
@@ -582,6 +583,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.short,
                                     F3_Manifestation_Product_Type.untertitel,
                                     F3_Manifestation_Product_Type.scope_style,
+                                    F3_Manifestation_Product_Type.self_content_type,
                             ]
                         },
                         
@@ -613,6 +615,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.short,
                                     F3_Manifestation_Product_Type.untertitel,
                                     F3_Manifestation_Product_Type.scope_style,
+                                    F3_Manifestation_Product_Type.self_content_type,
                             ]
                         },
                         
