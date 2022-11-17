@@ -534,6 +534,77 @@ additional_serializers_list = [
             ]
         }
     ),
+    AdditionalSerializerConfig( # Lade nested triples for performance
+        url="additional/nested_triples_to_performance",
+        name="nested_triples_to_performance",
+        path_structure={
+            Triple: [
+            {
+                Triple.subj: [
+                    E1_Crm_Entity.name,
+                    E1_Crm_Entity.id,
+                    F31_Performance.performance_id,
+                    E1_Crm_Entity.self_content_type,
+                    {
+                        E1_Crm_Entity.triple_set_from_obj: [
+                            {
+                                Triple.subj: [
+                                    F1_Work.name,
+                                    F1_Work.short,
+                                    F1_Work.id,
+                                    F1_Work.index_in_chapter,                                
+                                    F1_Work.index_desc,                                
+                                    F1_Work.idno,                                
+                                    F1_Work.genre,
+                                    F1_Work.self_content_type
+                                ]
+                            },
+                            {
+                                Triple.prop: [
+                                    Property.name
+                                ]
+                            },
+                        ]
+                    },
+                ]
+            },
+            {
+                Triple.prop: [
+                    Property.name
+                ]
+            },
+            {
+                Triple.obj: [
+                    E1_Crm_Entity.name,
+                    E1_Crm_Entity.id,
+                    F31_Performance.performance_id,
+                    E1_Crm_Entity.self_content_type,
+                    {
+                        E1_Crm_Entity.triple_set_from_obj: [
+                            {
+                                Triple.subj: [
+                                    F1_Work.name,
+                                    F1_Work.short,
+                                    F1_Work.id,
+                                    F1_Work.index_in_chapter,                                
+                                    F1_Work.index_desc,                                
+                                    F1_Work.idno,                                
+                                    F1_Work.genre,
+                                    F1_Work.self_content_type
+                                ]
+                            },
+                            {
+                                Triple.prop: [
+                                    Property.name
+                                ]
+                            },
+                        ]
+                    },
+                ]
+            },
+            ]
+        }
+    ),
     AdditionalSerializerConfig( # Lade Details pro Manifestation
         url="additional/manifestation_details",
         name="manifestation_details",
