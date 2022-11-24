@@ -1643,6 +1643,10 @@ class TreesManager:
                         xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
                     ):
                         attr_dict["broadcast_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+                    elif (
+                        xml_elem.attrib.get("target") is not None
+                    ):
+                        attr_dict["broadcast_id"] = xml_elem.attrib.get("target").replace("broadcast:", "")
 
                     for xml_elem_child in xml_elem:
 
@@ -1685,6 +1689,15 @@ class TreesManager:
                         else:
 
                             attr_dict["name"] = "Unknown recording date"
+                elif (xml_elem.tag.endswith("item") and xml_elem.attrib.get("type") is None):
+                    for xml_elem_child in xml_elem:
+
+                        if (xml_elem_child.tag.endswith("ptr") and xml_elem_child.attrib.get("type") == "broadcast"):
+                            if (
+                                xml_elem_child.attrib.get("target") is not None
+                            ):
+                                attr_dict["broadcast_id"] = xml_elem_child.attrib.get("target").replace("broadcast:", "")
+
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -2440,6 +2453,26 @@ class TreesManager:
                                 entity_obj=entity_other,
                                 prop=Property.objects.get(name="has note")
                             )
+
+            def triple_from_f1_to_f26(entity_recording_work, path_node: PathNode):
+
+                for path_node_neighbour in path_node.path_node_parent.path_node_children_list:
+
+                    if path_node_neighbour.xml_elem.attrib.get("type") == "broadcasts":
+
+                        for path_node_neighbour_child in path_node_neighbour.path_node_children_list:
+
+                            for path_node_neighbour_child_child in path_node_neighbour_child.path_node_children_list:
+
+                                for entity_other in path_node_neighbour_child_child.entities_list:
+
+                                    if entity_other.__class__ is F26_Recording:
+
+                                        create_triple(
+                                            entity_subj=entity_recording_work,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="R13 is realised in"),
+                                        )
                 
 
             triple_from_f1_to_f1(entity_work, path_node)
@@ -2447,6 +2480,7 @@ class TreesManager:
             triple_from_f1_to_f10(entity_work, path_node)
             triple_from_f1_to_f31(entity_work, path_node)
             triples_from_f1_to_note(entity_work, path_node)
+            triple_from_f1_to_f26(entity_work, path_node)
 
         def parse_triples_from_f3_manifestation(entity_manifestation, path_node):
 
@@ -3014,7 +3048,7 @@ class TreesManager:
 
                     for entity_other in path_node_child.entities_list:
 
-                        if entity_other.__class__ is F21_Recording_Work:
+                        if (entity_other.__class__ is F21_Recording_Work) or (entity_other.__class__ is F1_Work):
 
                             create_triple(
                                 entity_obj=entity_broadcast,

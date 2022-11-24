@@ -475,7 +475,7 @@ def construct_properties():
         name="R13 is realised in",
         name_reverse="R13i realises",
     )
-    r13_is_realised_in.subj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
+    r13_is_realised_in.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     r13_is_realised_in.obj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
 
     has_keyword = Property.objects.create(

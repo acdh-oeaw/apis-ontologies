@@ -337,7 +337,7 @@ def generate_short_text():
     def short_text_Hoerspiele(work):
         relations = Triple.objects.filter(subj=work, prop__name="R13 is realised in")
         if len(relations) > 0:
-            recordings = [r.obj for r in relations]
+            recordings = [r.obj for r in relations if r.obj.start_date is not None]
             recordings.sort(key=lambda r: r.start_date)
             places = Triple.objects.filter(subj=recordings[0], prop__name="has been performed at")
             if len(places) > 0:
