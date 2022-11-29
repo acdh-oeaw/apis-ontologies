@@ -46,3 +46,14 @@ DATABASES = {
     }
 }
 ```
+
+## Sharing of updates to code
+
+While working locally, most changes to your app's code will likely get picked up on-the-fly by the local development server (provided the appropriate Django management commands are run where required).
+
+However, for deployment elsewhere, you need to make sure all changes to the **apis-ontologies** submodule are actually available to and can be picked up by the **apis-rdf-devops** superproject on the remote.
+
+Take care to always:
+
+1. push all relevant commits to the submodule to its remote
+2. update the superproject's pointer to the submodule (by committing the changes in the superproject while the submodule is checked out on the correct commit)
