@@ -68,6 +68,8 @@ def remove_outer_xml_tags(var_str):
     first = regex.sub("", var_str).strip()
     regex = re.compile(r"</ns0:title>$")
     last = regex.sub("", first).strip()
+    regex = re.compile(r"</ns0:edition>$")
+    last = regex.sub("", last).strip()
     return last
 
 
@@ -629,7 +631,7 @@ class TreesManager:
                             attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
                         elif xml_elem_child.tag.endswith("edition"):
 
-                            attr_dict["edition"] = xml_elem_child.text
+                            attr_dict["edition"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif (
                             xml_elem_child.tag.endswith("biblScope")
@@ -667,7 +669,7 @@ class TreesManager:
 
                         elif xml_elem_child.tag.endswith("edition"):
 
-                            attr_dict["edition"] = xml_elem_child.text
+                            attr_dict["edition"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif (
                             xml_elem_child.tag is not None
@@ -712,7 +714,7 @@ class TreesManager:
 
                         elif xml_elem_child.tag.endswith("edition"):
 
-                            attr_dict["edition"] = xml_elem_child.text
+                            attr_dict["edition"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif (
                             xml_elem_child.tag.endswith("biblScope")
@@ -750,7 +752,7 @@ class TreesManager:
 
                         elif xml_elem_child.tag.endswith("edition"):
 
-                            attr_dict["edition"] = xml_elem_child.text
+                            attr_dict["edition"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif (
                             xml_elem_child.tag is not None
