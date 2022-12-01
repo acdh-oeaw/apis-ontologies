@@ -779,7 +779,8 @@ additional_serializers_list = [
                             E1_Crm_Entity.triple_set_from_subj: [
                                 {
                                     Triple.obj: [
-                                        F9_Place.name
+                                        E1_Crm_Entity.name,
+                                        E1_Crm_Entity.self_content_type
                                     ]
                                 },
                                 {
