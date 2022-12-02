@@ -10,8 +10,6 @@ class person(TempEntityClass):
     first_name = models.CharField(max_length=1024, blank=True, null=True)
     GENDER_CHOICES = (("männlich", "männlich"), ("weiblich", "weiblich"), ("unbekannt", "unbekannt"), )
     gender = models.CharField(max_length=9, choices=GENDER_CHOICES, blank=True)
-    CLASS_AFFILIATION_CHOICES = (("Hoher Adel", "Hoher Adel"), ("Niederer Adel", "Niederer Adel"), ("Klerus", "Klerus"), ("Bürgertum", "Bürgertum"), ("Bauerntum", "Bauerntum"), ("Gesinde", "Gesinde"), )
-    class_affiliation = models.CharField(max_length=13, choices=CLASS_AFFILIATION_CHOICES, blank=True)
     alternative_label = models.TextField(blank=True, null=True)
     
 
@@ -71,143 +69,349 @@ def construct_properties():
 
     from apis_core.apis_vocabularies.models import TextType
     from apis_core.apis_metainfo.models import Collection
-    from django.contrib.auth.models import User
     from apis_core.apis_relations.models import Property
+    # from apis_highlighter.models import AnnotationProject, Project
+    from django.contrib.auth.models import User
 
     
-    bewohnt = Property.objects.create(
+    bewohnt = Property.objects.get_or_create(
         name="bewohnt",
         name_reverse="Bewohner von",
-    )
+    )[0]
+    
+    bewohnt.subj_class.clear()
     bewohnt.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    bewohnt.obj_class.clear()
     bewohnt.obj_class.add(ContentType.objects.get(model=place.__name__))
     
     
-    besitzt = Property.objects.create(
+    besitzt = Property.objects.get_or_create(
         name="besitzt",
         name_reverse="Besitzer von",
-    )
+    )[0]
+    
+    besitzt.subj_class.clear()
     besitzt.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    besitzt.obj_class.clear()
     besitzt.obj_class.add(ContentType.objects.get(model=place.__name__))
     
     
-    hat_korrespondenz_mit = Property.objects.create(
+    hat_korrespondenz_mit = Property.objects.get_or_create(
         name="hat Korrespondenz mit",
         name_reverse="hat Korrespondenz mit",
-    )
+    )[0]
+    
+    hat_korrespondenz_mit.subj_class.clear()
     hat_korrespondenz_mit.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    hat_korrespondenz_mit.obj_class.clear()
     hat_korrespondenz_mit.obj_class.add(ContentType.objects.get(model=person.__name__))
     
     
-    hat_familienbeziehung_zu = Property.objects.create(
+    hat_familienbeziehung_zu = Property.objects.get_or_create(
         name="hat Familienbeziehung zu",
         name_reverse="hat Familienbeziehung zu",
-    )
+    )[0]
+    
+    hat_familienbeziehung_zu.subj_class.clear()
     hat_familienbeziehung_zu.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    hat_familienbeziehung_zu.obj_class.clear()
     hat_familienbeziehung_zu.obj_class.add(ContentType.objects.get(model=person.__name__))
     
     
-    hat_ehe_mit = Property.objects.create(
+    ist_elternteil_von = Property.objects.get_or_create(
+        name="ist Elternteil von",
+        name_reverse="ist Kind von",
+    )[0]
+    
+    ist_elternteil_von.subj_class.clear()
+    ist_elternteil_von.subj_class.add(ContentType.objects.get(model=person.__name__))
+    
+    
+    ist_elternteil_von.obj_class.clear()
+    ist_elternteil_von.obj_class.add(ContentType.objects.get(model=person.__name__))
+    
+    
+    ist_bruder_schwester_von = Property.objects.get_or_create(
+        name="ist Bruder/Schwester von",
+        name_reverse="ist Bruder/Schwester von",
+    )[0]
+    
+    ist_bruder_schwester_von.subj_class.clear()
+    ist_bruder_schwester_von.subj_class.add(ContentType.objects.get(model=person.__name__))
+    
+    
+    ist_bruder_schwester_von.obj_class.clear()
+    ist_bruder_schwester_von.obj_class.add(ContentType.objects.get(model=person.__name__))
+    
+    
+    ist_kind_von = Property.objects.get_or_create(
+        name="ist Kind von",
+        name_reverse="ist Elternteil von",
+    )[0]
+    
+    ist_kind_von.subj_class.clear()
+    ist_kind_von.subj_class.add(ContentType.objects.get(model=person.__name__))
+    
+    
+    ist_kind_von.obj_class.clear()
+    ist_kind_von.obj_class.add(ContentType.objects.get(model=person.__name__))
+    
+    
+    hat_ehe_mit = Property.objects.get_or_create(
         name="hat Ehe mit",
         name_reverse="hat Ehe mit",
-    )
+    )[0]
+    
+    hat_ehe_mit.subj_class.clear()
     hat_ehe_mit.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    hat_ehe_mit.obj_class.clear()
     hat_ehe_mit.obj_class.add(ContentType.objects.get(model=person.__name__))
     
     
-    war_anwesend_bei = Property.objects.create(
+    war_anwesend_bei = Property.objects.get_or_create(
         name="war anwesend bei",
         name_reverse="hatte anwesende Person",
-    )
+    )[0]
+    
+    war_anwesend_bei.subj_class.clear()
     war_anwesend_bei.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    war_anwesend_bei.obj_class.clear()
     war_anwesend_bei.obj_class.add(ContentType.objects.get(model=court.__name__))
     
     
-    empfahl = Property.objects.create(
+    empfahl = Property.objects.get_or_create(
         name="empfahl",
         name_reverse="wurde empfohlen von",
-    )
+    )[0]
+    
+    empfahl.subj_class.clear()
     empfahl.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    empfahl.obj_class.clear()
     empfahl.obj_class.add(ContentType.objects.get(model=person.__name__))
     
     
-    hat_geschäftsbeziehung_zu = Property.objects.create(
+    hat_geschäftsbeziehung_zu = Property.objects.get_or_create(
         name="hat Geschäftsbeziehung zu",
         name_reverse="hat Geschäftsbeziehung zu",
-    )
+    )[0]
+    
+    hat_geschäftsbeziehung_zu.subj_class.clear()
     hat_geschäftsbeziehung_zu.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    hat_geschäftsbeziehung_zu.obj_class.clear()
     hat_geschäftsbeziehung_zu.obj_class.add(ContentType.objects.get(model=person.__name__))
     
     
-    mitglied_von = Property.objects.create(
+    mitglied_von = Property.objects.get_or_create(
         name="Mitglied von",
         name_reverse="hatte Mitglied",
-    )
+    )[0]
+    
+    mitglied_von.subj_class.clear()
     mitglied_von.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    mitglied_von.obj_class.clear()
     mitglied_von.obj_class.add(ContentType.objects.get(model=institution.__name__))
     
     
-    nahm_teil_an = Property.objects.create(
+    nahm_teil_an = Property.objects.get_or_create(
         name="nahm teil an",
         name_reverse="hatte teilnehmende Person",
-    )
+    )[0]
+    
+    nahm_teil_an.subj_class.clear()
     nahm_teil_an.subj_class.add(ContentType.objects.get(model=person.__name__))
     
+    
+    nahm_teil_an.obj_class.clear()
     nahm_teil_an.obj_class.add(ContentType.objects.get(model=event.__name__))
     
     
-    erhielt_gehalt = Property.objects.create(
+    erhielt_gehalt = Property.objects.get_or_create(
         name="erhielt Gehalt",
         name_reverse="wurde ausbezahlt an",
-    )
+    )[0]
+    
+    erhielt_gehalt.subj_class.clear()
     erhielt_gehalt.subj_class.add(ContentType.objects.get(model=salary.__name__))
     
+    
+    erhielt_gehalt.obj_class.clear()
     erhielt_gehalt.obj_class.add(ContentType.objects.get(model=person.__name__))
     
     
-    ist_an = Property.objects.create(
+    weist_an = Property.objects.get_or_create(
+        name="weist an",
+        name_reverse="auf Anweisung von",
+    )[0]
+    
+    weist_an.subj_class.clear()
+    weist_an.subj_class.add(ContentType.objects.get(model=person.__name__))
+    
+    
+    weist_an.obj_class.clear()
+    weist_an.obj_class.add(ContentType.objects.get(model=salary.__name__))
+    
+    
+    geboren_in = Property.objects.get_or_create(
+        name="geboren in",
+        name_reverse="Geburtsort von",
+    )[0]
+    
+    geboren_in.subj_class.clear()
+    geboren_in.subj_class.add(ContentType.objects.get(model=person.__name__))
+    
+    
+    geboren_in.obj_class.clear()
+    geboren_in.obj_class.add(ContentType.objects.get(model=place.__name__))
+    
+    
+    gestorben_in = Property.objects.get_or_create(
+        name="gestorben in",
+        name_reverse="Sterbeort von",
+    )[0]
+    
+    gestorben_in.subj_class.clear()
+    gestorben_in.subj_class.add(ContentType.objects.get(model=person.__name__))
+    
+    
+    gestorben_in.obj_class.clear()
+    gestorben_in.obj_class.add(ContentType.objects.get(model=place.__name__))
+    
+    
+    ist_an = Property.objects.get_or_create(
         name="ist an",
         name_reverse="hat Funktion",
-    )
+    )[0]
+    
+    ist_an.subj_class.clear()
     ist_an.subj_class.add(ContentType.objects.get(model=function.__name__))
     
+    
+    ist_an.obj_class.clear()
     ist_an.obj_class.add(ContentType.objects.get(model=institution.__name__))
+    
+    ist_an.obj_class.clear()
     ist_an.obj_class.add(ContentType.objects.get(model=court.__name__))
     
     
-    wird_bekleidet_von = Property.objects.create(
+    wird_bekleidet_von = Property.objects.get_or_create(
         name="wird bekleidet von",
         name_reverse="hat Funktion inne",
-    )
+    )[0]
+    
+    wird_bekleidet_von.subj_class.clear()
     wird_bekleidet_von.subj_class.add(ContentType.objects.get(model=function.__name__))
     
+    
+    wird_bekleidet_von.obj_class.clear()
     wird_bekleidet_von.obj_class.add(ContentType.objects.get(model=person.__name__))
     
     
-    teil_von = Property.objects.create(
+    ging_hervor_aus = Property.objects.get_or_create(
+        name="ging hervor aus",
+        name_reverse="war Vorgänger von",
+    )[0]
+    
+    ging_hervor_aus.subj_class.clear()
+    ging_hervor_aus.subj_class.add(ContentType.objects.get(model=function.__name__))
+    
+    
+    ging_hervor_aus.obj_class.clear()
+    ging_hervor_aus.obj_class.add(ContentType.objects.get(model=function.__name__))
+    
+    
+    ist_untergeordnet = Property.objects.get_or_create(
+        name="ist untergeordnet",
+        name_reverse="hat untergeordnete Funktion",
+    )[0]
+    
+    ist_untergeordnet.subj_class.clear()
+    ist_untergeordnet.subj_class.add(ContentType.objects.get(model=function.__name__))
+    
+    
+    ist_untergeordnet.obj_class.clear()
+    ist_untergeordnet.obj_class.add(ContentType.objects.get(model=function.__name__))
+    
+    
+    teil_von = Property.objects.get_or_create(
         name="Teil von",
         name_reverse="hat Teil",
-    )
+    )[0]
+    
+    teil_von.subj_class.clear()
     teil_von.subj_class.add(ContentType.objects.get(model=place.__name__))
     
+    
+    teil_von.obj_class.clear()
     teil_von.obj_class.add(ContentType.objects.get(model=place.__name__))
     
     
-    zahlte_aus = Property.objects.create(
+    zahlte_aus = Property.objects.get_or_create(
         name="zahlte aus",
         name_reverse="wurde ausbezahlt von",
-    )
+    )[0]
+    
+    zahlte_aus.subj_class.clear()
     zahlte_aus.subj_class.add(ContentType.objects.get(model=institution.__name__))
     
+    
+    zahlte_aus.obj_class.clear()
     zahlte_aus.obj_class.add(ContentType.objects.get(model=salary.__name__))
+    
+    
+    ist_gelegen_in = Property.objects.get_or_create(
+        name="ist gelegen in",
+        name_reverse="inkludiert",
+    )[0]
+    
+    ist_gelegen_in.subj_class.clear()
+    ist_gelegen_in.subj_class.add(ContentType.objects.get(model=institution.__name__))
+    
+    
+    ist_gelegen_in.obj_class.clear()
+    ist_gelegen_in.obj_class.add(ContentType.objects.get(model=place.__name__))
+    
+    
+    fand_statt_in = Property.objects.get_or_create(
+        name="fand statt in",
+        name_reverse="inkludierte",
+    )[0]
+    
+    fand_statt_in.subj_class.clear()
+    fand_statt_in.subj_class.add(ContentType.objects.get(model=event.__name__))
+    
+    
+    fand_statt_in.obj_class.clear()
+    fand_statt_in.obj_class.add(ContentType.objects.get(model=place.__name__))
+    
+    
+    wurde_ausbezahlt_an = Property.objects.get_or_create(
+        name="wurde ausbezahlt an",
+        name_reverse="erhielt",
+    )[0]
+    
+    wurde_ausbezahlt_an.subj_class.clear()
+    wurde_ausbezahlt_an.subj_class.add(ContentType.objects.get(model=salary.__name__))
+    
+    
+    wurde_ausbezahlt_an.obj_class.clear()
+    wurde_ausbezahlt_an.obj_class.add(ContentType.objects.get(model=function.__name__))
     
     
