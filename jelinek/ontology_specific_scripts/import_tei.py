@@ -2225,6 +2225,28 @@ class TreesManager:
                                                     print("One of the two entities is none, this shouldn't happen")
                                                 else:
                                                     create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                        
+                        for sibling in path_node.path_node_parent.path_node_children_list:
+                            if (
+                                sibling.xml_elem.attrib.get("type") is not None 
+                                and (sibling.xml_elem.attrib.get("type").endswith("frbroo:manifestations"))
+                            ):
+                                for sibling_child in sibling.path_node_children_list:
+                                    if (
+                                        sibling_child.xml_elem.tag.endswith("listBibl") 
+                                        and sibling_child.xml_elem.attrib.get("type") == "content"
+                                        ):
+                                        for sibling_grandchild in sibling_child.path_node_children_list:
+                                            for entity_other in sibling_grandchild.entities_list:
+                                                if (
+                                                    entity_other.__class__ is F3_Manifestation_Product_Type
+                                                    or entity_other.__class__ is F1_Work
+                                                ):
+                                                    create_triple(
+                                                        entity_subj=entity_work,
+                                                        entity_obj=entity_other,
+                                                        prop=Property.objects.get(name="contains")
+                                                    )
                 elif (  path_node.path_node_parent is not None
                         and path_node.path_node_parent.xml_elem.tag.endswith("div")
                         and path_node.path_node_parent.xml_elem.attrib.get("type") == "section"
@@ -2234,7 +2256,7 @@ class TreesManager:
                         for sibling in path_node.path_node_parent.path_node_children_list:
                             if (
                                 sibling.xml_elem.attrib.get("ana") is not None 
-                                and sibling.xml_elem.attrib.get("ana") == "contained"
+                                and (sibling.xml_elem.attrib.get("ana") == "contained" or sibling.xml_elem.attrib.get("ana") == "content")
                             ):
                                 for sibling_child in sibling.path_node_children_list:
                                     for entity_other in sibling_child.entities_list:
