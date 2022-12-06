@@ -3204,7 +3204,19 @@ class TreesManager:
 
                         break
                 
-                
+                teiHeader = path_node_tei.path_node_children_list[0]
+                textClass = teiHeader.path_node_children_list[1].path_node_children_list[0]
+                for keywords in textClass.path_node_children_list:
+                    if keywords.xml_elem.attrib.get("ana") == "about":
+                        for term in keywords.path_node_children_list:
+                            for rs in term.path_node_children_list:
+                                for entity_other in rs.entities_list:
+                                    if entity_other != entity_chapter:
+                                        if entity_other is None or entity_chapter is None:
+                                            print("One of the two entities is none, this shouldn't happen")
+                                        else:
+                                            create_triple(entity_obj=entity_other, entity_subj=entity_chapter,prop=Property.objects.get(name="is about"))
+                        
 
 
             def triple_from_chapter_to_chapter(entity_chapter: Chapter, path_node: PathNode):
