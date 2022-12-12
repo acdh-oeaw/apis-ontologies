@@ -397,7 +397,7 @@ class TreesManager:
                                 if len(xml_file_name) > 0:
                                     if xml_file_name.split("_")[0] == "interview":
                                         attr_dict["index_in_chapter"] = int(xml_file_name.split("_")[1])
-                                    else:
+                                    elif xml_file_name.split("_")[0].isnumeric():
                                         attr_dict["index_in_chapter"] = int(xml_file_name.split("_")[0])
 
                     for xml_elem_child in xml_elem:
