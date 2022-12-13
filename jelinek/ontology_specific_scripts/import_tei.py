@@ -472,7 +472,7 @@ class TreesManager:
                             and xml_elem_child.attrib.get("type") == "seklit"
                         ):
 
-                            attr_dict["idno"] = xml_elem_child.attrib.get("target")
+                            attr_dict["idno"] = xml_elem_child.attrib.get("target").replace("seklit:", "")
                         
                         elif (
                             xml_elem_child.tag.endswith("title")
