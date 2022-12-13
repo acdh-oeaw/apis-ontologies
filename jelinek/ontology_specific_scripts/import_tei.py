@@ -459,6 +459,36 @@ class TreesManager:
                         ):
 
                             attr_dict["gnd_url"] = xml_elem_child.attrib.get("target")
+                elif (
+                    xml_elem.tag.endswith("item")
+                    and xml_elem.attrib.get("ana") is not None
+                    and xml_elem.attrib.get("ana").startswith("seklit")
+                ):
+
+                    for xml_elem_child in xml_elem:
+
+                        if (
+                            xml_elem_child.tag.endswith("ptr")
+                            and xml_elem_child.attrib.get("type") == "seklit"
+                        ):
+
+                            attr_dict["idno"] = xml_elem_child.attrib.get("target")
+                        
+                        elif (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "index"
+                            and is_valid_text(xml_elem_child.text)
+                        ):
+
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+
+                        elif (
+                            xml_elem_child.tag.endswith("ref")
+                            and xml_elem_child.attrib.get("type") == "gnd"
+                            and xml_elem_child.attrib.get("target") is not None
+                        ):
+
+                            attr_dict["gnd_url"] = xml_elem_child.attrib.get("target")
 
                 elif (
                     xml_elem.tag.endswith("rs")
@@ -3173,17 +3203,19 @@ class TreesManager:
                                                     break
 
                                             if path_node_div_child.xml_elem.attrib.get("type") == "seklitSubsection":
-                                                for path_node_bibl in path_node_div_child.path_node_children_list:
 
-                                                    for entity_work in path_node_bibl.entities_list:
+                                                for path_node_list in path_node_div_child.path_node_children_list:
+                                                    for path_node_bibl in path_node_list.path_node_children_list:
 
-                                                        if has_class_as_parent(entity_work.__class__, F1_Work):
+                                                        for entity_work in path_node_bibl.entities_list:
 
-                                                            create_triple(
-                                                                entity_subj=entity_work,
-                                                                entity_obj=entity_chapter,
-                                                                prop=Property.objects.get(name="is in chapter"),
-                                                            )
+                                                            if has_class_as_parent(entity_work.__class__, F1_Work):
+
+                                                                create_triple(
+                                                                    entity_subj=entity_work,
+                                                                    entity_obj=entity_chapter,
+                                                                    prop=Property.objects.get(name="is in chapter"),
+                                                                )
 
                                             if path_node_div_child.xml_elem.attrib.get("type") == "stagingSeklit":
                                                 for path_node_seklit in path_node_div_child.path_node_children_list:
