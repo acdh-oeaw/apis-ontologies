@@ -497,6 +497,7 @@ def construct_properties():
         name_reverse="is discussed in",
     )
     is_about.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_about.subj_class.add(ContentType.objects.get(model=Chapter.__name__))
     is_about.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_about.obj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_about.obj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
