@@ -397,7 +397,7 @@ class TreesManager:
                                 if len(xml_file_name) > 0:
                                     if xml_file_name.split("_")[0] == "interview":
                                         attr_dict["index_in_chapter"] = int(xml_file_name.split("_")[1])
-                                    else:
+                                    elif xml_file_name.split("_")[0].isnumeric():
                                         attr_dict["index_in_chapter"] = int(xml_file_name.split("_")[0])
 
                     for xml_elem_child in xml_elem:
@@ -445,6 +445,36 @@ class TreesManager:
                     for xml_elem_child in xml_elem:
 
                         if (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "index"
+                            and is_valid_text(xml_elem_child.text)
+                        ):
+
+                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+
+                        elif (
+                            xml_elem_child.tag.endswith("ref")
+                            and xml_elem_child.attrib.get("type") == "gnd"
+                            and xml_elem_child.attrib.get("target") is not None
+                        ):
+
+                            attr_dict["gnd_url"] = xml_elem_child.attrib.get("target")
+                elif (
+                    xml_elem.tag.endswith("item")
+                    and xml_elem.attrib.get("ana") is not None
+                    and xml_elem.attrib.get("ana").startswith("seklit")
+                ):
+
+                    for xml_elem_child in xml_elem:
+
+                        if (
+                            xml_elem_child.tag.endswith("ptr")
+                            and xml_elem_child.attrib.get("type") == "seklit"
+                        ):
+
+                            attr_dict["idno"] = xml_elem_child.attrib.get("target")
+                        
+                        elif (
                             xml_elem_child.tag.endswith("title")
                             and xml_elem_child.attrib.get("type") == "index"
                             and is_valid_text(xml_elem_child.text)
@@ -2225,6 +2255,28 @@ class TreesManager:
                                                     print("One of the two entities is none, this shouldn't happen")
                                                 else:
                                                     create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                        
+                        for sibling in path_node.path_node_parent.path_node_children_list:
+                            if (
+                                sibling.xml_elem.attrib.get("type") is not None 
+                                and (sibling.xml_elem.attrib.get("type").endswith("frbroo:manifestations"))
+                            ):
+                                for sibling_child in sibling.path_node_children_list:
+                                    if (
+                                        sibling_child.xml_elem.tag.endswith("listBibl") 
+                                        and sibling_child.xml_elem.attrib.get("type") == "content"
+                                        ):
+                                        for sibling_grandchild in sibling_child.path_node_children_list:
+                                            for entity_other in sibling_grandchild.entities_list:
+                                                if (
+                                                    entity_other.__class__ is F3_Manifestation_Product_Type
+                                                    or entity_other.__class__ is F1_Work
+                                                ):
+                                                    create_triple(
+                                                        entity_subj=entity_work,
+                                                        entity_obj=entity_other,
+                                                        prop=Property.objects.get(name="contains")
+                                                    )
                 elif (  path_node.path_node_parent is not None
                         and path_node.path_node_parent.xml_elem.tag.endswith("div")
                         and path_node.path_node_parent.xml_elem.attrib.get("type") == "section"
@@ -2234,7 +2286,7 @@ class TreesManager:
                         for sibling in path_node.path_node_parent.path_node_children_list:
                             if (
                                 sibling.xml_elem.attrib.get("ana") is not None 
-                                and sibling.xml_elem.attrib.get("ana") == "contained"
+                                and (sibling.xml_elem.attrib.get("ana") == "contained" or sibling.xml_elem.attrib.get("ana") == "content")
                             ):
                                 for sibling_child in sibling.path_node_children_list:
                                     for entity_other in sibling_child.entities_list:
@@ -3151,17 +3203,19 @@ class TreesManager:
                                                     break
 
                                             if path_node_div_child.xml_elem.attrib.get("type") == "seklitSubsection":
-                                                for path_node_bibl in path_node_div_child.path_node_children_list:
 
-                                                    for entity_work in path_node_bibl.entities_list:
+                                                for path_node_list in path_node_div_child.path_node_children_list:
+                                                    for path_node_bibl in path_node_list.path_node_children_list:
 
-                                                        if has_class_as_parent(entity_work.__class__, F1_Work):
+                                                        for entity_work in path_node_bibl.entities_list:
 
-                                                            create_triple(
-                                                                entity_subj=entity_work,
-                                                                entity_obj=entity_chapter,
-                                                                prop=Property.objects.get(name="is in chapter"),
-                                                            )
+                                                            if has_class_as_parent(entity_work.__class__, F1_Work):
+
+                                                                create_triple(
+                                                                    entity_subj=entity_work,
+                                                                    entity_obj=entity_chapter,
+                                                                    prop=Property.objects.get(name="is in chapter"),
+                                                                )
 
                                             if path_node_div_child.xml_elem.attrib.get("type") == "stagingSeklit":
                                                 for path_node_seklit in path_node_div_child.path_node_children_list:
@@ -3182,7 +3236,19 @@ class TreesManager:
 
                         break
                 
-                
+                teiHeader = path_node_tei.path_node_children_list[0]
+                textClass = teiHeader.path_node_children_list[1].path_node_children_list[0]
+                for keywords in textClass.path_node_children_list:
+                    if keywords.xml_elem.attrib.get("ana") == "about":
+                        for term in keywords.path_node_children_list:
+                            for rs in term.path_node_children_list:
+                                for entity_other in rs.entities_list:
+                                    if entity_other != entity_chapter:
+                                        if entity_other is None or entity_chapter is None:
+                                            print("One of the two entities is none, this shouldn't happen")
+                                        else:
+                                            create_triple(entity_obj=entity_other, entity_subj=entity_chapter,prop=Property.objects.get(name="is about"))
+                        
 
 
             def triple_from_chapter_to_chapter(entity_chapter: Chapter, path_node: PathNode):
