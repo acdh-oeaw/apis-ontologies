@@ -544,6 +544,7 @@ additional_serializers_list = [
                     E1_Crm_Entity.name,
                     E1_Crm_Entity.id,
                     F31_Performance.performance_id,
+                    F31_Performance.short,
                     E1_Crm_Entity.self_content_type,
                     {
                         E1_Crm_Entity.triple_set_from_obj: [
@@ -578,6 +579,7 @@ additional_serializers_list = [
                     E1_Crm_Entity.name,
                     E1_Crm_Entity.id,
                     F31_Performance.performance_id,
+                    F31_Performance.short,
                     E1_Crm_Entity.self_content_type,
                     {
                         E1_Crm_Entity.triple_set_from_obj: [

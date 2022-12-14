@@ -540,22 +540,22 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            # ("Lyrik", short_text_Lyrik), 
-            # ("Kurzprosa", short_text_Kurzprosa), 
-            # ("Essayistische Texte, Reden und Statements", short_text_Essays), 
-            # ("Romane", short_text_Romane), 
-            # ("Texte für Hörspiele", short_text_Hoerspiele), 
-            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
-            # ("Theatertexte", short_text_Theatertexte), 
-            # ("Kompositionen", short_text_Theatertexte), 
-            # ("Texte für Kompositionen", short_text_Theatertexte), 
-            # ("Libretti", short_text_Theatertexte), 
-            # ("Übersetzte Werke", short_text_Uebersetzte_Werke),
-            # ("Übersetzungen", short_text_Essays),
-            # ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
-            # ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
-            # ("Interviews", short_text_Interviews)
-            #("Sekundärliteratur", short_text_Seklit)
+            ("Lyrik", short_text_Lyrik), 
+            ("Kurzprosa", short_text_Kurzprosa), 
+            ("Essayistische Texte, Reden und Statements", short_text_Essays), 
+            ("Romane", short_text_Romane), 
+            ("Texte für Hörspiele", short_text_Hoerspiele), 
+            ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
+            ("Theatertexte", short_text_Theatertexte), 
+            ("Kompositionen", short_text_Theatertexte), 
+            ("Texte für Kompositionen", short_text_Theatertexte), 
+            ("Libretti", short_text_Theatertexte), 
+            ("Übersetzte Werke", short_text_Uebersetzte_Werke),
+            ("Übersetzungen", short_text_Essays),
+            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
+            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
+            ("Interviews", short_text_Interviews)
+            ("Sekundärliteratur", short_text_Seklit)
             ]
         for short_text_generator in short_text_generators:
             print("_____{}_____".format(short_text_generator[0]))
