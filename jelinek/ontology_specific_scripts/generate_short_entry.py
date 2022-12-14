@@ -554,7 +554,7 @@ def generate_short_text():
             ("Übersetzungen", short_text_Essays),
             ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
             ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
-            ("Interviews", short_text_Interviews)
+            ("Interviews", short_text_Interviews),
             ("Sekundärliteratur", short_text_Seklit)
             ]
         for short_text_generator in short_text_generators:
