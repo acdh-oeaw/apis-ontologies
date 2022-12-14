@@ -164,7 +164,7 @@ class F31_Performance(E1_Crm_Entity):
     note = models.TextField(blank=True)
     performance_id = models.CharField(max_length=1024, blank=True, null=True)
     performance_type = models.CharField(max_length=1024, blank=True, null=True)
-
+    short = models.CharField(max_length=1024, blank=True, null=True)
     # TODO: consider changing this to a e55 relation
     category = models.CharField(max_length=1024, blank=True, null=True)
 

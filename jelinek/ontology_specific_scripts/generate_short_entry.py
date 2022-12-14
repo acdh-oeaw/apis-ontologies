@@ -473,6 +473,24 @@ def generate_short_text():
         work.short = short
         return work
 
+    def short_text_Seklit(work):
+        work = short_text_Essays(work)
+        if work.short is None:
+            work.short = ""
+        new_short = work.short.replace("Erstdruck | ", "")
+        interviewers = [t.subj for t in Triple.objects.filter(obj=work, prop__name="is editor of")]
+        point = "."
+        if work.name.endswith((".", "!", "?", ".\"")):
+            point = ""
+        short = ""
+        if len(interviewers) > 0:
+            interviewer_string = (" / ").join(["{}, {}".format(i.surname, i.forename) for i in interviewers])
+            short = "{}: <i>{}{}</i> {}".format(interviewer_string, work.name, point, new_short)
+        else:
+            short = "{}{} {}".format(work.name, point, new_short)
+        work.short = short
+        return work
+
     def short_text_Installationen(work):
         relations = Triple.objects.filter(subj=work, prop__name="R13 is realised in")
         if len(relations) > 0:
@@ -511,35 +529,56 @@ def generate_short_text():
         else:
             print("no manifestations")
         return work
-            
+
+    def short_text_Performance(performance):
+        places = [t.obj for t in Triple.objects.filter(subj=performance, prop__name="has been performed at")]
+        directors = [t.subj for t in Triple.objects.filter(obj=performance, prop__name="is director of")]
+        if len(places) > 0 and len(directors) > 0:
+            short = "{} {}, I: {}".format(performance.start_date_written, places[0].name, directors[0].name)
+            performance.short = short
+        return performance
+
     def main():
         short_text_generators = [
-            ("Lyrik", short_text_Lyrik), 
-            ("Kurzprosa", short_text_Kurzprosa), 
-            ("Essayistische Texte, Reden und Statements", short_text_Essays), 
-            ("Romane", short_text_Romane), 
-            ("Texte für Hörspiele", short_text_Hoerspiele), 
-            ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
-            ("Theatertexte", short_text_Theatertexte), 
-            ("Kompositionen", short_text_Theatertexte), 
-            ("Texte für Kompositionen", short_text_Theatertexte), 
-            ("Libretti", short_text_Theatertexte), 
-            ("Übersetzte Werke", short_text_Uebersetzte_Werke),
-            ("Übersetzungen", short_text_Essays),
-            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
-            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
-            ("Interviews", short_text_Interviews)
+            # ("Lyrik", short_text_Lyrik), 
+            # ("Kurzprosa", short_text_Kurzprosa), 
+            # ("Essayistische Texte, Reden und Statements", short_text_Essays), 
+            # ("Romane", short_text_Romane), 
+            # ("Texte für Hörspiele", short_text_Hoerspiele), 
+            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
+            # ("Theatertexte", short_text_Theatertexte), 
+            # ("Kompositionen", short_text_Theatertexte), 
+            # ("Texte für Kompositionen", short_text_Theatertexte), 
+            # ("Libretti", short_text_Theatertexte), 
+            # ("Übersetzte Werke", short_text_Uebersetzte_Werke),
+            # ("Übersetzungen", short_text_Essays),
+            # ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
+            # ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
+            # ("Interviews", short_text_Interviews)
+            #("Sekundärliteratur", short_text_Seklit)
             ]
         for short_text_generator in short_text_generators:
             print("_____{}_____".format(short_text_generator[0]))
             works = [rel.subj for rel in Triple.objects.filter(prop__name="is in chapter", obj__name__contains=short_text_generator[0])]
             for work in works:
-                print(work.name)
-                work = short_text_generator[1](work)
-                if work.short is not None:  
-                    work.short = work.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
-                work.save()
-                print("-> {}".format(work.short))
+                if len(work.name) > 0:
+                    print(work.name)
+                    work = short_text_generator[1](work)
+                    if work.short is not None:  
+                        work.short = work.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
+                    work.save()
+                    print("-> {}".format(work.short))
+
+        # Generate short entried for performances
+        print("_____Performances_____")
+        performances = F31_Performance.objects.all()
+        for p in performances:
+            print(p.name)
+            p = short_text_Performance(p)
+            if p.short is not None:  
+                p.short = p.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
+            p.save()
+            print("-> {}".format(p.short))
                 
 
     main()
