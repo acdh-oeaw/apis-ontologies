@@ -70,6 +70,8 @@ def remove_outer_xml_tags(var_str):
     last = regex.sub("", first).strip()
     regex = re.compile(r"</ns0:edition>$")
     last = regex.sub("", last).strip()
+    regex = re.compile(r"</ns0:head>$")
+    last = regex.sub("", last).strip()
     return last
 
 
@@ -572,6 +574,113 @@ class TreesManager:
                                     F1_Work.objects.create(name=attr_dict["name"]),
                                     True
                                 ]
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    enities_list.append(handle_after_creation(db_result, attr_dict))
+
+                return enities_list
+
+            return sub_main(path_node)
+
+        def parse_honour(path_node):
+
+            def parse_attr(path_node: PathNode):
+
+                xml_elem = path_node.xml_elem
+                
+                attr_dict = {
+                    "honour_id": None,
+                    "name": None,
+                    "index_in_chapter": None,
+                    "start_date_written": None,
+                }
+
+                if (
+                    xml_elem.tag.endswith("event")
+                    and (xml_elem.attrib.get("type") == "honour" or xml_elem.attrib.get("type") == "awards_ceremony")
+                ):
+
+                    if (xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None):
+                        attr_dict["honour_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+                        if len(attr_dict["honour_id"].split("_")) > 1 and attr_dict["honour_id"].split("_")[1].isnumeric():
+                            attr_dict["index_in_chapter"] = int(attr_dict["honour_id"].split("_")[1])
+
+                    for xml_elem_child in xml_elem:
+
+                        # TODO : Check if there are titles without 'type="main"'
+                        if (
+                            xml_elem_child.tag.endswith("head")
+                        ):
+
+                            attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
+
+                        if (
+                            xml_elem_child.tag.endswith("date")
+                        ):
+
+                            attr_dict["start_date_written"] = xml_elem_child.text
+
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
+
+
+            def sub_main(path_node):
+
+                enities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    db_result = None
+                    if attr_dict["name"] is not None:
+                        attr_dict["name"] = attr_dict["name"][:255]
+
+                    if attr_dict["honour_id"] is not None:
+                        db_hit = Honour.objects.filter(honour_id=attr_dict["honour_id"],
+                            self_content_type=Honour.get_content_type())
+
+                        if len(db_hit) <= 1:
+                            
+                            db_result = Honour.objects.get_or_create(
+                                honour_id=attr_dict["honour_id"],
+                                self_content_type=Honour.get_content_type()
+                            )
+                        else:
+                            print("Multiple entries using the same honour_id found - that shouldn't happen")
+                            db_result = [db_hit[0], False]
+
+                    elif attr_dict["name"] is not None:
+
+                        # db_result = Honour.objects.get_or_create(name=attr_dict["name"])
+                        db_hit = Honour.objects.filter(
+                            name=attr_dict["name"],
+                            self_content_type=Honour.get_content_type()
+                        )
+                        if len(db_hit) > 1:
+
+                            # TODO : Check how often this is the case
+                            print("Multiple occurences found, taking the first")
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 1:
+
+                            db_result = [db_hit[0], False]
+
+                        elif len(db_hit) == 0:
+
+                            db_result = [
+                                Honour.objects.create(name=attr_dict["name"]),
+                                True
+                            ]
 
                     else:
 
@@ -2116,6 +2225,8 @@ class TreesManager:
 
             path_node.entities_list.extend(parse_f1_work(path_node))
 
+            path_node.entities_list.extend(parse_honour(path_node))
+
             path_node.entities_list.extend(parse_f3_manifestation(path_node))
 
             path_node.entities_list.extend(parse_f9_place(path_node))
@@ -2535,6 +2646,111 @@ class TreesManager:
             triple_from_f1_to_f31(entity_work, path_node)
             triples_from_f1_to_note(entity_work, path_node)
             triple_from_f1_to_f26(entity_work, path_node)
+
+        def parse_triples_from_honour(entity_honour, path_node):
+
+            def triples_from_honour_to_e55(entity_honour, path_node):
+
+                name_subtype = path_node.xml_elem.attrib.get("subtype")
+                name_type = path_node.xml_elem.attrib.get("type")
+
+                subtype_found = False
+                type_found = False
+                entity_found = None
+
+                for entity_other in path_node.entities_list:
+
+                    if entity_other.__class__ is E55_Type and entity_other.name is not None:
+
+                        # TODO : After db fix with regards to upper-lower-case colloations, remove this 'lower()' here
+                        if (
+                            name_subtype is not None
+                            and entity_other.name.lower() == name_subtype.lower()
+                        ):
+
+                            subtype_found = True
+                            entity_found = entity_other
+
+                        elif (
+                            name_type is not None
+                            and entity_other.name.lower() == name_type.lower()
+                            and not subtype_found
+                        ):
+
+                            entity_found = entity_other
+
+                if entity_found is None and (name_subtype is not None or name_type is not None) and name_type != "host":
+
+                    # TODO : Check how often this is the case
+                    print("Found a type, but no correspondingly created entity for it")
+
+                if entity_found is not None:
+
+                    create_triple(
+                        entity_subj=entity_honour,
+                        entity_obj=entity_found,
+                        prop=Property.objects.get(name="p2 has type")
+                    )
+
+            def triples_from_honour_to_f9(entity_honour, path_node: PathNode):
+
+                for child_path_node in path_node.path_node_children_list:
+
+                    for entity_other in child_path_node.entities_list:
+
+                        if (
+                            entity_other.__class__ is F9_Place
+                        ):
+
+                            create_triple(
+                                entity_subj=entity_honour,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="took place in")
+                            )
+
+            def triples_from_honour_to_e40(entity_honour, path_node: PathNode):
+
+                date = None
+                triple = None
+
+                for child_path_node in path_node.path_node_children_list:
+
+                    for entity_other in child_path_node.entities_list:
+
+                        if (
+                            entity_other.__class__ is E40_Legal_Body
+                        ):
+
+                            triple = create_triple(
+                                entity_subj=entity_other,
+                                entity_obj=entity_honour,
+                                prop=Property.objects.get(name="is organizer of")
+                            )
+
+                if triple is not None:
+                    triple.save()
+
+            def triples_from_honour_to_note(entity_honour, path_node: PathNode):
+
+                for child_path_node in path_node.path_node_children_list:
+
+                    for entity_other in child_path_node.entities_list:
+
+                        if (
+                            entity_other.__class__ is XMLNote
+                            and child_path_node.xml_elem.tag.endswith("note")
+                        ):
+
+                            create_triple(
+                                entity_subj=entity_honour,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="has note")
+                            )
+
+            triples_from_honour_to_e55(entity_honour, path_node)
+            triples_from_honour_to_f9(entity_honour, path_node)
+            triples_from_honour_to_e40(entity_honour, path_node)
+            triples_from_honour_to_note(entity_honour, path_node)
 
         def parse_triples_from_f3_manifestation(entity_manifestation, path_node):
 
@@ -3202,6 +3418,19 @@ class TreesManager:
                                                 if not entity_chapter.chapter_number.startswith("6"):
                                                     break
 
+                                            if entity_chapter.chapter_number.startswith("6"):
+
+                                                for path_node_item in path_node_div_child.path_node_children_list:
+
+                                                        for entity_work in path_node_item.entities_list:
+
+                                                            if has_class_as_parent(entity_work.__class__, F1_Work):
+
+                                                                create_triple(
+                                                                    entity_subj=entity_work,
+                                                                    entity_obj=entity_chapter,
+                                                                    prop=Property.objects.get(name="is in chapter"),
+                                                                )
                                             if path_node_div_child.xml_elem.attrib.get("type") == "seklitSubsection":
 
                                                 for path_node_list in path_node_div_child.path_node_children_list:
@@ -3249,6 +3478,43 @@ class TreesManager:
                                         else:
                                             create_triple(entity_obj=entity_other, entity_subj=entity_chapter,prop=Property.objects.get(name="is about"))
                         
+            def triple_from_chapter_to_honour(entity_chapter, path_node: PathNode):
+
+                for path_node_text in path_node_tei.path_node_children_list:
+
+                    if path_node_text.xml_elem.tag.endswith("text"):
+
+                        for path_node_body in path_node_text.path_node_children_list:
+
+                            if path_node_body.xml_elem.tag.endswith("body"):
+
+                                for path_node_div in path_node_body.path_node_children_list:
+
+                                    if path_node_div.xml_elem.tag.endswith("div"):
+
+                                        for path_node_div_child in path_node_div.path_node_children_list:
+
+                                            for path_node_event in path_node_div_child.path_node_children_list:
+
+                                                for entity_work in path_node_event.entities_list:
+
+                                                    if has_class_as_parent(entity_work.__class__, Honour):
+
+                                                        create_triple(
+                                                            entity_subj=entity_work,
+                                                            entity_obj=entity_chapter,
+                                                            prop=Property.objects.get(name="is in chapter"),
+                                                        )
+
+                                                    if not entity_chapter.chapter_number.startswith("6"):
+                                                        break
+
+                                           
+                                        break
+
+                                break
+
+                        break
 
 
             def triple_from_chapter_to_chapter(entity_chapter: Chapter, path_node: PathNode):
@@ -3267,6 +3533,7 @@ class TreesManager:
 
 
             triple_from_chapter_to_f1(entity_chapter, path_node)
+            triple_from_chapter_to_honour(entity_chapter, path_node)
             triple_from_chapter_to_chapter(entity_chapter, path_node)
             
         def parse_triples_from_keyword(entity_keyword, path_node: PathNode):
@@ -3341,6 +3608,21 @@ class TreesManager:
                             entity_obj=entity_xml_file,
                             prop=Property.objects.get(name="was defined primarily in"),
                         )
+                    elif (
+                            path_node_current.path_node_parent is not None
+                            and path_node_current.path_node_parent.xml_elem.tag.endswith("div")
+                            and path_node_current.path_node_parent.xml_elem.attrib.get("type") == "head_section"
+                            and path_node_current.path_node_parent.path_node_parent.xml_elem.tag.endswith("div")
+                            and path_node_current.path_node_parent.path_node_parent.xml_elem.attrib.get("type") in ["honour", "prize"]
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("body")
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("text")
+                    ):
+
+                        create_triple(
+                            entity_subj=entity_other,
+                            entity_obj=entity_xml_file,
+                            prop=Property.objects.get(name="was defined primarily in"),
+                        )
 
                 for path_node_child in path_node_current.path_node_children_list:
 
@@ -3393,6 +3675,10 @@ class TreesManager:
                 elif entity.__class__ is Keyword:
 
                     parse_triples_from_keyword(entity, path_node)
+
+                elif entity.__class__ is Honour:
+
+                    parse_triples_from_honour(entity, path_node)
 
         main_parse_for_triples(path_node)
 

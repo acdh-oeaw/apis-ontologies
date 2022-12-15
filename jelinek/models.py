@@ -49,8 +49,12 @@ class F1_Work(E1_Crm_Entity):
     )
 
     short = models.CharField(max_length=1024, blank=True, null=True)
-    #note = models.CharField(max_length=1024, blank=True, null=True)
 
+@reversion.register(follow=["tempentityclass_ptr"])
+class Honour(E1_Crm_Entity):
+    honour_id = models.CharField(max_length=1024, blank=True, null=True)
+    index_in_chapter = models.IntegerField(blank=True, null=True)
+    short = models.CharField(max_length=1024, blank=True, null=True)
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F3_Manifestation_Product_Type(E1_Crm_Entity):
@@ -210,8 +214,10 @@ def construct_properties():
     data_read_from.subj_class.add(ContentType.objects.get(model=E1_Crm_Entity.__name__))
     data_read_from.subj_class.add(ContentType.objects.get(model=Chapter.__name__))
     data_read_from.subj_class.add(ContentType.objects.get(model=Keyword.__name__))
-    data_read_from.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
     data_read_from.subj_class.add(ContentType.objects.get(model=XMLNote.__name__))
+    data_read_from.subj_class.add(ContentType.objects.get(model=Honour.__name__))
+    data_read_from.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
+    
 
     was_defined_primarily_in = Property.objects.create(
         name="was defined primarily in",
@@ -219,6 +225,7 @@ def construct_properties():
     )
     was_defined_primarily_in.subj_class.add(ContentType.objects.get(model=E1_Crm_Entity.__name__))
     was_defined_primarily_in.subj_class.add(ContentType.objects.get(model=XMLNote.__name__))
+    was_defined_primarily_in.subj_class.add(ContentType.objects.get(model=Honour.__name__))
     was_defined_primarily_in.obj_class.add(ContentType.objects.get(model=Xml_File.__name__))
 
     p2_has_type = Property.objects.create(
@@ -428,6 +435,7 @@ def construct_properties():
     is_organizer_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     is_organizer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_organizer_of.obj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
+    is_organizer_of.obj_class.add(ContentType.objects.get(model=Honour.__name__))
     is_organizer_of.save()
 
     has_been_performed_in = Property.objects.create(
@@ -462,6 +470,7 @@ def construct_properties():
         name_reverse="contains work",
     )
     is_in_chapter.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_in_chapter.subj_class.add(ContentType.objects.get(model=Honour.__name__))
     is_in_chapter.obj_class.add(ContentType.objects.get(model=Chapter.__name__))
 
     is_in_chapter = Property.objects.create(
@@ -483,6 +492,7 @@ def construct_properties():
         name_reverse="is keyword of",
     )
     has_keyword.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    has_keyword.subj_class.add(ContentType.objects.get(model=Honour.__name__))
     has_keyword.obj_class.add(ContentType.objects.get(model=Keyword.__name__))
     
     has_note = Property.objects.create(
@@ -501,3 +511,11 @@ def construct_properties():
     is_about.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_about.obj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_about.obj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
+    is_about.obj_class.add(ContentType.objects.get(model=Honour.__name__))
+
+    is_about = Property.objects.create(
+        name="took place in",
+        name_reverse="was venue of",
+    )
+    is_about.subj_class.add(ContentType.objects.get(model=Honour.__name__))
+    is_about.obj_class.add(ContentType.objects.get(model=F9_Place.__name__))
