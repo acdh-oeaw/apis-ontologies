@@ -30,25 +30,16 @@ DATABASES = {
     }
 }
 
+# The APIS Bibsonomy module can be used with either Bibsonomy or Zotero
+# Example settings for APIS Bibsonomy with Zotero:
+APIS_BIBSONOMY = [
+    {
+        "type": "zotero",  # use "bibsonomy" for Bibsonomy
+        "url": "https://api.zotero.org/",  # use "https://www.bibsonomy.org/" for Bibsonomy
+        "user": "example_user_id",  # use the user ID for Zotero, user name for Bibsonomy
+        "API key": "example_key",
+    }
+]
 
-# Bibsonomy example settings
-APIS_BIBSONOMY = [
-    {
-        "type": "zotero",
-        "url": "https://api.zotero.org/",
-        "user": "exmaple_user_id",  # fill in the API user ID, not the user-name
-        "API key": "example_key",
-    }
-]
-# Zotero example settings (note that code-wise the module and settings are
-# called bibsonomy eventhough they also support zotero)
-APIS_BIBSONOMY = [
-    {
-        "type": "bibsonomy",
-        "url": "https://www.bibsonomy.org/",
-        "user": "example_user",
-        "API key": "example_key",
-    }
-]
-# then append the bibsonomy module:
+# Append the Bibsonomy module with:
 INSTALLED_APPS.append("apis_bibsonomy")

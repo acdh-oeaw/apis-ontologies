@@ -17,8 +17,6 @@ class E55_Type(E1_Crm_Entity):
     class Meta:
         verbose_name = "E55 Type"
 
-    pass
-
 
 def construct_properties():
 
@@ -29,14 +27,13 @@ def construct_properties():
     from django.contrib.auth.models import User
 
     TextType.objects.all().delete()
-    tt = TextType.objects.create(entity="E1_Crm_Entity")
-    # tt.collections.add(Collection.objects.get_or_create(name="manually created entity"))
 
     AnnotationProject.objects.create(name="test__annotation_project_1")
     Project.objects.create(name="test__project_1", user=User.objects.first())
 
     Property.objects.all().delete()
 
+    # Examples for how to define properties
     p2_has_type = Property.objects.create(
         name="p2 has type",
         name_reverse="p2i is type of",
