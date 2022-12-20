@@ -30,7 +30,7 @@ def construct_properties():
 
     TextType.objects.all().delete()
     tt = TextType.objects.create(entity="E1_Crm_Entity")
-    #tt.collections.add(Collection.objects.get_or_create(name="manually created entity"))
+    # tt.collections.add(Collection.objects.get_or_create(name="manually created entity"))
 
     AnnotationProject.objects.create(name="test__annotation_project_1")
     Project.objects.create(name="test__project_1", user=User.objects.first())
@@ -49,7 +49,10 @@ def construct_properties():
         name="p127 has broader term",
         name_reverse="p127i has narrower term",
     )
-    p127_has_broader_term.subj_class.add(ContentType.objects.get(model=E55_Type.__name__))
-    p127_has_broader_term.obj_class.add(ContentType.objects.get(model=E55_Type.__name__))
+    p127_has_broader_term.subj_class.add(
+        ContentType.objects.get(model=E55_Type.__name__)
+    )
+    p127_has_broader_term.obj_class.add(
+        ContentType.objects.get(model=E55_Type.__name__)
+    )
     p127_has_broader_term.save()
-
