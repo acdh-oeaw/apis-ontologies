@@ -1,10 +1,11 @@
-# Template for file for local Django settings.
-#
-# To be used as basis for new settings files for local development,
-# to store keys/passwords, values for development databases etc.
-#
-# Resulting local settings files are not meant to be committed/versioned.
+"""
+Template for file for local Django settings.
 
+To be used as basis for new settings file(s) for local development,
+to store keys/passwords, configs for development databases etc.
+
+Resulting local settings files are not meant to be committed/versioned.
+"""
 from .server_settings import *
 
 # SECRET_KEY must not be empty or Django won't run.
