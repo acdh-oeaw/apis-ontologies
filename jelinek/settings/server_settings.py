@@ -75,3 +75,23 @@ LANGUAGE_CODE = "de"
 APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
 INSTALLED_APPS.append("apis_highlighter")
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+    dsn="https://64a8f7266f1b43489710c36784d42303@o4504360778661888.ingest.sentry.io/4504360922513408",
+    integrations=[
+        DjangoIntegration(),
+    ],
+    environment="production",
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)
