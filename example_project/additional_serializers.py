@@ -34,17 +34,15 @@ additional_serializers_list = [
                                             ]
                                         },
                                         {
-                                            Triple.subj: [
-                                                F10_Person.name
-                                            ],
-                                        }
+                                            Triple.subj: [F10_Person.name],
+                                        },
                                     ]
-                                }
+                                },
                             ]
                         },
                     ]
                 },
             ]
-        }
+        },
     )
 ]
