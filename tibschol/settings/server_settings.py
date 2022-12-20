@@ -72,3 +72,23 @@ APIS_AUTOCOMPLETE_SETTINGS = "apis_ontology.settings.autocomplete_settings"
 #INSTALLED_APPS += ["apis_ontology"]
 
 APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+    dsn="https://26617c9eabdc4fb7b54a8d8d2037c67d@o4504360778661888.ingest.sentry.io/4504360943484928",
+    integrations=[
+        DjangoIntegration(),
+    ],
+    environment="production",
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)
