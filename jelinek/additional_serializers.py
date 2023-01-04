@@ -347,7 +347,6 @@ additional_serializers_list = [
             Honour: [
                 Honour.id,
                 Honour.name,
-                Honour.genre,
                 {
                     Honour.triple_set_from_subj: [
                         {
