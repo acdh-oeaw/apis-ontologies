@@ -367,6 +367,7 @@ def construct_properties():
     is_voice_actor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
     is_voice_actor_of.save()
 
     is_actor_of = Property.objects.create(
@@ -462,6 +463,14 @@ def construct_properties():
     )
     is_expressed_in.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_expressed_in.subj_class.add(ContentType.objects.get(model=F17_Aggregation_Work.__name__))
+    is_expressed_in.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_expressed_in.save()
+
+    is_expressed_in = Property.objects.create(
+        name="is reported in",
+        name_reverse="reports",
+    )
+    is_expressed_in.subj_class.add(ContentType.objects.get(model=Honour.__name__))
     is_expressed_in.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_expressed_in.save()
 

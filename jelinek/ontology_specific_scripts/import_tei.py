@@ -1638,6 +1638,7 @@ class TreesManager:
                         trees_manager.helper_dict["current_type"] == "005_TextefürHörspiele"
                         or trees_manager.helper_dict["current_type"] == "006_DrehbücherundTextefürFilme"
                         or trees_manager.helper_dict["current_type"] == "007_Kompositionen"
+                        or xml_elem.attrib.get("type") == "audio_work"
                     )
                     and xml_elem.tag.endswith("bibl")
                     and xml_elem.attrib.get("ana") == "frbroo:work"
@@ -1701,6 +1702,14 @@ class TreesManager:
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
 
+                elif (
+                    xml_elem.tag.endswith("rs")
+                    and xml_elem.attrib.get("type") == "audio_vis_work"
+                    and xml_elem.attrib.get("ref") is not None
+                    and xml_elem.attrib.get("ref").startswith("audio_vis_work:")
+                ):
+
+                    attr_dict["idno"] = xml_elem.attrib.get("ref").replace("audio_vis_work:", "")
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -1784,6 +1793,10 @@ class TreesManager:
                         xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
                     ):
                         attr_dict["broadcast_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+                    elif (
+                        xml_elem.attrib.get("id") is not None
+                    ):
+                        attr_dict["broadcast_id"] = xml_elem.attrib.get("id")
                     elif (
                         xml_elem.attrib.get("target") is not None
                     ):
@@ -2747,10 +2760,45 @@ class TreesManager:
                                 prop=Property.objects.get(name="has note")
                             )
 
+            def triples_from_honour_to_f3(entity_honour, path_node):
+
+                def check_and_create_triple_to_f3(entity_honour, path_node_other):
+
+                    for entity_other in path_node_other.entities_list:
+
+                        if entity_other.__class__ is F3_Manifestation_Product_Type:
+
+                            create_triple(
+                                entity_subj=entity_honour,
+                                entity_obj=entity_other,
+                                prop=Property.objects.get(name="is reported in")
+                            )
+
+                for neighbour_path_node in path_node.path_node_parent.path_node_parent.path_node_children_list:
+
+                    # direct manifestations
+                    if (
+                        neighbour_path_node.xml_elem.tag.endswith("div")
+                        and neighbour_path_node.xml_elem.attrib.get("type") == "berichte"
+                    ):
+
+                        for neighbour_child_path_node in neighbour_path_node.path_node_children_list:
+
+                            if neighbour_child_path_node.xml_elem.tag.endswith("listBibl"):
+
+                                for neighbour_child_child_path_node in neighbour_child_path_node.path_node_children_list:
+
+                                    check_and_create_triple_to_f3(entity_honour, neighbour_child_child_path_node)
+
+                            else:
+
+                                check_and_create_triple_to_f3(entity_honour, neighbour_child_path_node)
+
             triples_from_honour_to_e55(entity_honour, path_node)
             triples_from_honour_to_f9(entity_honour, path_node)
             triples_from_honour_to_e40(entity_honour, path_node)
             triples_from_honour_to_note(entity_honour, path_node)
+            triples_from_honour_to_f3(entity_honour, path_node)
 
         def parse_triples_from_f3_manifestation(entity_manifestation, path_node):
 
@@ -3028,12 +3076,45 @@ class TreesManager:
                     for entity_other in path_node.path_node_parent.entities_list:
 
                         if entity_other.__class__ is F21_Recording_Work:
+                            for child_path_node in path_node.path_node_children_list:
+                                if (
+                                    child_path_node.xml_elem.tag.endswith("persName")
+                                ):
+                                    if (child_path_node.xml_elem.attrib.get("role") == "contributor"):
 
-                            create_triple(
-                                entity_subj=entity_person,
-                                entity_obj=entity_other,
-                                prop=Property.objects.get(name="is author of")
-                            )
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is contributor of")
+                                        )
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "actor"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is actor of")
+                                        )
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "voice_actor"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is voice actor of")
+                                        )
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "director"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is director of")
+                                        )
+                                    else:
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is author of")
+                                        )
+
 
             triple_from_f10_to_f3(entity_person, path_node)
             triple_from_f10_to_f21(entity_person, path_node)
@@ -3418,7 +3499,7 @@ class TreesManager:
                                                 if not entity_chapter.chapter_number.startswith("6"):
                                                     break
 
-                                            if entity_chapter.chapter_number.startswith("6"):
+                                            if entity_chapter.chapter_number.startswith(("6", "7")):
 
                                                 for path_node_item in path_node_div_child.path_node_children_list:
 
@@ -3431,6 +3512,21 @@ class TreesManager:
                                                                     entity_obj=entity_chapter,
                                                                     prop=Property.objects.get(name="is in chapter"),
                                                                 )
+
+                                                if entity_chapter.chapter_number.startswith("7"):
+
+                                                    for path_node_item_child in path_node_item.path_node_children_list:
+
+                                                            for entity_work in path_node_item_child.entities_list:
+
+                                                                if has_class_as_parent(entity_work.__class__, F1_Work):
+
+                                                                    create_triple(
+                                                                        entity_subj=entity_work,
+                                                                        entity_obj=entity_chapter,
+                                                                        prop=Property.objects.get(name="is in chapter"),
+                                                                    )
+
                                             if path_node_div_child.xml_elem.attrib.get("type") == "seklitSubsection":
 
                                                 for path_node_list in path_node_div_child.path_node_children_list:
