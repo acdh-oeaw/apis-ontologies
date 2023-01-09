@@ -384,6 +384,7 @@ class TreesManager:
                     xml_elem.tag.endswith("bibl")
                     and (xml_elem.attrib.get("ana") == "frbroo:work" or xml_elem.attrib.get("ana") == "frbroo:aggregation_work")
                     and (trees_manager.helper_dict["current_type"] == "work" or trees_manager.helper_dict["current_type"] == "seklit")
+                    and not xml_elem.attrib.get("type") == "audio_work"
                 ):
 
                     if (xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None and xml_elem.attrib.get("type") == "seklit"):
@@ -1639,6 +1640,7 @@ class TreesManager:
                         or trees_manager.helper_dict["current_type"] == "006_DrehbücherundTextefürFilme"
                         or trees_manager.helper_dict["current_type"] == "007_Kompositionen"
                         or xml_elem.attrib.get("type") == "audio_work"
+                        or xml_elem.attrib.get("type") == "audio_vis_work"
                     )
                     and xml_elem.tag.endswith("bibl")
                     and xml_elem.attrib.get("ana") == "frbroo:work"
@@ -1704,7 +1706,7 @@ class TreesManager:
 
                 elif (
                     xml_elem.tag.endswith("rs")
-                    and xml_elem.attrib.get("type") == "audio_vis_work"
+                    and (xml_elem.attrib.get("type") == "audio_vis_work" or xml_elem.attrib.get("type") == "audio_work")
                     and xml_elem.attrib.get("ref") is not None
                     and xml_elem.attrib.get("ref").startswith("audio_vis_work:")
                 ):
@@ -1795,13 +1797,14 @@ class TreesManager:
                         attr_dict["broadcast_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
                     elif (
                         xml_elem.attrib.get("id") is not None
+                        and len(xml_elem.attrib.get("id")) > 0
                     ):
                         attr_dict["broadcast_id"] = xml_elem.attrib.get("id")
                     elif (
                         xml_elem.attrib.get("target") is not None
                     ):
                         attr_dict["broadcast_id"] = xml_elem.attrib.get("target").replace("broadcast:", "")
-
+        
                     for xml_elem_child in xml_elem:
 
                         if (
@@ -1843,6 +1846,21 @@ class TreesManager:
                         else:
 
                             attr_dict["name"] = "Unknown recording date"
+
+                    if (
+                        xml_elem.attrib.get("id") is None
+                        or len(xml_elem.attrib.get("id")) == 0
+                    ):
+                        if path_node.path_node_parent != None:
+                            parent = path_node.path_node_parent
+                            while parent.path_node_parent != None:
+                                parent = parent.path_node_parent
+                            if len(parent.entities_list) > 0:
+                                xml = [f for f in parent.entities_list if "xml" in f.name]
+                                if len(xml) > 0:
+                                    xml_file_name = xml[0].name.replace(".xml", "")
+                                    attr_dict["broadcast_id"] = "broadcast_{}_{}".format(xml_file_name, attr_dict["start_date_written"])
+ 
                 elif (xml_elem.tag.endswith("item") and xml_elem.attrib.get("type") is None):
                     for xml_elem_child in xml_elem:
 
@@ -1852,7 +1870,7 @@ class TreesManager:
                             ):
                                 attr_dict["broadcast_id"] = xml_elem_child.attrib.get("target").replace("broadcast:", "")
 
-
+                
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
                     return attr_dict
@@ -3513,7 +3531,7 @@ class TreesManager:
                                                                     prop=Property.objects.get(name="is in chapter"),
                                                                 )
 
-                                                if entity_chapter.chapter_number.startswith("7"):
+                                                if path_node_div_child.xml_elem.attrib.get("type") == "head_section" and entity_chapter.chapter_number.startswith("7"):
 
                                                     for path_node_item_child in path_node_item.path_node_children_list:
 
@@ -3712,6 +3730,23 @@ class TreesManager:
                             and path_node_current.path_node_parent.path_node_parent.xml_elem.attrib.get("type") in ["honour", "prize"]
                             and path_node_current.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("body")
                             and path_node_current.path_node_parent.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("text")
+                    ):
+
+                        create_triple(
+                            entity_subj=entity_other,
+                            entity_obj=entity_xml_file,
+                            prop=Property.objects.get(name="was defined primarily in"),
+                        )
+                    elif (
+                            path_node_current.path_node_parent is not None
+                            and path_node_current.path_node_parent.xml_elem.tag.endswith("head")
+                            and path_node_current.path_node_parent.path_node_parent.xml_elem.tag.endswith("div")
+                            and path_node_current.path_node_parent.path_node_parent.xml_elem.attrib.get("type") == "head_section"
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("div")
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.xml_elem.attrib.get("type") == "entry"
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("body")
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("text")
+                            and (entity_other.__class__ == F1_Work or entity_other.__class__ == F21_Recording_Work)
                     ):
 
                         create_triple(
