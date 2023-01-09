@@ -3719,6 +3719,23 @@ class TreesManager:
                             entity_obj=entity_xml_file,
                             prop=Property.objects.get(name="was defined primarily in"),
                         )
+                    elif (
+                            path_node_current.path_node_parent is not None
+                            and path_node_current.path_node_parent.xml_elem.tag.endswith("head")
+                            and path_node_current.path_node_parent.path_node_parent.xml_elem.tag.endswith("div")
+                            and path_node_current.path_node_parent.path_node_parent.xml_elem.attrib.get("type") == "head_section"
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("div")
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.xml_elem.attrib.get("type") == "entry"
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("body")
+                            and path_node_current.path_node_parent.path_node_parent.path_node_parent.path_node_parent.path_node_parent.xml_elem.tag.endswith("text")
+                            and (entity_other.__class__ == F1_Work or entity_other.__class__ == F21_Recording_Work)
+                    ):
+
+                        create_triple(
+                            entity_subj=entity_other,
+                            entity_obj=entity_xml_file,
+                            prop=Property.objects.get(name="was defined primarily in"),
+                        )
 
                 for path_node_child in path_node_current.path_node_children_list:
 
