@@ -28,7 +28,7 @@ DEV_VERSION = False
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    # "project-name.subdomain.oeaw.ac.at",  # add URI of website where app gets deployed
+    # do not add additional hosts here; use CI/CD variable (or local settings) instead
 ]
 
 if "ALLOWED_HOSTS" in os.environ:
