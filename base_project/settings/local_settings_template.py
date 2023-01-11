@@ -7,11 +7,6 @@
 
 from .server_settings import *
 
-# SECRET_KEY must not be empty or Django won't run.
-# Use a unique, unpredictable value,
-# see: https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
-SECRET_KEY = ""
-
 # DEBUG, DEV_VERSION are optional variables which override defaults
 # for production environments set in server_settings.py
 # Comment them out if/when they are not needed.
