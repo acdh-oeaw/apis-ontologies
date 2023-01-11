@@ -52,7 +52,7 @@ def generate_genre():
                         work.genre = "Sekundärliteratur"
                     elif "0005_Würdigungen" in xml_file.file_path:
                         work.genre = "Würdigungen"
-                    elif "0007_Schwerpunktsend" in xml_file.file_path:
+                    elif "0007_SendungenundFilmporträts" in xml_file.file_path:
                         work.genre = "Sendungen und Filmportraits"
             else:
                 xml_files = [t.obj for t in Triple.objects.filter(prop__name="data read from file", subj=work)]
@@ -63,8 +63,8 @@ def generate_genre():
                         work.genre = "Würdigungen"
                     elif "0004_Bearbeitungenvo" in xml_file.file_path:
                         work.genre = "Bearbeitungen von anderen"
-                    elif "0007_Schwerpunktsend" in xml_file.file_path:
-                        work.genre = "Sendungen und Filmportraits"
+                    elif "0007_SendungenundFilmporträts" in xml_file.file_path:
+                        work.genre = "Sendungen und Filmporträts"
             work.save()
             
 
