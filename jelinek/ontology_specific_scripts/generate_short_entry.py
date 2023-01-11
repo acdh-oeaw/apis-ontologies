@@ -4,6 +4,8 @@ from apis_ontology.models import *
 from apis_core.apis_relations.models import Triple, TempTriple, Property
 from collections import namedtuple
 
+import datetime
+from lxml import etree
 
 
 def generate_short_text():
@@ -382,6 +384,74 @@ def generate_short_text():
         work.short = short
         return work
 
+    def short_text_Bearbeitungen(work):
+        # Kinostart, Erstsendung, Erstabdruck, UA, Erstpräsentation
+        short = ""
+        relations = Triple.objects.filter(subj=work, prop__name__in=["R13 is realised in", "is expressed in", "has been performed in"])
+        if len(relations) > 0:
+            recordings = [r.obj for r in relations]
+            recordings.sort(key=lambda r: r.start_date if (r.start_date is not None) else datetime.datetime.now().date())
+            if len(recordings) > 0:
+                first = recordings[0]
+                if first.__class__ == F26_Recording:
+                    places = Triple.objects.filter(subj=first, prop__name="has been performed at")
+                    if len(places) > 0:
+                        short = "Erstsendung | {} {}".format(first.start_date_written, places[0].obj.name)
+                elif first.__class__ == F3_Manifestation_Product_Type:
+                    hosts = Triple.objects.filter(subj=first, prop__name="host")
+                    if hosts.count() > 0:
+                        host = hosts[0].obj
+                        publishers = Triple.objects.filter(prop__name="is publisher of", obj=host)
+                        places = Triple.objects.filter(prop__name="was published in", subj=host)
+                        if publishers.count() > 0 and places.count() > 0:
+                            publisher = publishers[0].subj
+                            place = places[0].obj
+                            editors = Triple.objects.filter(prop__name="is editor of", obj=host)
+                            if editors.count() > 0:
+                                editor = editors[0].subj
+                                if editor.__class__ == E40_Legal_Body:
+                                    short = "Erstdruck | In: {} (Hg.): {}. {}: {} {}, {}.".format(editor.name, host.name, place.name, publisher.name, first.start_date_written, _format_page(first.page))
+                                elif editor.__class__ == F10_Person:
+                                    short = "Erstdruck | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(editor.surname, editor.forename, host.name, place.name, publisher.name, first.start_date_written, _format_page(first.page))
+                            else:
+                                short = "Erstdruck | In: {}. {}: {} {}, {}.".format(host.name, place.name, publisher.name, first.start_date_written, _format_page(first.page))
+                    else:
+                        editors = Triple.objects.filter(obj=first, prop__name="is editor of")
+                        editor_string = ""
+                        if len(editors) > 0:
+                            editor_string = "Hg. v. {}. ".format(" und ".join([e.subj.name for e in editors]))
+                        publishers = Triple.objects.filter(obj=first, prop__name="is publisher of")
+                        places = Triple.objects.filter(subj=first, prop__name="was published in")
+                        if len(publishers) > 0 and len(places) > 0:
+                            short = "Erstdruck | {}. {}{}: {} {}.".format(first.name, editor_string, places[0].obj.name, publishers[0].subj.name, first.start_date_written)
+                        elif first.ref_target is not None:
+                            short = "Erstdruck | {}, datiert mit {} (= {})".format(first.ref_target, first.start_date_written, first.series)
+                elif first.__class__ == F31_Performance:
+                    if first.performance_type == "cinemarelease":
+                        short = "Kinostart | {}".format(first.start_date_written)
+                    elif first.performance_type == "UA":
+                        institutions = [rel.obj for rel in Triple.objects.filter(prop__name="has been performed at", subj=first)]
+                        short = "UA | {} {}".format(first.start_date_written, ", ".join([inst.name for inst in institutions]))
+                    elif first.performance_type == "EP":
+                        institutions = [rel.obj for rel in Triple.objects.filter(prop__name="has been performed at", subj=first)]
+                        short = "Erstpräsentation | {} {}".format(first.start_date_written, ", ".join([inst.name for inst in institutions]))
+                    else:
+                        short = ""
+                else:
+                    short = ""
+        else:
+            xml_doc = [t.obj for t in Triple.objects.filter(subj=work, prop__name="was defined primarily in")]
+            if len(xml_doc) > 0:
+                xml_doc = xml_doc[0]
+                root = etree.fromstring(xml_doc.file_content)
+                
+                production = root.xpath("//*[@type='production']")
+                if len(production) > 0:
+                    short = "".join([t for t in production[0].itertext()])
+                    short = " ".join(short.split())
+        work.short = short
+        return work
+
     def short_text_Theatertexte(work):
         def short_text_Einzeltext(work):
             relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.performance_type == "UA"]
@@ -555,7 +625,9 @@ def generate_short_text():
             ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
             ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
             ("Interviews", short_text_Interviews),
-            ("Sekundärliteratur", short_text_Seklit)
+            ("Bearbeitungen von anderen", short_text_Bearbeitungen),
+            ("Sekundärliteratur", short_text_Seklit),
+            
             ]
         for short_text_generator in short_text_generators:
             print("_____{}_____".format(short_text_generator[0]))

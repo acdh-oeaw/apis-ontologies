@@ -229,6 +229,7 @@ class TreesManager:
                             and (xml_elem.attrib.get("type") == "institution"
                             or xml_elem.attrib.get("type") == "theater"
                             or xml_elem.attrib.get("type") == "festival"
+                            or xml_elem.attrib.get("type") == "place"
                             or xml_elem.attrib.get("type") == "broadcaster")
                         )
                         #or xml_elem.tag.endswith("orgName")
@@ -251,7 +252,7 @@ class TreesManager:
                     if xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None:
                         attr_dict["institution_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
                     elif xml_elem.attrib.get("ref") is not None:
-                        attr_dict["institution_id"] = xml_elem.attrib.get("ref").replace("insti:", "")
+                        attr_dict["institution_id"] = xml_elem.attrib.get("ref").replace("insti:", "").replace("venues:","")
                 elif (
                     xml_elem.tag.endswith("orgName")
                     and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is None
@@ -2654,11 +2655,22 @@ class TreesManager:
 
                 for path_node_neighbour in path_node.path_node_parent.path_node_children_list:
 
-                    if path_node_neighbour.xml_elem.attrib.get("type") == "broadcasts":
+                    if path_node_neighbour.xml_elem.attrib.get("type") in ["broadcasts", "broadcast"]:
 
                         for path_node_neighbour_child in path_node_neighbour.path_node_children_list:
 
                             for path_node_neighbour_child_child in path_node_neighbour_child.path_node_children_list:
+
+                                if (path_node_neighbour_child_child.xml_elem.tag.endswith("item")):
+
+                                    for path_node_neighbour_child_child_child in path_node_neighbour_child_child.path_node_children_list:
+                                        for entity_other in path_node_neighbour_child_child_child.entities_list:
+                                            if entity_other.__class__ is F26_Recording:
+                                                create_triple(
+                                                    entity_subj=entity_recording_work,
+                                                    entity_obj=entity_other,
+                                                    prop=Property.objects.get(name="R13 is realised in"),
+                                                )
 
                                 for entity_other in path_node_neighbour_child_child.entities_list:
 
@@ -3953,6 +3965,10 @@ def run(*args, **options):
                     elif "0006_Sekundärliterat" in xml_file_path:
 
                         current_type = "seklit"
+
+                    elif "0004_Bearbeitungenvo/0003_Hörspiele" in xml_file_path:
+
+                        current_type = "005_TextefürHörspiele"
 
                     else:
 
