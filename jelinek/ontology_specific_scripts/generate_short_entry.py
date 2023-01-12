@@ -96,7 +96,7 @@ def generate_short_text():
                 if publishers.count() <= 0:
                     continue
                 publishers = [p for p in publishers]
-                publishers.sort(key=lambda e: e.temptriple.start_date)
+                publishers.sort(key=lambda e: e.temptriple.start_date if e.temptriple.start_date is not None else datetime.datetime.now().date())
                 manifestations_and_years.append((rel, publishers[0], publishers[0].temptriple.start_date))
             manifestations_and_years.sort(key=lambda t: t[2])
             if len(manifestations_and_years) > 0:
@@ -279,7 +279,7 @@ def generate_short_text():
             else:
                 relations = [r for r in Triple.objects.filter(subj__name=work.name, prop__name="R13 is realised in") if r.subj.idno == work.idno]
                 if len(relations) > 0:
-                    first_recording = min(relations, key=lambda r: r.obj.start_date).obj
+                    first_recording = min(relations, key=lambda r: r.obj.start_date if r.obj.start_date is not None else datetime.datetime.now().date()).obj
                     places = [p.obj for p in Triple.objects.filter(subj=first_recording, prop__name="has been performed at")]
                     if len(places) > 0:
                         place = places[0]
@@ -565,7 +565,7 @@ def generate_short_text():
         relations = Triple.objects.filter(subj=work, prop__name="R13 is realised in")
         if len(relations) > 0:
             recordings = [r.obj for r in relations]
-            recordings.sort(key=lambda r: r.start_date)
+            recordings.sort(key=lambda r: r.start_date if r.start_date is not None else datetime.datetime.now().date())
             places = Triple.objects.filter(subj=recordings[0], prop__name="has been performed at")
             if len(places) > 0:
                 short = "Erstpräsentation | {} {}".format(recordings[0].start_date_written, places[0].obj.name)
