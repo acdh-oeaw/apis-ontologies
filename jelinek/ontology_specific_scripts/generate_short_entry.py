@@ -688,24 +688,24 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            # ("Lyrik", short_text_Lyrik), 
-            # ("Kurzprosa", short_text_Kurzprosa), 
-            # ("Essayistische Texte, Reden und Statements", short_text_Essays), 
-            # ("Romane", short_text_Romane), 
-            # ("Texte für Hörspiele", short_text_Hoerspiele), 
-            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
-            # ("Theatertexte", short_text_Theatertexte), 
-            # ("Kompositionen", short_text_Theatertexte), 
-            # ("Texte für Kompositionen", short_text_Theatertexte), 
-            # ("Libretti", short_text_Theatertexte), 
-            # ("Übersetzte Werke", short_text_Uebersetzte_Werke),
-            # ("Übersetzungen", short_text_Essays),
-            # ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
-            # ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
-            # ("Interviews", short_text_Interviews),
-            # ("Bearbeitungen von anderen", short_text_Bearbeitungen),
-            # ("Sekundärliteratur", short_text_Seklit),
-            # ("Würdigungen", short_text_Honour),
+            ("Lyrik", short_text_Lyrik), 
+            ("Kurzprosa", short_text_Kurzprosa), 
+            ("Essayistische Texte, Reden und Statements", short_text_Essays), 
+            ("Romane", short_text_Romane), 
+            ("Texte für Hörspiele", short_text_Hoerspiele), 
+            ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
+            ("Theatertexte", short_text_Theatertexte), 
+            ("Kompositionen", short_text_Theatertexte), 
+            ("Texte für Kompositionen", short_text_Theatertexte), 
+            ("Libretti", short_text_Theatertexte), 
+            ("Übersetzte Werke", short_text_Uebersetzte_Werke),
+            ("Übersetzungen", short_text_Essays),
+            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
+            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
+            ("Interviews", short_text_Interviews),
+            ("Bearbeitungen von anderen", short_text_Bearbeitungen),
+            ("Sekundärliteratur", short_text_Seklit),
+            ("Würdigungen", short_text_Honour),
             ("Sendungen und Filmporträts", short_text_Sendungen),
             
             ]
@@ -722,15 +722,15 @@ def generate_short_text():
                     print("-> {}".format(work.short))
 
         # Generate short entried for performances
-        # print("_____Performances_____")
-        # performances = F31_Performance.objects.all()
-        # for p in performances:
-        #     print(p.name)
-        #     p = short_text_Performance(p)
-        #     if p.short is not None:  
-        #         p.short = p.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
-        #     p.save()
-        #     print("-> {}".format(p.short))
+        print("_____Performances_____")
+        performances = F31_Performance.objects.all()
+        for p in performances:
+            print(p.name)
+            p = short_text_Performance(p)
+            if p.short is not None:  
+                p.short = p.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
+            p.save()
+            print("-> {}".format(p.short))
                 
 
     main()
