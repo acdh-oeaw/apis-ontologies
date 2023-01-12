@@ -608,6 +608,41 @@ def generate_short_text():
             performance.short = short
         return performance
 
+    def short_text_Honour(work):
+        def short_text_Preise(work):
+            xml_doc = [t.obj for t in Triple.objects.filter(subj=work, prop__name="was defined primarily in")]
+            if len(xml_doc) > 0:
+                xml_doc = xml_doc[0]
+                root = etree.fromstring(xml_doc.file_content)
+                production = root.xpath("//*[@ana='shortinfo']")
+                if len(production) > 0:
+                    short = "".join([t for t in production[0].itertext()])
+                    short = " ".join(short.split())
+                    work.short = short
+            return work
+        def short_text_Symposien(work):
+            xml_doc = [t.obj for t in Triple.objects.filter(subj=work, prop__name="was defined primarily in")]
+            if len(xml_doc) > 0:
+                xml_doc = xml_doc[0]
+                root = etree.fromstring(xml_doc.file_content)
+                organizers = root.xpath("//*[@type='head_section']//*[@role='organizer']")
+                if len(organizers) > 0:
+                    if len(organizers) > 1:
+                        organizerstring = ", ".join([o.text for o in organizers[:-1]]) + " & " + organizers[-1].text
+                        short = "VeranstalterInnen | {}".format(organizerstring)
+                    elif len(organizers) == 1:
+                        organizerstring = organizers[0].text
+                        short = "VeranstalterIn | {}".format(organizerstring)
+                    work.short = short
+            return work
+        work.short = ""
+        if Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Preise und Preisverleihungen").count() > 0:
+            work = short_text_Preise(work)
+        elif Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Symposien und Schwerpunkte").count() > 0:
+            work = short_text_Symposien(work)
+        return work
+
+
     def main():
         short_text_generators = [
             ("Lyrik", short_text_Lyrik), 
@@ -627,6 +662,7 @@ def generate_short_text():
             ("Interviews", short_text_Interviews),
             ("Bearbeitungen von anderen", short_text_Bearbeitungen),
             ("Sekundärliteratur", short_text_Seklit),
+            ("Würdigungen", short_text_Honour),
             
             ]
         for short_text_generator in short_text_generators:
