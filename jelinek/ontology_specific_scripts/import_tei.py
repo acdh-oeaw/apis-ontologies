@@ -1849,8 +1849,7 @@ class TreesManager:
                             attr_dict["name"] = "Unknown recording date"
 
                     if (
-                        xml_elem.attrib.get("id") is None
-                        or len(xml_elem.attrib.get("id")) == 0
+                        attr_dict["broadcast_id"] is None or attr_dict["broadcast_id"] == ""
                     ):
                         if path_node.path_node_parent != None:
                             parent = path_node.path_node_parent
