@@ -385,7 +385,7 @@ class TreesManager:
                     xml_elem.tag.endswith("bibl")
                     and (xml_elem.attrib.get("ana") == "frbroo:work" or xml_elem.attrib.get("ana") == "frbroo:aggregation_work")
                     and (trees_manager.helper_dict["current_type"] == "work" or trees_manager.helper_dict["current_type"] == "seklit")
-                    and not xml_elem.attrib.get("type") == "audio_work"
+                    and not xml_elem.attrib.get("type") in ["audio_vis_work", "audio_work", "movie"]
                 ):
 
                     if (xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None and xml_elem.attrib.get("type") == "seklit"):
@@ -1642,6 +1642,7 @@ class TreesManager:
                         or trees_manager.helper_dict["current_type"] == "007_Kompositionen"
                         or xml_elem.attrib.get("type") == "audio_work"
                         or xml_elem.attrib.get("type") == "audio_vis_work"
+                        or xml_elem.attrib.get("type") == "movie"
                     )
                     and xml_elem.tag.endswith("bibl")
                     and xml_elem.attrib.get("ana") == "frbroo:work"
@@ -1707,7 +1708,7 @@ class TreesManager:
 
                 elif (
                     xml_elem.tag.endswith("rs")
-                    and (xml_elem.attrib.get("type") == "audio_vis_work" or xml_elem.attrib.get("type") == "audio_work")
+                    and (xml_elem.attrib.get("type") in ["audio_vis_work", "audio_work", "movie"])
                     and xml_elem.attrib.get("ref") is not None
                     and xml_elem.attrib.get("ref").startswith("audio_vis_work:")
                 ):
@@ -1849,8 +1850,7 @@ class TreesManager:
                             attr_dict["name"] = "Unknown recording date"
 
                     if (
-                        xml_elem.attrib.get("id") is None
-                        or len(xml_elem.attrib.get("id")) == 0
+                        attr_dict["broadcast_id"] is None or attr_dict["broadcast_id"] == ""
                     ):
                         if path_node.path_node_parent != None:
                             parent = path_node.path_node_parent
@@ -2614,7 +2614,28 @@ class TreesManager:
                                 
 
             def triple_from_f1_to_f31(entity_work, path_node):
-                for neighbour_path_node in path_node.path_node_parent.path_node_children_list:
+                parent = path_node.path_node_parent
+                if parent.xml_elem.tag.endswith("head"):
+                    parent = parent.path_node_parent.path_node_parent
+                    for neighbour_path_node in parent.path_node_children_list:
+                        for child_path_node in neighbour_path_node.path_node_children_list:
+                            if child_path_node.xml_elem.tag.endswith("item"):
+                                for entity_other in child_path_node.entities_list:
+                                        if entity_other.__class__ == F31_Performance:
+                                            create_triple(
+                                                        entity_obj=entity_other,
+                                                        entity_subj=entity_work,
+                                                        prop=Property.objects.get(name="has been performed in")
+                                                    )
+                                for child_child_path_node in child_path_node.path_node_children_list:
+                                    for entity_other in child_child_path_node.entities_list:
+                                        if entity_other.__class__ == F31_Performance:
+                                            create_triple(
+                                                        entity_obj=entity_other,
+                                                        entity_subj=entity_work,
+                                                        prop=Property.objects.get(name="has been performed in")
+                                                    )
+                for neighbour_path_node in parent.path_node_children_list:
                     for child_path_node in neighbour_path_node.path_node_children_list:
                         for child_child_path_node in child_path_node.path_node_children_list:
                             if child_child_path_node.xml_elem.tag.endswith("item"):
@@ -3266,7 +3287,7 @@ class TreesManager:
 
                     for entity_other in path_node_child.entities_list:
 
-                        if entity_other.__class__ is F1_Work:
+                        if has_class_as_parent(entity_other.__class__, F1_Work):
 
                             create_triple(
                                 entity_obj=entity_performance,
@@ -3280,7 +3301,7 @@ class TreesManager:
 
                             for entity_other in path_node_child.entities_list:
 
-                                if entity_other.__class__ is F1_Work:
+                                if has_class_as_parent(entity_other.__class__, F1_Work):
 
                                     create_triple(
                                         entity_obj=entity_performance,
@@ -3463,7 +3484,6 @@ class TreesManager:
                                 entity_obj=entity_other,
                                 prop=Property.objects.get(name="has been performed at"),
                             )                
-
             def triples_from_f26_to_note(entity_manifestation, path_node: PathNode):
 
                 for child_path_node in path_node.path_node_children_list:

@@ -608,25 +608,105 @@ def generate_short_text():
             performance.short = short
         return performance
 
+    def short_text_Honour(work):
+        def short_text_Preise(work):
+            xml_doc = [t.obj for t in Triple.objects.filter(subj=work, prop__name="was defined primarily in")]
+            if len(xml_doc) > 0:
+                xml_doc = xml_doc[0]
+                root = etree.fromstring(xml_doc.file_content)
+                production = root.xpath("//*[@ana='shortinfo']")
+                if len(production) > 0:
+                    short = "".join([t for t in production[0].itertext()])
+                    short = " ".join(short.split())
+                    work.short = short
+            return work
+        def short_text_Symposien(work):
+            xml_doc = [t.obj for t in Triple.objects.filter(subj=work, prop__name="was defined primarily in")]
+            if len(xml_doc) > 0:
+                xml_doc = xml_doc[0]
+                root = etree.fromstring(xml_doc.file_content)
+                organizers = root.xpath("//*[@type='head_section']//*[@role='organizer']")
+                if len(organizers) > 0:
+                    if len(organizers) > 1:
+                        organizerstring = ", ".join([o.text for o in organizers[:-1]]) + " & " + organizers[-1].text
+                        short = "VeranstalterInnen | {}".format(organizerstring)
+                    elif len(organizers) == 1:
+                        organizerstring = organizers[0].text
+                        short = "VeranstalterIn | {}".format(organizerstring)
+                    work.short = short
+            return work
+        work.short = ""
+        if Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Preise und Preisverleihungen").count() > 0:
+            work = short_text_Preise(work)
+        elif Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Symposien und Schwerpunkte").count() > 0:
+            work = short_text_Symposien(work)
+        return work
+
+    def short_text_Sendungen(work):
+        def short_text_RadioFernsehen(work):
+            xml_doc = [t.obj for t in Triple.objects.filter(subj=work, prop__name="was defined primarily in")]
+            if len(xml_doc) > 0:
+                xml_doc = xml_doc[0]
+                root = etree.fromstring(xml_doc.file_content)
+                head_section = root.xpath("//*[@type='head_section']")
+                if len(head_section) > 0:
+                    xmlString = "".join([t for t in head_section[0].itertext() if t != work.name])
+                    short = "<i>{}</i>{}".format(work.name, xmlString.lstrip())
+                    short = " ".join(short.split())
+                    work.short = short
+            return work
+        def short_text_Filme(work):
+            xml_doc = [t.obj for t in Triple.objects.filter(subj=work, prop__name="was defined primarily in")]
+            if len(xml_doc) > 0:
+                xml_doc = xml_doc[0]
+                root = etree.fromstring(xml_doc.file_content)
+                head_section = root.xpath("//*[@type='head_section']")
+                if len(head_section) > 0:
+                    head_section = head_section[0]
+                    directors = head_section.xpath(".//*[@role='director']")
+                    if len(directors) == 0:
+                        directors = head_section.xpath(".//*[@role='production']")
+                    director = ", ".join([d.text for d in directors])
+                    date = [d.text for d in head_section.xpath(".//*") if d.tag.endswith("date")][0]
+                    first_row = "{}: {} ({})".format(director, work.name, date)
+                    short = first_row
+                    performances = [t.obj for t in Triple.objects.filter(subj=work, prop__name="has been performed in")]
+                    performances.sort(key=lambda e: e.start_date if e.start_date is not None else datetime.datetime.now().date())
+                    if len(performances) > 0:
+                        second_row = "Film-Premiere | {}".format(performances[0].start_date_written)
+                        short = short + "$" + second_row
+                    short = " ".join(short.split())
+                    work.short = short
+            return work
+        work.short = ""
+        if Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Filme").count() > 0:
+            work = short_text_Filme(work)
+        else:
+            work = short_text_RadioFernsehen(work)
+        return work
+
+
     def main():
         short_text_generators = [
-            ("Lyrik", short_text_Lyrik), 
-            ("Kurzprosa", short_text_Kurzprosa), 
-            ("Essayistische Texte, Reden und Statements", short_text_Essays), 
-            ("Romane", short_text_Romane), 
-            ("Texte für Hörspiele", short_text_Hoerspiele), 
-            ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
-            ("Theatertexte", short_text_Theatertexte), 
-            ("Kompositionen", short_text_Theatertexte), 
-            ("Texte für Kompositionen", short_text_Theatertexte), 
-            ("Libretti", short_text_Theatertexte), 
-            ("Übersetzte Werke", short_text_Uebersetzte_Werke),
-            ("Übersetzungen", short_text_Essays),
-            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
-            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
-            ("Interviews", short_text_Interviews),
-            ("Bearbeitungen von anderen", short_text_Bearbeitungen),
-            ("Sekundärliteratur", short_text_Seklit),
+            # ("Lyrik", short_text_Lyrik), 
+            # ("Kurzprosa", short_text_Kurzprosa), 
+            # ("Essayistische Texte, Reden und Statements", short_text_Essays), 
+            # ("Romane", short_text_Romane), 
+            # ("Texte für Hörspiele", short_text_Hoerspiele), 
+            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
+            # ("Theatertexte", short_text_Theatertexte), 
+            # ("Kompositionen", short_text_Theatertexte), 
+            # ("Texte für Kompositionen", short_text_Theatertexte), 
+            # ("Libretti", short_text_Theatertexte), 
+            # ("Übersetzte Werke", short_text_Uebersetzte_Werke),
+            # ("Übersetzungen", short_text_Essays),
+            # ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
+            # ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
+            # ("Interviews", short_text_Interviews),
+            # ("Bearbeitungen von anderen", short_text_Bearbeitungen),
+            # ("Sekundärliteratur", short_text_Seklit),
+            # ("Würdigungen", short_text_Honour),
+            ("Sendungen und Filmporträts", short_text_Sendungen),
             
             ]
         for short_text_generator in short_text_generators:
@@ -642,15 +722,15 @@ def generate_short_text():
                     print("-> {}".format(work.short))
 
         # Generate short entried for performances
-        print("_____Performances_____")
-        performances = F31_Performance.objects.all()
-        for p in performances:
-            print(p.name)
-            p = short_text_Performance(p)
-            if p.short is not None:  
-                p.short = p.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
-            p.save()
-            print("-> {}".format(p.short))
+        # print("_____Performances_____")
+        # performances = F31_Performance.objects.all()
+        # for p in performances:
+        #     print(p.name)
+        #     p = short_text_Performance(p)
+        #     if p.short is not None:  
+        #         p.short = p.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
+        #     p.save()
+        #     print("-> {}".format(p.short))
                 
 
     main()
