@@ -464,9 +464,10 @@ class TreesManager:
 
                             attr_dict["gnd_url"] = xml_elem_child.attrib.get("target")
                 elif (
-                    xml_elem.tag.endswith("item")
+                    (xml_elem.tag.endswith("item")
                     and xml_elem.attrib.get("ana") is not None
-                    and xml_elem.attrib.get("ana").startswith("seklit")
+                    and xml_elem.attrib.get("ana").startswith("seklit"))
+                    or (xml_elem.tag.endswith("div") and xml_elem.attrib.get("type") == "head_section")
                 ):
 
                     for xml_elem_child in xml_elem:
