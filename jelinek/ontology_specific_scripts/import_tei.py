@@ -321,6 +321,7 @@ class TreesManager:
                 attr_dict = {
                     "name_type": None,
                     "name_subtype": None,
+                    "name_mediatype": None,
                 }
 
                 if (
@@ -328,9 +329,9 @@ class TreesManager:
                     and xml_elem.attrib.get("type") is not None
                     # and xml_elem.attrib.get("ana") == "frbroo:manifestation"
                 ):
-
                     attr_dict["name_type"] = xml_elem.attrib.get("type")
                     attr_dict["name_subtype"] = xml_elem.attrib.get("subtype")
+                    attr_dict["name_mediatype"] = xml_elem.attrib.get("mediatype")
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -357,6 +358,12 @@ class TreesManager:
                     if attr_dict["name_subtype"] is not None:
 
                         db_result = E55_Type.objects.get_or_create(name=attr_dict["name_subtype"])
+
+                        enities_list.append(handle_after_creation(db_result, {}))
+
+                    if attr_dict["name_mediatype"] is not None:
+
+                        db_result = E55_Type.objects.get_or_create(name=attr_dict["name_mediatype"])
 
                         enities_list.append(handle_after_creation(db_result, {}))
 
@@ -2856,9 +2863,11 @@ class TreesManager:
 
             def triples_from_f3_to_e55(entity_manifestation, path_node):
 
+                name_mediatype = path_node.xml_elem.attrib.get("mediatype")
                 name_subtype = path_node.xml_elem.attrib.get("subtype")
                 name_type = path_node.xml_elem.attrib.get("type")
 
+                mediatype_found = None
                 subtype_found = False
                 type_found = False
                 entity_found = None
@@ -2884,6 +2893,12 @@ class TreesManager:
 
                             entity_found = entity_other
 
+                        if (
+                            name_mediatype is not None
+                            and entity_other.name.lower() == name_mediatype.lower()
+                        ):
+                            mediatype_found = entity_other
+
                 if entity_found is None and (name_subtype is not None or name_type is not None) and name_type != "host":
 
                     # TODO : Check how often this is the case
@@ -2894,6 +2909,14 @@ class TreesManager:
                     create_triple(
                         entity_subj=entity_manifestation,
                         entity_obj=entity_found,
+                        prop=Property.objects.get(name="p2 has type")
+                    )
+
+                if mediatype_found is not None:
+
+                    create_triple(
+                        entity_subj=entity_manifestation,
+                        entity_obj=mediatype_found,
                         prop=Property.objects.get(name="p2 has type")
                     )
 
