@@ -3738,7 +3738,40 @@ class TreesManager:
 
                                                 break
 
+                                        for path_node_div_div in path_node_div.path_node_children_list:
+
+                                            if path_node_div_div.xml_elem.tag.endswith("div") and path_node_div_div.xml_elem.attrib.get("type") == "head_section":
+
+                                                for path_node_bibl in path_node_div_div.path_node_children_list:
+
+                                                    for entity_work in path_node_bibl.entities_list:
+
+                                                        if has_class_as_parent(entity_work.__class__, F1_Work):
+
+                                                            create_triple(
+                                                                entity_subj=entity_work,
+                                                                entity_obj=entity_keyword,
+                                                                prop=Property.objects.get(name="has keyword"),
+                                                            )
+
+                                                    if path_node_bibl.xml_elem.tag.endswith("head"):
+                                                        for path_node_bibl in path_node_bibl.path_node_children_list:
+
+                                                            for entity_work in path_node_bibl.entities_list:
+
+                                                                if has_class_as_parent(entity_work.__class__, F1_Work):
+
+                                                                    create_triple(
+                                                                        entity_subj=entity_work,
+                                                                        entity_obj=entity_keyword,
+                                                                        prop=Property.objects.get(name="has keyword"),
+                                                                    )
+
+                                                break
+
                                         break
+
+                                break
 
                                 break
 
