@@ -416,7 +416,7 @@ class TreesManager:
                         # TODO : Check if there are titles without 'type="main"'
                         if (
                             xml_elem_child.tag.endswith("title")
-                            and (xml_elem_child.attrib.get("type") == "main" or xml_elem_child.attrib.get("type") == None)
+                            and (xml_elem_child.attrib.get("type") == "main" or (xml_elem_child.attrib.get("type") == None and attr_dict["name"] == ""))
                         ):
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
@@ -1674,7 +1674,7 @@ class TreesManager:
                         # TODO : Check if there are titles without 'type="main"'
                         if (
                             xml_elem_child.tag.endswith("title")
-                            and (xml_elem_child.attrib.get("type") == "main" or xml_elem_child.attrib.get("type") == None)
+                            and (xml_elem_child.attrib.get("type") == "main" or (xml_elem_child.attrib.get("type") == None and attr_dict["name"] == ""))
                         ):
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
@@ -3738,7 +3738,40 @@ class TreesManager:
 
                                                 break
 
+                                        for path_node_div_div in path_node_div.path_node_children_list:
+
+                                            if path_node_div_div.xml_elem.tag.endswith("div") and path_node_div_div.xml_elem.attrib.get("type") == "head_section":
+
+                                                for path_node_bibl in path_node_div_div.path_node_children_list:
+
+                                                    for entity_work in path_node_bibl.entities_list:
+
+                                                        if has_class_as_parent(entity_work.__class__, F1_Work):
+
+                                                            create_triple(
+                                                                entity_subj=entity_work,
+                                                                entity_obj=entity_keyword,
+                                                                prop=Property.objects.get(name="has keyword"),
+                                                            )
+
+                                                    if path_node_bibl.xml_elem.tag.endswith("head"):
+                                                        for path_node_bibl in path_node_bibl.path_node_children_list:
+
+                                                            for entity_work in path_node_bibl.entities_list:
+
+                                                                if has_class_as_parent(entity_work.__class__, F1_Work):
+
+                                                                    create_triple(
+                                                                        entity_subj=entity_work,
+                                                                        entity_obj=entity_keyword,
+                                                                        prop=Property.objects.get(name="has keyword"),
+                                                                    )
+
+                                                break
+
                                         break
+
+                                break
 
                                 break
 
@@ -4046,11 +4079,12 @@ def run(*args, **options):
 
         if len(xml_file_list) == 0:
             print("No files nor directories in env found")
+            xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2"))
-            xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+            
 
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0005_Sammelbände"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
