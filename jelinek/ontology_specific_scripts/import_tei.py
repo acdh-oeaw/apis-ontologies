@@ -4079,11 +4079,12 @@ def run(*args, **options):
 
         if len(xml_file_list) == 0:
             print("No files nor directories in env found")
+            xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2"))
-            xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+            
 
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0005_Sammelbände"))
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
