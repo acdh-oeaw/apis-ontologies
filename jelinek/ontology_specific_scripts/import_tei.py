@@ -416,7 +416,7 @@ class TreesManager:
                         # TODO : Check if there are titles without 'type="main"'
                         if (
                             xml_elem_child.tag.endswith("title")
-                            and (xml_elem_child.attrib.get("type") == "main" or xml_elem_child.attrib.get("type") == None)
+                            and (xml_elem_child.attrib.get("type") == "main" or (xml_elem_child.attrib.get("type") == None and attr_dict["name"] == ""))
                         ):
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
@@ -1674,7 +1674,7 @@ class TreesManager:
                         # TODO : Check if there are titles without 'type="main"'
                         if (
                             xml_elem_child.tag.endswith("title")
-                            and (xml_elem_child.attrib.get("type") == "main" or xml_elem_child.attrib.get("type") == None)
+                            and (xml_elem_child.attrib.get("type") == "main" or (xml_elem_child.attrib.get("type") == None and attr_dict["name"] == ""))
                         ):
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
