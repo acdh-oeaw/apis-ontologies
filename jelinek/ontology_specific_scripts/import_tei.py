@@ -1655,6 +1655,11 @@ class TreesManager:
                     and xml_elem.tag.endswith("bibl")
                     and xml_elem.attrib.get("ana") == "frbroo:work"
                 ):
+                    if (
+                        xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
+                    ):
+                        attr_dict["idno"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+
                     if path_node.path_node_parent != None:
                         parent = path_node.path_node_parent
                         while parent.path_node_parent != None:
@@ -1674,7 +1679,7 @@ class TreesManager:
                         # TODO : Check if there are titles without 'type="main"'
                         if (
                             xml_elem_child.tag.endswith("title")
-                            and (xml_elem_child.attrib.get("type") == "main" or (xml_elem_child.attrib.get("type") == None and attr_dict["name"] == ""))
+                            and (xml_elem_child.attrib.get("type") == "main" or (xml_elem_child.attrib.get("type") == None and attr_dict["name"] is None))
                         ):
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
@@ -3587,19 +3592,19 @@ class TreesManager:
                                                                     prop=Property.objects.get(name="is in chapter"),
                                                                 )
 
-                                                if path_node_div_child.xml_elem.attrib.get("type") == "head_section" and entity_chapter.chapter_number.startswith("7"):
+                                                        if path_node_div_child.xml_elem.attrib.get("type") == "head_section" and entity_chapter.chapter_number.startswith("7"):
 
-                                                    for path_node_item_child in path_node_item.path_node_children_list:
+                                                            for path_node_item_child in path_node_item.path_node_children_list:
 
-                                                            for entity_work in path_node_item_child.entities_list:
+                                                                    for entity_work in path_node_item_child.entities_list:
 
-                                                                if has_class_as_parent(entity_work.__class__, F1_Work):
+                                                                        if has_class_as_parent(entity_work.__class__, F1_Work):
 
-                                                                    create_triple(
-                                                                        entity_subj=entity_work,
-                                                                        entity_obj=entity_chapter,
-                                                                        prop=Property.objects.get(name="is in chapter"),
-                                                                    )
+                                                                            create_triple(
+                                                                                entity_subj=entity_work,
+                                                                                entity_obj=entity_chapter,
+                                                                                prop=Property.objects.get(name="is in chapter"),
+                                                                            )
 
                                             if path_node_div_child.xml_elem.attrib.get("type") == "seklitSubsection":
 
