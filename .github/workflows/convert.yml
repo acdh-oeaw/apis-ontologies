@@ -1,0 +1,75 @@
+#Github workflow to update sicprod models.py
+#
+#SPDX-FileCopyrightText: 2023 Birger Schacht
+#SPDX-License-Identifier: MIT
+
+# To be able to create PR in this action, we have to activate
+# 'Allow Github Actions to create and approve pull requests'
+#
+# This workflow is triggered by a repository_dispatch event, in our case curl is doing the trick:
+#  curl -H "Accept: application/vnd.github.everest-preview+json" \
+#    -H "Authorization: token ${{ secrets.PR_TOKEN }}" \
+#    --request POST \
+#    --data '{"event_type": "createpr"}' \
+#    https://api.github.com/repos/acdh-oeaw/apis-ontologies/dispatches
+
+name: "Update sicprod/models.py from model.xml and create PR"
+
+# this workflow is only run via the repository_dispatch
+# trigger in combination with the event_type `createpr`
+on:
+  repository_dispatch:
+    types: createpr
+
+# those are needed to push the changes and create a PR
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  createpr:
+    name: "Update models.py from model.xml and create PR"
+    runs-on: ubuntu-22.04
+
+    steps:
+     - name: Install dependencies
+       run: |
+          sudo apt update
+          sudo apt install python3-lxml python3-jinja2 -y
+     - name: Checkout xmltodjangomodel
+       uses: actions/checkout@v3
+       with:
+         repository: acdh-oeaw/xmltodjangomodel
+         path: xmltodjangomodel
+     - name: Checkout sicprod repository
+       uses: actions/checkout@v3
+       with:
+         repository: SiCProD/sicprod-datamodel
+         path: sicprod-datamodel
+     - name: Checkout ontologies repository
+       uses: actions/checkout@v3
+       with:
+         path: apis-ontologies
+     - name: Build models.py
+       run: |
+         cd xmltodjangomodel
+         python3 convert.py ../sicprod-datamodel/model.xml ../apis-ontologies/sicprod/models.py
+     - name: Create PR
+       run: |
+         cd apis-ontologies
+         SICPROD_HEAD=`git -C ../sicprod-datamodel rev-parse --short HEAD`
+         git config user.name github-actions
+         git config user.email github-actions@github.com
+         git checkout -b modelspy-${SICPROD_HEAD}
+         git add sicprod/models.py
+         if `git diff --exit-code sicprod/models.py`; then
+             echo "models.py changed"
+             if ! `gh pr list --search "${SICPROD_HEAD}" | grep -q "${SICPROD_HEAD}"`; then
+                 echo "No PR containing ${SICPROD_HEAD}, lets create one"
+                 git commit -m 'Updated models.py from sicprod-datamodel/model.xml'
+                 git push -u origin modelspy-${SICPROD_HEAD}
+                 gh pr create --title "Updated models.py from sicprod-datamodel ${SICPROD_HEAD}" --body 'Updated models.py'
+             fi
+         fi
+       env:
+         GH_TOKEN: ${{ github.token }}
