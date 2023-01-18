@@ -30,9 +30,9 @@ Whenever you run a Django management command, make sure to reference it [as per 
 
 ##### Required settings
 
-The only strictly required settings for local development are `SECRET_KEY` and variables needed to establish a database connection.
+The only strictly required setting for local development is the information about the database connection.
 
-For `SECRET_KEY`, follow the instructions in the template. For the database, adapt the `DATABASES` dictionary once you have a database for local development in place. For a local MariaDB or MySQL database, for example, use the following config with values for `NAME`, `USER` and `PASSWORD` provided:
+Adapt the `DATABASES` dictionary once you have a database for local development in place. For a local MariaDB or MySQL database, for example, use the following config with values for `NAME`, `USER` and `PASSWORD` provided:
 
 ```python
 DATABASES = {
@@ -46,6 +46,8 @@ DATABASES = {
     }
 }
 ```
+
+Once you migrate the application to a production environment, you should set a `SECRET_KEY` environment variable.
 
 ## Sharing of updates to code
 
