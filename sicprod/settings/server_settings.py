@@ -23,6 +23,14 @@ APIS_SKOSMOS = {
     "description": "Thesaurus of the APIS project. Used to type entities and relations.",
 }
 
+APIS_BIBSONOMY = [{
+   'type': 'zotero', #or zotero
+   'url': 'https://api.zotero.org', #url of the bibsonomy instance or zotero.org
+   'user': os.environ.get('APIS_BIBSONOMY_USER'), #for zotero use the user id number found in settings
+   'API key': os.environ.get('APIS_BIBSONOMY_PASSWORD'),
+   'group': '4853010'
+}]
+APIS_BIBSONOMY_FIELDS = ['self']
 APIS_AUTOCOMPLETE_SETTINGS = "apis_ontology.settings.autocomplete_settings"
 
 ALLOWED_HOSTS = re.sub(
@@ -58,7 +66,7 @@ MAIN_TEXT_NAME = "ÖBL Haupttext"
 
 LANGUAGE_CODE = "de"
 
-#INSTALLED_APPS += ["apis_ontology"]
+INSTALLED_APPS += ["apis_bibsonomy"]
 
 #STATICFILES_DIRS = [BASE_DIR + "/member_images"]
 
