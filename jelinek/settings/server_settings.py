@@ -68,7 +68,7 @@ LANGUAGE_CODE = "de"
 
 APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
-INSTALLED_APPS.append("apis_highlighter")
+#INSTALLED_APPS.append("apis_highlighter")
 
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
