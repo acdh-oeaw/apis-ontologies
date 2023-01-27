@@ -24,6 +24,16 @@ def add_jelinek_as_interviewee(work):
         prop=Property.objects.get(name="is interviewee of")
     )
 
+def add_names_for_seklit(work):
+    if work.name is None or len(work.name) == 0:
+        manifestations = [t.obj for t in Triple.objects.filter(prop__name="is expressed in", subj=work)]
+        if len(manifestations) == 1:
+            work.name = manifestations[0].name
+        elif len(set([m.name for m in manifestations if not (m.name is None or len(m.name) == 0)])) == 1:
+            work.name = list(set([m.name for m in manifestations if not (m.name is None or len(m.name) == 0)]))[0]
+        print("Set work {} name to {}".format(work.idno, work.name))
+    return work
+
 def generate_genre():
 
     def main():
@@ -70,6 +80,7 @@ def generate_genre():
                         work.genre = "Bearbeitungen von anderen"
                     elif "0006_Sekundärliterat" in xml_file.file_path:
                         work.genre = "Sekundärliteratur"
+                        work = add_names_for_seklit(work)
                     elif "0005_Würdigungen" in xml_file.file_path:
                         work.genre = "Würdigungen"
                     elif "0007_SendungenundFilmporträts" in xml_file.file_path:
@@ -79,6 +90,7 @@ def generate_genre():
                 for xml_file in xml_files:
                     if "0006_Sekundärliterat" in xml_file.file_path:
                         work.genre = "Sekundärliteratur"
+                        work = add_names_for_seklit(work)
                     elif "0005_Würdigungen" in xml_file.file_path:
                         work.genre = "Würdigungen"
                     elif "0004_Bearbeitungenvo" in xml_file.file_path:
