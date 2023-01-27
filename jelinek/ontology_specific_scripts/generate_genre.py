@@ -84,7 +84,7 @@ def generate_genre():
                     elif "0005_Würdigungen" in xml_file.file_path:
                         work.genre = "Würdigungen"
                     elif "0007_SendungenundFilmporträts" in xml_file.file_path:
-                        work.genre = "Sendungen und Filmportraits"
+                        work.genre = "Sendungen und Filmporträts"
             else:
                 xml_files = [t.obj for t in Triple.objects.filter(prop__name="data read from file", subj=work)]
                 for xml_file in xml_files:

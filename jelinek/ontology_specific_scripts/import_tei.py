@@ -1131,7 +1131,7 @@ class TreesManager:
                 }
 
                 if (
-                    xml_elem.tag.endswith("pubPlace")
+                    (xml_elem.tag.endswith("pubPlace") or xml_elem.tag.endswith("places"))
                     and is_valid_text(xml_elem.text)
                 ):
 
@@ -2433,6 +2433,22 @@ class TreesManager:
                                                         entity_obj=entity_other,
                                                         prop=Property.objects.get(name="contains")
                                                     )
+                            elif (
+                                sibling.xml_elem.attrib.get("type") is not None 
+                                and (sibling.xml_elem.attrib.get("type").endswith("basedOn") or sibling.xml_elem.attrib.get("type").endswith("commentary"))
+                            ):
+                                for sibling_child in sibling.path_node_children_list:
+                                    for p in sibling_child.path_node_children_list:
+                                        for rs in p.path_node_children_list:
+                                            for entity_other in rs.entities_list:
+                                                if entity_other != entity_work:
+                                                    if entity_other is None or entity_work is None:
+                                                        print("One of the two entities is none, this shouldn't happen")
+                                                    else:
+                                                        create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                        
+
+
                 elif (  path_node.path_node_parent is not None
                         and path_node.path_node_parent.xml_elem.tag.endswith("div")
                         and path_node.path_node_parent.xml_elem.attrib.get("type") == "section"
@@ -3072,6 +3088,17 @@ class TreesManager:
                     entity_obj=entity_type,
                     prop=Property.objects.get(name="p127 has broader term")
                 )
+        
+        def parse_triples_from_e40_legal_body(entity_e40, path_node):
+
+            for child in path_node.path_node_children_list:
+                if child.xml_elem.tag.endswith("places"):
+                    for place in child.entities_list:
+                        create_triple(
+                            entity_subj=entity_e40,
+                            entity_obj=place,
+                            prop=Property.objects.get(name="is located in")
+                        )
 
         def parse_triples_from_f10_person(entity_person, path_node: PathNode):
 
@@ -3304,6 +3331,14 @@ class TreesManager:
                                                 prop=Property.objects.get(name="is organizer of"),
                                             )
 
+                                        if (path_node_child_child.xml_elem.attrib.get("role") == "broadcaster"):
+
+                                            create_triple(
+                                                entity_obj=entity_performance,
+                                                entity_subj=entity_other,
+                                                prop=Property.objects.get(name="is broadcaster of"),
+                                            )
+
                                     create_triple(
                                                 entity_subj=entity_performance,
                                                 entity_obj=entity_other,
@@ -3507,6 +3542,22 @@ class TreesManager:
                     for entity_other in path_node_child.entities_list:
 
                         if entity_other.__class__ is E40_Legal_Body:
+
+                            if path_node_child.xml_elem.attrib.get("type") == "broadcaster":
+                                create_triple(
+                                    entity_obj=entity_broadcast,
+                                    entity_subj=entity_other,
+                                    prop=Property.objects.get(name="is broadcaster of"),
+                                )
+                            elif path_node_child.xml_elem.attrib.get("type") == "institution":
+                                for org_name in path_node_child.path_node_children_list:
+                                    if org_name.xml_elem.attrib.get("role") == "broadcaster":
+                                        create_triple(
+                                            entity_obj=entity_broadcast,
+                                            entity_subj=entity_other,
+                                            prop=Property.objects.get(name="is broadcaster of"),
+                                        ) 
+                                
 
                             create_triple(
                                 entity_subj=entity_broadcast,
@@ -3864,6 +3915,10 @@ class TreesManager:
                 if entity.__class__ is E55_Type:
 
                     parse_triples_from_e55_manifestation(entity, path_node)
+
+                elif entity.__class__ is E40_Legal_Body:
+
+                    parse_triples_from_e40_legal_body(entity, path_node)
 
                 elif entity.__class__ is F1_Work:
 

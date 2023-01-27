@@ -439,6 +439,16 @@ def construct_properties():
     is_organizer_of.obj_class.add(ContentType.objects.get(model=Honour.__name__))
     is_organizer_of.save()
 
+    is_broadcaster_of = Property.objects.create(
+        name="is broadcaster of",
+        name_reverse="has broadcaster",
+    )
+    is_broadcaster_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
+    is_broadcaster_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_broadcaster_of.obj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
+    is_broadcaster_of.obj_class.add(ContentType.objects.get(model=Honour.__name__))
+    is_broadcaster_of.save()
+
     has_been_performed_in = Property.objects.create(
         name="has been performed in",
         name_reverse="was performance of",
@@ -528,3 +538,10 @@ def construct_properties():
     )
     is_about.subj_class.add(ContentType.objects.get(model=Honour.__name__))
     is_about.obj_class.add(ContentType.objects.get(model=F9_Place.__name__))
+
+    is_located_in = Property.objects.create(
+        name="is located in",
+        name_reverse="is location of",
+    )
+    is_located_in.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
+    is_located_in.obj_class.add(ContentType.objects.get(model=F9_Place.__name__))
