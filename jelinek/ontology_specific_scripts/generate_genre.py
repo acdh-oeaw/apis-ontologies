@@ -3,7 +3,26 @@ from __future__ import annotations
 from apis_ontology.models import *
 from apis_core.apis_relations.models import Triple, TempTriple, Property
 
+jelinek = F10_Person.objects.get(name="Elfriede Jelinek", pers_id="pers00000")
 
+def create_triple(entity_subj, entity_obj, prop):
+    db_result = TempTriple.objects.get_or_create(
+        subj=entity_subj,
+        obj=entity_obj,
+        prop=prop
+    )
+    if db_result[1] is True:
+        print(f"created triple: subj: {entity_subj}, obj: {entity_obj}, prop: {prop.name}")
+    else:
+        print("triple already exists")
+    return db_result[0]
+
+def add_jelinek_as_interviewee(work):
+    create_triple(
+        entity_subj=jelinek,
+        entity_obj=work,
+        prop=Property.objects.get(name="is interviewee of")
+    )
 
 def generate_genre():
 
@@ -46,6 +65,7 @@ def generate_genre():
                         work.genre = "Herausgeberin- und Redaktionstätigkeit"
                     elif "003_Interviews" in xml_file.file_path:
                         work.genre = "Interviews"
+                        add_jelinek_as_interviewee(work)
                     elif "0004_Bearbeitungenvo" in xml_file.file_path:
                         work.genre = "Bearbeitungen von anderen"
                     elif "0006_Sekundärliterat" in xml_file.file_path:
