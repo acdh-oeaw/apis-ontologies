@@ -2406,7 +2406,7 @@ class TreesManager:
                                 for term in keywords.path_node_children_list:
                                     for rs in term.path_node_children_list:
                                         for entity_other in rs.entities_list:
-                                            if entity_other != entity_work:
+                                            if entity_other != entity_work and has_class_as_parent(entity_other.__class__, F1_Work):
                                                 if entity_other is None or entity_work is None:
                                                     print("One of the two entities is none, this shouldn't happen")
                                                 else:
@@ -2441,7 +2441,7 @@ class TreesManager:
                                     for p in sibling_child.path_node_children_list:
                                         for rs in p.path_node_children_list:
                                             for entity_other in rs.entities_list:
-                                                if entity_other != entity_work:
+                                                if entity_other != entity_work and has_class_as_parent(entity_other.__class__, F1_Work):
                                                     if entity_other is None or entity_work is None:
                                                         print("One of the two entities is none, this shouldn't happen")
                                                     else:
@@ -3698,7 +3698,7 @@ class TreesManager:
                         for term in keywords.path_node_children_list:
                             for rs in term.path_node_children_list:
                                 for entity_other in rs.entities_list:
-                                    if entity_other != entity_chapter:
+                                    if entity_other != entity_chapter and has_class_as_parent(entity_other.__class__, F1_Work):
                                         if entity_other is None or entity_chapter is None:
                                             print("One of the two entities is none, this shouldn't happen")
                                         else:

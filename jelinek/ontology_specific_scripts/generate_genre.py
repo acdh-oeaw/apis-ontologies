@@ -6,16 +6,21 @@ from apis_core.apis_relations.models import Triple, TempTriple, Property
 jelinek = F10_Person.objects.get(name="Elfriede Jelinek", pers_id="pers00000")
 
 def create_triple(entity_subj, entity_obj, prop):
-    db_result = TempTriple.objects.get_or_create(
-        subj=entity_subj,
-        obj=entity_obj,
-        prop=prop
-    )
-    if db_result[1] is True:
-        print(f"created triple: subj: {entity_subj}, obj: {entity_obj}, prop: {prop.name}")
-    else:
-        print("triple already exists")
-    return db_result[0]
+    try:
+        db_result = TempTriple.objects.get_or_create(
+            subj=entity_subj,
+            obj=entity_obj,
+            prop=prop
+        )
+        if db_result[1] is True:
+            print(f"created triple: subj: {entity_subj}, obj: {entity_obj}, prop: {prop.name}")
+        else:
+            print("triple already exists")
+        return db_result[0]
+    except:
+        print(f"An error occurred with the triple creation: subj: {entity_subj}, obj: {entity_obj}, prop: {prop.name}")
+
+    
 
 def add_jelinek_as_interviewee(work):
     create_triple(
@@ -38,6 +43,7 @@ def generate_genre():
 
     def main():
         for work in  F1_Work.objects.all():
+        # for work in  F1_Work.objects.filter(name="Sind schreibende Frauen Fremde in dieser Welt? Die Begegnung."):
             xml_files = [t.obj for t in Triple.objects.filter(prop__name="was defined primarily in", subj=work)]
             if len(xml_files) > 0:
                 for xml_file in xml_files:
