@@ -2162,6 +2162,7 @@ class TreesManager:
 
                 if (
                     path_node.path_node_parent is not None
+                    and (not path_node.path_node_parent.xml_elem.attrib.get("ana") == "textlang")
                     and xml_elem.tag.endswith("term")
                     and xml_elem.attrib.get("n") is None
                     and is_valid_text(xml_elem.text)
