@@ -24,38 +24,68 @@ def generate_short_text():
         else:
             return "{}/{}".format(issue, date)
 
+    def get_sorted_manifestations_for_work(work, include_translations=False):
+        relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
+        if len(relations) == 0 and include_translations:
+            relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.edition == "first_edition"]
+            RelInv = namedtuple("RelInv", "obj prop subj")
+            relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
+        if len(relations) == 0:
+            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
+            relations.sort(key=lambda rel: rel.obj.start_date)
+        if len(relations) == 0:
+            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in")]
+            relations.sort(key=lambda rel: rel.obj.id)
+        if len(relations) == 0 and include_translations:
+            relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.start_date is not None]
+            RelInv = namedtuple("RelInv", "obj prop subj")
+            relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
+            relations.sort(key=lambda rel: rel.obj.start_date)
+        return relations
+
+    def get_erstdruck_string(manifestation):
+        triples = [triple for triple in manifestation.triple_set_from_subj.all()]
+        types = [triple.obj.name for triple in manifestation.triple_set_from_subj.all() if triple.prop.name == "p2 has type"]
+        if len(types) > 0:
+            if types[0] == "onlinePublication":
+                return "Erstveröffentlichung"
+        return "Erstdruck"
+
     def short_text_Lyrik(work):
         def short_text_Buchpublikationen(work):
-            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
-            if len(relations) == 0:
-                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
-                relations.sort(key=lambda rel: rel.obj.start_date)
+            relations = get_sorted_manifestations_for_work(work)
+            has_translator = False
+            if work.index_in_chapter >= 7: ## koniec/ende and Gesammelte Gedichte/Poésies Complètes have translations
+                        relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.start_date is not None]
+                        RelInv = namedtuple("RelInv", "obj prop subj")
+                        relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
+                        relations.sort(key=lambda rel: rel.obj.start_date)
+                        has_translator = True
             if len(relations) > 0:
                 first_manifestation = relations[0].obj
                 publishers = Triple.objects.filter(prop__name="is publisher of", obj=first_manifestation)
                 publishers = [p for p in publishers]
+                translator_string = ""
+                if has_translator:
+                    translators = Triple.objects.filter(prop__name__in=["is translator of", "is editor of"], obj=first_manifestation)
+                    translators = [t.subj for t in translators]
+                    translator_string = "Ü: {}. ".format(", ".join([t.name for t in translators]))
                 if len(publishers) > 0:
                     publisher = publishers[0].subj
                     places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
                     if places.count() > 0:
                         place = places[0].obj
-                        short = "<b><i>{}.</i></b> {}: {} {}.".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
+                        short = "<b><i>{}.</i></b> {}{}: {} {}.".format(first_manifestation.name, translator_string, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
                             short = short + " ({})".format(first_manifestation.series)
                         work.short = short
                 else:
-                    print("No publishers")
+                    print("No publishers")                        
             else:
                 print("no manifestations")
             return work
         def short_text_Einzelgedichte(work):
-            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
-            if len(relations) == 0:
-                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
-                relations.sort(key=lambda rel: rel.obj.start_date)
-            if len(relations) == 0:
-                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in")]
-                relations.sort(key=lambda rel: rel.obj.id)
+            relations = get_sorted_manifestations_for_work(work)
             if len(relations) > 0:
                 first_manifestation = relations[0].obj
                 hosts = Triple.objects.filter(subj=first_manifestation, prop__name="host")
@@ -64,17 +94,14 @@ def generate_short_text():
                     date_written = first_manifestation.start_date_written
                     if date_written is None:
                         date_written = host.start_date_written
-                    short = "Erstdruck | In: {} {}, {}.".format(host.name, date_written, _format_page(first_manifestation.page))
+                    short = "{} | In: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, date_written, _format_page(first_manifestation.page))
                     work.short = short
                 else:
                     if work.idno == "work00875": #Sonderfall: Postkarte
-                        editors = [e.obj for e in Triple.objects.filter(prop__name="is editor of", obj=first_manifestation)]
-                        if len(editors) > 0:
-                            editor = editors[0]
-                            short = "{}. {}, {}".format(first_manifestation.name, editor.name, first_manifestation.start_date_written)
-                            work.short = short
+                        short = "{}, {}".format(first_manifestation.name, first_manifestation.start_date_written)
+                        work.short = short
                     elif work.idno == "work01048": #Sonderfall: Online-Publikation
-                        short = "Erstdruck | In: {} ({}) (= {}).".format(first_manifestation.ref_target, first_manifestation.ref_accessed, first_manifestation.series)
+                        short = "{} | In: {} ({}) (= {}).".format(get_erstdruck_string(first_manifestation), first_manifestation.ref_target, first_manifestation.ref_accessed, first_manifestation.series)
                         work.short = short
                     else:
                         print("No publishers")
@@ -104,15 +131,12 @@ def generate_short_text():
                 publisher = manifestations_and_years[0][1]
                 places = Triple.objects.filter(subj__id=manifestation.id, prop__name="was published in")
                 if places.count() > 0:
-                    short = "Erstdruck | {}: {} {}.".format(places[0].obj.name, publisher.subj.name, publisher.temptriple.start_date_written)
+                    short = "{} | {}: {} {}.".format(get_erstdruck_string(manifestation), places[0].obj.name, publisher.subj.name, publisher.temptriple.start_date_written)
                     work.short = short
         return work
 
     def short_text_Kurzprosa(work):
-        relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
-        if len(relations) == 0:
-            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
-            relations.sort(key=lambda rel: rel.obj.start_date)
+        relations = get_sorted_manifestations_for_work(work)
         if len(relations) > 0:
             first_manifestation = relations[0].obj
             hosts = Triple.objects.filter(subj=first_manifestation, prop__name="host")
@@ -127,23 +151,23 @@ def generate_short_text():
                     if editors.count() > 0:
                         editor = editors[0].subj
                         if editor.__class__ == E40_Legal_Body:
-                            short = "Erstdruck | In: {} (Hg.): {}. {}: {} {}, {}.".format(editor.name, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                            short = "{} | In: {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.name, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
                         elif editor.__class__ == F10_Person:
-                            short = "Erstdruck | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(editor.surname, editor.forename, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                            short = "{} | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.surname, editor.forename, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
                     else:
-                        short = "Erstdruck | In: {}. {}: {} {}, {}.".format(host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                        short = "{} | In: {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
                     work.short = short
                 else:
-                    is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name="journal")
+                    is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name__in=["journal", "newspaper"])
                     if is_journal.count() > 0:
-                        short = "Erstdruck | In: {} {}, {}.".format(host.name, _format_issue(first_manifestation.issue, first_manifestation.start_date_written), _format_page(first_manifestation.page))
+                        short = "{} | In: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, _format_issue(first_manifestation.issue, first_manifestation.start_date_written), _format_page(first_manifestation.page))
                         work.short = short
                     else:
                         print("No journal")
             else:
                 is_online_publication = Triple.objects.filter(prop__name="p2 has type", subj=first_manifestation, obj__name="onlinePublication")
                 if is_online_publication.count() > 0:
-                    short = "Erstdruck | In: {} ({}), datiert mit {} (= {}).".format(first_manifestation.ref_target, first_manifestation.ref_accessed, first_manifestation.start_date_written, first_manifestation.series)
+                    short = "{} | In: {} ({}), datiert mit {} (= {}).".format(get_erstdruck_string(first_manifestation), first_manifestation.ref_target, first_manifestation.ref_accessed, first_manifestation.start_date_written, first_manifestation.series)
                     work.short = short
                 else:
                     print("No hosts")
@@ -153,23 +177,7 @@ def generate_short_text():
 
     def short_text_Essays(work):
         def short_text_Einzeln(work):
-            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
-            if len(relations) == 0:
-                relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.edition == "first_edition"]
-                RelInv = namedtuple("RelInv", "obj prop subj")
-                relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
-            if len(relations) == 0:
-                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
-                relations.sort(key=lambda rel: rel.obj.start_date)
-            if len(relations) == 0:
-                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in")]
-                relations.sort(key=lambda rel: rel.obj.id)
-            if len(relations) == 0:
-                relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.start_date is not None]
-                RelInv = namedtuple("RelInv", "obj prop subj")
-                relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
-                relations.sort(key=lambda rel: rel.obj.start_date)
-
+            relations = get_sorted_manifestations_for_work(work, include_translations=True)
             if len(relations) > 0:
                 first_manifestation = relations[0].obj
                 hosts = Triple.objects.filter(subj=first_manifestation, prop__name="host")
@@ -184,14 +192,14 @@ def generate_short_text():
                         if editors.count() > 0:
                             editor = editors[0].subj
                             if editor.__class__ == E40_Legal_Body:
-                                short = "Erstdruck | In: {} (Hg.): {}. {}: {} {}, {}.".format(editor.name, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                                short = "{} | In: {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.name, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
                             elif editor.__class__ == F10_Person:
-                                short = "Erstdruck | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(editor.surname, editor.forename, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                                short = "{} | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.surname, editor.forename, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
                         else:
-                            short = "Erstdruck | In: {}. {}: {} {}, {}.".format(host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                            short = "{} | In: {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
                         work.short = short
                     else:
-                        is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name="journal")
+                        is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name__in=["journal", "newspaper"])
                         if is_journal.count() > 0:
                             short = "Erstdruck | In: {} {}, {}.".format(host.name, _format_issue(first_manifestation.issue, first_manifestation.start_date_written), _format_page(first_manifestation.page))
                             work.short = short
@@ -201,7 +209,7 @@ def generate_short_text():
                                 short = "Erstdruck | In: {}, {}.".format(host.name, host.start_date_written)
                                 work.short = short
                             else:
-                                is_supplement = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name="supplement")
+                                is_supplement = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name__in=["supplement", "booklet"])
                                 if is_supplement.count() > 0:
                                     hosts = Triple.objects.filter(subj=host, prop__name="host")
                                     if hosts.count() > 0:
@@ -229,7 +237,7 @@ def generate_short_text():
                                             hosts = Triple.objects.filter(subj=host, prop__name="host")
                                             if hosts.count() > 0:
                                                 host_host = hosts[0].obj
-                                                is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host_host, obj__name="journal")
+                                                is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host_host, obj__name__in=["journal", "newspaper"])
                                                 if is_journal.count() > 0:
                                                     short = "Erstdruck | In: {}. In: {}, {}.".format(host.name, host_host.name, host_host.start_date_written)
                                                     work.short = short
@@ -248,7 +256,7 @@ def generate_short_text():
                 else:
                     is_online_publication = Triple.objects.filter(prop__name="p2 has type", subj=first_manifestation, obj__name="onlinePublication")
                     if is_online_publication.count() > 0:
-                        short = "Erstdruck | In: {} ({}), datiert mit {} (= {}).".format(first_manifestation.ref_target, first_manifestation.ref_accessed, first_manifestation.start_date_written, first_manifestation.series)
+                        short = "Erstveröffentlichung | In: {} ({}), datiert mit {} (= {}).".format(first_manifestation.ref_target, first_manifestation.ref_accessed, first_manifestation.start_date_written, first_manifestation.series)
                         work.short = short
                     else:
                         is_book = Triple.objects.filter(prop__name="p2 has type", subj=first_manifestation, obj__name="book")
@@ -294,23 +302,7 @@ def generate_short_text():
             return work
 
         def short_text_Sammelbaende(work):
-            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
-            if len(relations) == 0:
-                relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.edition == "first_edition"]
-                RelInv = namedtuple("RelInv", "obj prop subj")
-                relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
-            if len(relations) == 0:
-                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
-                relations.sort(key=lambda rel: rel.obj.start_date)
-            if len(relations) == 0:
-                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in")]
-                relations.sort(key=lambda rel: rel.obj.id)
-            if len(relations) == 0:
-                relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.start_date is not None]
-                RelInv = namedtuple("RelInv", "obj prop subj")
-                relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
-                relations.sort(key=lambda rel: rel.obj.start_date)
-
+            relations = get_sorted_manifestations_for_work(work, include_translations=True)
             if len(relations) > 0:
                 first_manifestation = relations[0].obj
                 publishers = Triple.objects.filter(prop__name="is publisher of", obj=first_manifestation)
@@ -368,9 +360,9 @@ def generate_short_text():
                     publishers = Triple.objects.filter(obj=first, prop__name="is publisher of")
                     places = Triple.objects.filter(subj=first, prop__name="was published in")
                     if len(publishers) > 0 and len(places) > 0:
-                        short = "Erstdruck | {}. {}{}: {} {}.".format(first.name, editor_string, places[0].obj.name, publishers[0].subj.name, first.start_date_written)
+                        short = "{} | {}. {}{}: {} {}.".format(get_erstdruck_string(first), first.name, editor_string, places[0].obj.name, publishers[0].subj.name, first.start_date_written)
                     elif first.ref_target is not None:
-                        short = "Erstdruck | {}, datiert mit {} (= {})".format(first.ref_target, first.start_date_written, first.series)
+                        short = "{} | {}, datiert mit {} (= {})".format(get_erstdruck_string(first), first.ref_target, first.start_date_written, first.series)
                 elif first.__class__ == F31_Performance:
                     if first.performance_type == "cinemarelease":
                         short = "Kinostart | {}".format(first.start_date_written)
@@ -410,11 +402,11 @@ def generate_short_text():
                             if editors.count() > 0:
                                 editor = editors[0].subj
                                 if editor.__class__ == E40_Legal_Body:
-                                    short = "Erstdruck | In: {} (Hg.): {}. {}: {} {}, {}.".format(editor.name, host.name, place.name, publisher.name, first.start_date_written, _format_page(first.page))
+                                    short = "{} | In: {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first), editor.name, host.name, place.name, publisher.name, first.start_date_written, _format_page(first.page))
                                 elif editor.__class__ == F10_Person:
-                                    short = "Erstdruck | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(editor.surname, editor.forename, host.name, place.name, publisher.name, first.start_date_written, _format_page(first.page))
+                                    short = "{} | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first), editor.surname, editor.forename, host.name, place.name, publisher.name, first.start_date_written, _format_page(first.page))
                             else:
-                                short = "Erstdruck | In: {}. {}: {} {}, {}.".format(host.name, place.name, publisher.name, first.start_date_written, _format_page(first.page))
+                                short = "{} | In: {}. {}: {} {}, {}.".format(get_erstdruck_string(first), host.name, place.name, publisher.name, first.start_date_written, _format_page(first.page))
                     else:
                         editors = Triple.objects.filter(obj=first, prop__name="is editor of")
                         editor_string = ""
@@ -423,9 +415,9 @@ def generate_short_text():
                         publishers = Triple.objects.filter(obj=first, prop__name="is publisher of")
                         places = Triple.objects.filter(subj=first, prop__name="was published in")
                         if len(publishers) > 0 and len(places) > 0:
-                            short = "Erstdruck | {}. {}{}: {} {}.".format(first.name, editor_string, places[0].obj.name, publishers[0].subj.name, first.start_date_written)
+                            short = "{} | {}. {}{}: {} {}.".format(get_erstdruck_string(first), first.name, editor_string, places[0].obj.name, publishers[0].subj.name, first.start_date_written)
                         elif first.ref_target is not None:
-                            short = "Erstdruck | {}, datiert mit {} (= {})".format(first.ref_target, first.start_date_written, first.series)
+                            short = "{} | {}, datiert mit {} (= {})".format(get_erstdruck_string(first), first.ref_target, first.start_date_written, first.series)
                 elif first.__class__ == F31_Performance:
                     if first.performance_type == "cinemarelease":
                         short = "Kinostart | {}".format(first.start_date_written)
@@ -573,10 +565,7 @@ def generate_short_text():
         return work
 
     def short_text_Herausgeberin(work):
-        relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
-        if len(relations) == 0:
-            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
-            relations.sort(key=lambda rel: rel.obj.start_date)
+        relations = get_sorted_manifestations_for_work(work)
         if len(relations) > 0:
             first_manifestation = relations[0].obj
             publishers = Triple.objects.filter(prop__name="is publisher of", obj=first_manifestation)
@@ -688,36 +677,38 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            ("Lyrik", short_text_Lyrik), 
-            ("Kurzprosa", short_text_Kurzprosa), 
-            ("Essayistische Texte, Reden und Statements", short_text_Essays), 
-            ("Romane", short_text_Romane), 
-            ("Texte für Hörspiele", short_text_Hoerspiele), 
-            ("Drehbücher und Texte für Filme", short_text_Drehbuecher), 
-            ("Theatertexte", short_text_Theatertexte), 
-            ("Kompositionen", short_text_Theatertexte), 
-            ("Texte für Kompositionen", short_text_Theatertexte), 
-            ("Libretti", short_text_Theatertexte), 
-            ("Übersetzte Werke", short_text_Uebersetzte_Werke),
-            ("Übersetzungen", short_text_Essays),
-            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen),
-            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin),
-            ("Interviews", short_text_Interviews),
-            ("Bearbeitungen von anderen", short_text_Bearbeitungen),
-            ("Sekundärliteratur", short_text_Seklit),
-            ("Würdigungen", short_text_Honour),
-            ("Sendungen und Filmporträts", short_text_Sendungen),
+            ("Lyrik", short_text_Lyrik, "1.1"), 
+            ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
+            ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
+            ("Romane", short_text_Romane, "1.2"), 
+            ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
+            ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
+            ("Theatertexte", short_text_Theatertexte, "1.4"), 
+            ("Kompositionen", short_text_Theatertexte, "1.7"), 
+            ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
+            ("Libretti", short_text_Theatertexte, "1.9"), 
+            ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
+            ("Übersetzungen", short_text_Essays, "1.11"),
+            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen, "1.12"),
+            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
+            ("Interviews", short_text_Interviews, "3"),
+            ("Bearbeitungen von anderen", short_text_Bearbeitungen, "4"),
+            ("Sekundärliteratur", short_text_Seklit, "6"),
+            ("Würdigungen", short_text_Honour, "5"),
+            ("Sendungen und Filmporträts", short_text_Sendungen, "7"),
             
             ]
         for short_text_generator in short_text_generators:
             print("_____{}_____".format(short_text_generator[0]))
-            works = [rel.subj for rel in Triple.objects.filter(prop__name="is in chapter", obj__name__contains=short_text_generator[0])]
+            works = [rel.subj for rel in Triple.objects.filter(prop__name="is in chapter", obj__name__contains=short_text_generator[0]) if rel.obj.chapter_number == short_text_generator[2]]
             for work in works:
                 if len(work.name) > 0:
                     print(work.name)
                     work = short_text_generator[1](work)
                     if work.short is not None:  
                         work.short = work.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
+                    else:
+                        print("-...-")
                     work.save()
                     print("-> {}".format(work.short))
 
