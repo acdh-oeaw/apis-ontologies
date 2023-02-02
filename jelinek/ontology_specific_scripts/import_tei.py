@@ -799,6 +799,10 @@ class TreesManager:
 
                                 attr_dict["ref_accessed"] = xml_elem_child.text
 
+                            elif xml_elem_child.attrib.get("to") is not None:
+
+                                attr_dict["start_date_written"] = attr_dict["start_date_written"] + " - " + xml_elem_child.text
+                            
                             else:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
@@ -882,6 +886,10 @@ class TreesManager:
 
                                 attr_dict["ref_accessed"] = xml_elem_child.text
 
+                            elif xml_elem_child.attrib.get("to") is not None:
+
+                                attr_dict["start_date_written"] = attr_dict["start_date_written"] + " - " + xml_elem_child.text
+                            
                             else:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
@@ -950,6 +958,10 @@ class TreesManager:
 
                                 attr_dict["ref_accessed"] = xml_elem_child.text
 
+                            elif xml_elem_child.attrib.get("to") is not None:
+
+                                attr_dict["start_date_written"] = attr_dict["start_date_written"] + " - " + xml_elem_child.text
+                            
                             else:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
