@@ -755,7 +755,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
@@ -770,7 +770,7 @@ class TreesManager:
                                     and is_valid_text(xml_elem_child_child.text)
                                 ):
                                     if (xml_elem_child_child.attrib.get("type") == "sub"):
-                                        attr_dict["untertitel"] = remove_whitespace(xml_elem_child_child.text)
+                                        attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child_child, encoding="unicode").strip(xml_elem_child_child.tail)))
                                     else:
                                         attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
@@ -838,7 +838,7 @@ class TreesManager:
                             and is_valid_text(path_node_sibling.xml_elem.text)
                             ):
                                 if (path_node_sibling.xml_elem.attrib.get("type") == "sub"):
-                                    attr_dict["untertitel"] = remove_whitespace(path_node_sibling.xml_elem.text)
+                                    attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(path_node_sibling, encoding="unicode").strip(path_node_sibling.tail)))
                                 else:
                                     attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(path_node_sibling.xml_elem, encoding="unicode").strip(path_node_sibling.xml_elem.tail)))
 
@@ -861,7 +861,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
@@ -934,7 +934,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                         elif (
@@ -942,7 +942,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+                            attr_dict["name"] = attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif xml_elem_child.tag.endswith("series"):
 
