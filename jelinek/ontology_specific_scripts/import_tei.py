@@ -1268,6 +1268,12 @@ class TreesManager:
                     attr_dict["name"], attr_dict["forename"], attr_dict["surname"] = parse_persName(xml_elem)
 
                 elif (
+                    xml_elem.tag.endswith("personGrp")
+                ):
+
+                    attr_dict["name"] = remove_whitespace(xml_elem.text)
+
+                elif (
                     xml_elem.tag.endswith("item")
                     and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
                 ):
@@ -2583,6 +2589,24 @@ class TreesManager:
 
                         if entity_other.__class__ == F10_Person:
 
+                            if child_path_node.xml_elem.tag.endswith("personGrp"):
+
+                                if (child_child_path_node.xml_elem.attrib.get("role") == "editor"):
+
+                                    create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is editor of")
+                                        )
+                                elif (child_child_path_node.xml_elem.attrib.get("role") == "author"):
+
+                                    create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is author of")
+                                        )
+
+
                             for child_child_path_node in child_path_node.path_node_children_list:
 
                                 if (
@@ -3122,6 +3146,23 @@ class TreesManager:
                     for entity_other in path_node.path_node_parent.entities_list:
 
                         if entity_other.__class__ is F3_Manifestation_Product_Type:
+
+                            if path_node.xml_elem.tag.endswith("personGrp"):
+
+                                if (path_node.xml_elem.attrib.get("role") == "editor"):
+
+                                    create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is editor of")
+                                        )
+                                elif (path_node.xml_elem.attrib.get("role") == "author"):
+
+                                    create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is author of")
+                                    )
 
                             for child_path_node in path_node.path_node_children_list:
 
