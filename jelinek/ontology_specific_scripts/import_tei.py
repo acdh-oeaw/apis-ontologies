@@ -755,7 +755,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
@@ -770,7 +770,7 @@ class TreesManager:
                                     and is_valid_text(xml_elem_child_child.text)
                                 ):
                                     if (xml_elem_child_child.attrib.get("type") == "sub"):
-                                        attr_dict["untertitel"] = remove_whitespace(xml_elem_child_child.text)
+                                        attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child_child, encoding="unicode").strip(xml_elem_child_child.tail)))
                                     else:
                                         attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
@@ -838,7 +838,7 @@ class TreesManager:
                             and is_valid_text(path_node_sibling.xml_elem.text)
                             ):
                                 if (path_node_sibling.xml_elem.attrib.get("type") == "sub"):
-                                    attr_dict["untertitel"] = remove_whitespace(path_node_sibling.xml_elem.text)
+                                    attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(path_node_sibling, encoding="unicode").strip(path_node_sibling.tail)))
                                 else:
                                     attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(path_node_sibling.xml_elem, encoding="unicode").strip(path_node_sibling.xml_elem.tail)))
 
@@ -861,7 +861,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
@@ -934,7 +934,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                         elif (
@@ -942,7 +942,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+                            attr_dict["name"] = attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif xml_elem_child.tag.endswith("series"):
 
@@ -1266,6 +1266,12 @@ class TreesManager:
                 ):
 
                     attr_dict["name"], attr_dict["forename"], attr_dict["surname"] = parse_persName(xml_elem)
+
+                elif (
+                    xml_elem.tag.endswith("personGrp")
+                ):
+
+                    attr_dict["name"] = remove_whitespace(xml_elem.text)
 
                 elif (
                     xml_elem.tag.endswith("item")
@@ -2583,6 +2589,24 @@ class TreesManager:
 
                         if entity_other.__class__ == F10_Person:
 
+                            if child_path_node.xml_elem.tag.endswith("personGrp"):
+
+                                if (child_child_path_node.xml_elem.attrib.get("role") == "editor"):
+
+                                    create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is editor of")
+                                        )
+                                elif (child_child_path_node.xml_elem.attrib.get("role") == "author"):
+
+                                    create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is author of")
+                                        )
+
+
                             for child_child_path_node in child_path_node.path_node_children_list:
 
                                 if (
@@ -3122,6 +3146,23 @@ class TreesManager:
                     for entity_other in path_node.path_node_parent.entities_list:
 
                         if entity_other.__class__ is F3_Manifestation_Product_Type:
+
+                            if path_node.xml_elem.tag.endswith("personGrp"):
+
+                                if (path_node.xml_elem.attrib.get("role") == "editor"):
+
+                                    create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is editor of")
+                                        )
+                                elif (path_node.xml_elem.attrib.get("role") == "author"):
+
+                                    create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is author of")
+                                    )
 
                             for child_path_node in path_node.path_node_children_list:
 
