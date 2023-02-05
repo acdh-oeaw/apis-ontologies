@@ -3,8 +3,6 @@ from __future__ import annotations
 from apis_ontology.models import *
 from apis_core.apis_relations.models import Triple, TempTriple, Property
 
-jelinek = F10_Person.objects.get(name="Elfriede Jelinek", pers_id="pers00000")
-
 def create_triple(entity_subj, entity_obj, prop):
     try:
         db_result = TempTriple.objects.get_or_create(
@@ -22,7 +20,7 @@ def create_triple(entity_subj, entity_obj, prop):
 
     
 
-def add_jelinek_as_interviewee(work):
+def add_jelinek_as_interviewee(work, jelinek):
     create_triple(
         entity_subj=jelinek,
         entity_obj=work,
@@ -42,6 +40,7 @@ def add_names_for_seklit(work):
 def generate_genre():
 
     def main():
+        jelinek = F10_Person.objects.get(name="Elfriede Jelinek", pers_id="pers00000")
         for work in  F1_Work.objects.all():
         # for work in  F1_Work.objects.filter(name="Sind schreibende Frauen Fremde in dieser Welt? Die Begegnung."):
             xml_files = [t.obj for t in Triple.objects.filter(prop__name="was defined primarily in", subj=work)]
@@ -81,7 +80,7 @@ def generate_genre():
                         work.genre = "Herausgeberin- und Redaktionstätigkeit"
                     elif "003_Interviews" in xml_file.file_path:
                         work.genre = "Interviews"
-                        add_jelinek_as_interviewee(work)
+                        add_jelinek_as_interviewee(work, jelinek)
                     elif "0004_Bearbeitungenvo" in xml_file.file_path:
                         work.genre = "Bearbeitungen von anderen"
                     elif "0006_Sekundärliterat" in xml_file.file_path:
