@@ -2591,14 +2591,14 @@ class TreesManager:
 
                             if child_path_node.xml_elem.tag.endswith("personGrp"):
 
-                                if (child_child_path_node.xml_elem.attrib.get("role") == "editor"):
+                                if (child_path_node.xml_elem.attrib.get("role") == "editor"):
 
                                     create_triple(
                                             entity_subj=entity_other,
                                             entity_obj=entity_work,
                                             prop=Property.objects.get(name="is editor of")
                                         )
-                                elif (child_child_path_node.xml_elem.attrib.get("role") == "author"):
+                                elif (child_path_node.xml_elem.attrib.get("role") == "author"):
 
                                     create_triple(
                                             entity_subj=entity_other,
