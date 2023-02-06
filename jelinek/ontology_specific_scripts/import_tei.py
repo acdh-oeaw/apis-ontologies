@@ -2742,7 +2742,7 @@ class TreesManager:
 
                 for path_node_neighbour in path_node.path_node_parent.path_node_children_list:
 
-                    if path_node_neighbour.xml_elem.attrib.get("type") in ["broadcasts", "broadcast"]:
+                    if path_node_neighbour.xml_elem.attrib.get("type") in ["broadcasts", "broadcast", "radio"]:
 
                         for path_node_neighbour_child in path_node_neighbour.path_node_children_list:
 
@@ -3050,12 +3050,48 @@ class TreesManager:
                                 prop=Property.objects.get(name="is editor of")
                             )
 
+                    for child_child_path_node in child_path_node.path_node_children_list:
+
+                        for entity_other in child_child_path_node.entities_list:
+
+                            if (
+                                entity_other.__class__ is E40_Legal_Body
+                                and child_child_path_node.xml_elem.tag.endswith("publisher")
+                            ):
+
+                                triple = create_triple(
+                                    entity_subj=entity_other,
+                                    entity_obj=entity_manifestation,
+                                    prop=Property.objects.get(name="is publisher of")
+                                )
+
+                            if (
+                                entity_other.__class__ is E40_Legal_Body
+                                and (child_child_path_node.xml_elem.attrib.get("role") == "editor"
+                                or child_child_path_node.xml_elem.attrib.get("role") == "possessor")
+                            ):
+
+                                triple = create_triple(
+                                    entity_subj=entity_other,
+                                    entity_obj=entity_manifestation,
+                                    prop=Property.objects.get(name="is editor of")
+                                )
+
                     if (
                         child_path_node.xml_elem.tag.endswith("date")
                         and is_valid_text(child_path_node.xml_elem.text)
                     ):
 
                         date = child_path_node.xml_elem.text
+
+                    if (
+                        child_path_node.xml_elem.tag.endswith("date")
+                        and is_valid_text(child_path_node.xml_elem.text)
+                    ):
+
+                        date = child_path_node.xml_elem.text
+
+                
 
                 if triple is not None:
                     if date is not None:
