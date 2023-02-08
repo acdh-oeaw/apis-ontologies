@@ -2510,7 +2510,7 @@ class TreesManager:
                     # direct manifestations
                     if (
                         neighbour_path_node.xml_elem.tag.endswith("div")
-                        and neighbour_path_node.xml_elem.attrib.get("type") == "frbroo:manifestations"
+                        and neighbour_path_node.xml_elem.attrib.get("type") in ["frbroo:manifestations", "audiocassette", "cd", "dvd"]
                     ):
 
                         for neighbour_child_path_node in neighbour_path_node.path_node_children_list:
