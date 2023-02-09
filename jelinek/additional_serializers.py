@@ -869,6 +869,35 @@ additional_serializers_list = [
             ]
         }
     ),
+    AdditionalSerializerConfig( # Simple Triple List with first and last names
+        url="additional/person_triples",
+        name="person_triples",
+        path_structure={
+            Triple: [
+                {
+                    Triple.subj: [
+                        F10_Person.name,
+                        F10_Person.forename,
+                        F10_Person.surname,
+                        F10_Person.id,
+                        F10_Person.self_content_type,
+                    ]
+                },
+                {
+                    Triple.prop: [
+                        Property.name,
+                    ]
+                },
+                {
+                    Triple.obj: [
+                        F10_Person.name,
+                        F10_Person.id,
+                        F10_Person.self_content_type,
+                    ]
+                }
+            ]
+        }
+    ),
     AdditionalSerializerConfig( # Triples for filters (date, language,)
         url="additional/search_filter_triples",
         name="search_filter_triples",
