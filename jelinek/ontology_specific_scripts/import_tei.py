@@ -2999,7 +2999,7 @@ class TreesManager:
                                 create_triple(
                                     entity_subj=entity_manifestation,
                                     entity_obj=entity_other,
-                                    prop=Property.objects.get(name="host")
+                                    prop=Property.objects.get(name="has host")
                                 )
 
             def triples_from_f3_to_f9(entity_manifestation, path_node: PathNode):
