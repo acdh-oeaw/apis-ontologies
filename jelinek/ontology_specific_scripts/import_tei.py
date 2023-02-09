@@ -1276,6 +1276,7 @@ class TreesManager:
                 elif (
                     xml_elem.tag.endswith("item")
                     and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
+                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id").startswith("pers")
                 ):
 
                     attr_dict["pers_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
