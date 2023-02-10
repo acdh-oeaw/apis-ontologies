@@ -2721,6 +2721,16 @@ class TreesManager:
                                                         entity_subj=entity_work,
                                                         prop=Property.objects.get(name="has been performed in")
                                                     )
+                                    if child_child_child_path_node.xml_elem.tag.endswith("p"):
+                                        for item_path_node in child_child_child_path_node.path_node_children_list:
+                                            for ptr_path_node in item_path_node.path_node_children_list:
+                                                for entity_other in ptr_path_node.entities_list:
+                                                    if entity_other.__class__ == F31_Performance:
+                                                        create_triple(
+                                                                    entity_obj=entity_other,
+                                                                    entity_subj=entity_work,
+                                                                    prop=Property.objects.get(name="has been performed in")
+                                                                )
                 
             def triples_from_f1_to_note(entity_work, path_node: PathNode):
 
@@ -2743,7 +2753,7 @@ class TreesManager:
 
                 for path_node_neighbour in path_node.path_node_parent.path_node_children_list:
 
-                    if path_node_neighbour.xml_elem.attrib.get("type") in ["broadcasts", "broadcast", "radio"]:
+                    if path_node_neighbour.xml_elem.attrib.get("type") in ["broadcasts", "broadcast", "radio", "cinemarelease"]:
 
                         for path_node_neighbour_child in path_node_neighbour.path_node_children_list:
 
@@ -2759,6 +2769,16 @@ class TreesManager:
                                                     entity_obj=entity_other,
                                                     prop=Property.objects.get(name="R13 is realised in"),
                                                 )
+
+                                        if path_node_neighbour_child_child_child.xml_elem.tag.endswith("p"):
+                                            for item_path_node in path_node_neighbour_child_child_child.path_node_children_list:
+                                                for entity_other in item_path_node.entities_list:
+                                                    if entity_other.__class__ is F26_Recording:
+                                                        create_triple(
+                                                            entity_subj=entity_recording_work,
+                                                            entity_obj=entity_other,
+                                                            prop=Property.objects.get(name="R13 is realised in"),
+                                                        )
 
                                 for entity_other in path_node_neighbour_child_child.entities_list:
 
