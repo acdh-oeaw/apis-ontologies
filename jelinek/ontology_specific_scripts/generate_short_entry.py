@@ -133,6 +133,12 @@ def generate_short_text():
                 if places.count() > 0:
                     short = "{} | {}: {} {}.".format(get_erstdruck_string(manifestation), places[0].obj.name, publisher.subj.name, publisher.temptriple.start_date_written)
                     work.short = short
+            else:
+                all_manifestations = [r.obj for r in relations]
+                all_manifestations.sort(key=lambda m: m.start_date if m.start_date is not None else datetime.datetime.now().date())
+                first_manifestation = all_manifestations[0]
+                short = "{} | In: {} ({}), datiert mit {} (= {}).".format(get_erstdruck_string(first_manifestation), first_manifestation.ref_target, first_manifestation.ref_accessed, first_manifestation.start_date_written, first_manifestation.series)
+                work.short = short
         return work
 
     def short_text_Kurzprosa(work):
