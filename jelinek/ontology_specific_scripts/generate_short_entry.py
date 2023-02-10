@@ -352,6 +352,8 @@ def generate_short_text():
         if len(relations) > 0:
             recordings = [r.obj for r in relations if r.obj.start_date is not None]
             recordings.sort(key=lambda r: r.start_date)
+            if work.idno == "work00104":
+                recordings = [r.obj for r in relations if r.obj.__class__ == F31_Performance and r.obj.performance_type == "EP" ]
             if len(recordings) > 0:
                 first = recordings[0]
                 if first.__class__ == F26_Recording:
@@ -375,6 +377,11 @@ def generate_short_text():
                     elif first.performance_type == "UA":
                         institutions = [rel.obj for rel in Triple.objects.filter(prop__name="has been performed at", subj=first)]
                         short = "UA | {} {}".format(first.start_date_written, ", ".join([inst.name for inst in institutions]))
+                    elif first.performance_type == "EP":
+                        institutions = [rel.obj for rel in Triple.objects.filter(prop__name="has been performed at", subj=first)]
+                        notes = [rel.obj for rel in Triple.objects.filter(prop__name="has note", subj=first) if "rendition=\"#inline\"" in rel.obj.content]
+                        relevant_notes = " ".join([n.content for n in notes])
+                        short = "Erstpräsentation | {} {} {}".format(first.start_date_written, ", ".join([inst.name for inst in institutions]), relevant_notes)
                     else:
                         short = ""
                 else:
