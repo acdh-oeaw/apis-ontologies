@@ -86,7 +86,7 @@ class Salary(TempEntityClass):
     Ein Gehalt ist die Menge an Geld die eine Person als Gegenleistung erhalten hat. Das Gehalt muss keine wiederkehrende Zahlung sein.
     Generated from model xml
     """
-    TYP_CHOICES = (("Sold", "Sold"), ("Zehrung", "Zehrung"), ("Provision", "Provision"), ("Kredit", "Kredit"), ("Sonstiges", "Sonstiges"), )
+    TYP_CHOICES = (("Sold", "Sold"), ("Zehrung", "Zehrung"), ("Provision", "Provision"), ("Kredit", "Kredit"), ("Sonstiges", "Sonstiges"), ("Burghut", "Burghut"), ("Botenlohn", "Botenlohn"), )
     typ = models.CharField(max_length=9, choices=TYP_CHOICES, blank=True, verbose_name = "Typ", help_text = "Art des Gehalts.")
     REPETITIONTYPE_CHOICES = (("einfach", "einfach"), ("wiederholend", "wiederholend"), )
     repetitionType = models.CharField(max_length=12, choices=REPETITIONTYPE_CHOICES, blank=True, verbose_name = "Typ Wiederholungen", help_text = "Typ des Gehalts.")
@@ -317,6 +317,24 @@ def construct_properties():
     person_has_hometown.subj_class.add(ContentType.objects.get(model=Person.__name__))
     person_has_hometown.obj_class.clear()
     person_has_hometown.obj_class.add(ContentType.objects.get(model=Place.__name__))
+
+    person_sells_property_to = Property.objects.get_or_create(
+        name="verkauft Besitz an",
+        name_reverse="kauft Besitz von",
+    )[0]
+    person_sells_property_to.subj_class.clear()
+    person_sells_property_to.subj_class.add(ContentType.objects.get(model=Person.__name__))
+    person_sells_property_to.obj_class.clear()
+    person_sells_property_to.obj_class.add(ContentType.objects.get(model=Person.__name__))
+
+    person_has_dispute_with = Property.objects.get_or_create(
+        name="hat Streit mit",
+        name_reverse="hat Streit mit",
+    )[0]
+    person_has_dispute_with.subj_class.clear()
+    person_has_dispute_with.subj_class.add(ContentType.objects.get(model=Person.__name__))
+    person_has_dispute_with.obj_class.clear()
+    person_has_dispute_with.obj_class.add(ContentType.objects.get(model=Person.__name__))
 
     function_is_located_at_institution = Property.objects.get_or_create(
         name="ist an",
