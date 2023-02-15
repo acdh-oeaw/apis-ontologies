@@ -81,6 +81,7 @@ APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 APIS_ENTITIES = {
     "Salary": {},
     "Function": {},
+    "Court": {},
     "Place": {
         "merge": True,
         "search": ["name"],
