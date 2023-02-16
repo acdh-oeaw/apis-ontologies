@@ -79,9 +79,15 @@ APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
 #INSTALLED_APPS.append("apis_highlighter")
 APIS_ENTITIES = {
-    "Salary": {},
-    "Function": {},
-    "Court": {},
+    "Salary": {
+        "search": ["name"]
+    },
+    "Function": {
+        "search": ["name"]
+    },
+    "Court": {
+        "search": ["name"]
+    },
     "Place": {
         "merge": True,
         "search": ["name"],
