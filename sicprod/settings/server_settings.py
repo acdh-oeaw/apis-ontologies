@@ -121,6 +121,7 @@ APIS_ENTITIES = {
             "first_name",
             "start_date_written",
             "end_date_written",
+            "alternative_label",
         ],
         "additional_cols": ["id", "profession", "gender"],
         "list_filters": [
