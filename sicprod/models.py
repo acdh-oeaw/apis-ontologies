@@ -336,6 +336,15 @@ def construct_properties():
     person_has_dispute_with.obj_class.clear()
     person_has_dispute_with.obj_class.add(ContentType.objects.get(model=Person.__name__))
 
+    person_executes_salary = Property.objects.get_or_create(
+        name="führt durch",
+        name_reverse="nimmt entgegen",
+    )[0]
+    person_executes_salary.subj_class.clear()
+    person_executes_salary.subj_class.add(ContentType.objects.get(model=Person.__name__))
+    person_executes_salary.obj_class.clear()
+    person_executes_salary.obj_class.add(ContentType.objects.get(model=Salary.__name__))
+
     function_is_located_at_institution = Property.objects.get_or_create(
         name="ist an",
         name_reverse="hat Funktion",
@@ -382,6 +391,15 @@ def construct_properties():
     function_was_located_in.subj_class.add(ContentType.objects.get(model=Function.__name__))
     function_was_located_in.obj_class.clear()
     function_was_located_in.obj_class.add(ContentType.objects.get(model=Place.__name__))
+
+    function_executes_salary = Property.objects.get_or_create(
+        name="führt durch",
+        name_reverse="nimmt entgegen",
+    )[0]
+    function_executes_salary.subj_class.clear()
+    function_executes_salary.subj_class.add(ContentType.objects.get(model=Function.__name__))
+    function_executes_salary.obj_class.clear()
+    function_executes_salary.obj_class.add(ContentType.objects.get(model=Salary.__name__))
 
     place_located_in_place = Property.objects.get_or_create(
         name="Teil von",
