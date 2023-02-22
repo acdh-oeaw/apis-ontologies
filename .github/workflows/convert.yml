@@ -66,9 +66,9 @@ jobs:
              echo "models.py changed"
              if ! `gh pr list --search "${SICPROD_HEAD}" | grep -q "${SICPROD_HEAD}"`; then
                  echo "No PR containing ${SICPROD_HEAD}, lets create one"
-                 git commit -m 'Updated models.py from sicprod-datamodel/model.xml'
+                 git commit -m 'sicprod: Updated models.py from sicprod-datamodel/model.xml'
                  git push -u origin modelspy-${SICPROD_HEAD}
-                 gh pr create --title "Updated models.py from sicprod-datamodel ${SICPROD_HEAD}" --body 'Updated models.py'
+                 gh pr create --title "sicprod: Updated models.py from sicprod-datamodel ${SICPROD_HEAD}" --body 'Updated models.py'
              fi
          fi
        env:
