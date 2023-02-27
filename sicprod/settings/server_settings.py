@@ -83,14 +83,14 @@ APIS_ENTITIES = {
         "search": ["name"]
     },
     "Function": {
-        "search": ["name"]
+        "search": ["name", "alternative_label"]
     },
     "Court": {
-        "search": ["name"]
+        "search": ["name", "alternative_label"]
     },
     "Place": {
         "merge": True,
-        "search": ["name"],
+        "search": ["name", "alternative_label"],
         "form_order": ["name", "kind", "lat", "lng", "status", "collection"],
         "table_fields": ["name"],
         "additional_cols": ["id", "lat", "lng", "part_of"],
@@ -106,7 +106,7 @@ APIS_ENTITIES = {
     },
     "Person": {
         "merge": True,
-        "search": ["name", "first_name"],
+        "search": ["name", "first_name", "alternative_label"],
         "form_order": [
             "first_name",
             "name",
@@ -139,7 +139,7 @@ APIS_ENTITIES = {
     },
     "Institution": {
         "merge": True,
-        "search": ["name"],
+        "search": ["name", "alternative_label"],
         "form_order": [
             "name",
             "start_date_written",
@@ -180,7 +180,7 @@ APIS_ENTITIES = {
     },
     "Event": {
         "merge": True,
-        "search": ["name"],
+        "search": ["name", "alternative_label"],
         "additional_cols": [
             "id",
         ],
