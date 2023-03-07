@@ -195,3 +195,12 @@ APIS_ENTITIES = {
         ],
     },
 }
+
+
+# find out the path to the current settings file
+# and use it to add a custom template path to
+# the template backends
+ONTOLOGY_DIR = os.path.dirname(os.path.dirname(__file__))
+print(ONTOLOGY_DIR)
+for template in TEMPLATES:
+  template["DIRS"].append(os.path.join(ONTOLOGY_DIR, "templates"))
