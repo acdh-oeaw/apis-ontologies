@@ -46,7 +46,13 @@ def generate_genre():
             xml_files = [t.obj for t in Triple.objects.filter(prop__name="was defined primarily in", subj=work)]
             if len(xml_files) > 0:
                 for xml_file in xml_files:
-                    if "001_Lyrik" in xml_file.file_path:
+                    if "012_Übersetzungen/001_Lyrik" in xml_file.file_path:
+                        work.genre = "Übersetzungen, Lyrik"
+                    elif "012_Übersetzungen/002_Prosatexte" in xml_file.file_path:
+                        work.genre = "Übersetzungen, Prosatexte"
+                    elif "012_Übersetzungen/003_Theaterstücke" in xml_file.file_path:
+                        work.genre = "Übersetzungen, Theaterstücke"
+                    elif "001_Lyrik" in xml_file.file_path:
                         work.genre = "Lyrik"
                     elif "002_Romane" in xml_file.file_path:
                         work.genre = "Romane"
@@ -68,12 +74,6 @@ def generate_genre():
                         work.genre = "Libretti"
                     elif "011_EssayistischeTexteRedenundStatements" in xml_file.file_path:
                         work.genre = "Essayistische Texte, Reden und Statements"
-                    elif "012_Übersetzungen/001_Lyrik" in xml_file.file_path:
-                        work.genre = "Übersetzungen, Lyrik"
-                    elif "012_Übersetzungen/002_Prosatexte" in xml_file.file_path:
-                        work.genre = "Übersetzungen, Prosatexte"
-                    elif "012_Übersetzungen/003_Theaterstücke" in xml_file.file_path:
-                        work.genre = "Übersetzungen, Theaterstücke"
                     elif "013_TextefürInstallationenundProjektionenFotoarbeiten" in xml_file.file_path:
                         work.genre = "Texte für Installationen und Projektionen, Fotoarbeiten"
                     elif "014_HerausgeberinundRedaktionstätigkeit" in xml_file.file_path:
