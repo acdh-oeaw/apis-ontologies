@@ -4,6 +4,8 @@ import xml.etree.ElementTree
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element as XmlElement
 from typing import Type, List
+
+from apis_core.helper_functions import caching
 from apis_ontology.models import *
 from apis_core.apis_relations.models import Triple, TempTriple, Property
 from apis_core.apis_vocabularies.models import *
@@ -541,13 +543,13 @@ class TreesManager:
 
                     if attr_dict["idno"] is not None:
                         db_hit = F1_Work.objects.filter(idno=attr_dict["idno"],
-                            self_content_type=F1_Work.get_content_type())
+                            self_contenttype=caching.get_contenttype_of_class(F1_Work))
 
                         if len(db_hit) <= 1:
                             
                             db_result = F1_Work.objects.get_or_create(
                                 idno=attr_dict["idno"],
-                                self_content_type=F1_Work.get_content_type()
+                                self_contenttype=caching.get_contenttype_of_class(F1_Work)
                             )
                         else:
                             print("Multiple entries using the same idno found - that shouldn't happen")
@@ -566,7 +568,7 @@ class TreesManager:
                             # db_result = F1_Work.objects.get_or_create(name=attr_dict["name"])
                             db_hit = F1_Work.objects.filter(
                                 name=attr_dict["name"],
-                                self_content_type=F1_Work.get_content_type()
+                                self_contenttype=caching.get_contenttype_of_class(F1_Work)
                             )
                             if len(db_hit) > 1:
 
@@ -656,13 +658,13 @@ class TreesManager:
 
                     if attr_dict["honour_id"] is not None:
                         db_hit = Honour.objects.filter(honour_id=attr_dict["honour_id"],
-                            self_content_type=Honour.get_content_type())
+                            self_contenttype=caching.get_contenttype_of_class(Honour))
 
                         if len(db_hit) <= 1:
                             
                             db_result = Honour.objects.get_or_create(
                                 honour_id=attr_dict["honour_id"],
-                                self_content_type=Honour.get_content_type()
+                                self_contenttype=caching.get_contenttype_of_class(Honour)
                             )
                         else:
                             print("Multiple entries using the same honour_id found - that shouldn't happen")
@@ -673,7 +675,7 @@ class TreesManager:
                         # db_result = Honour.objects.get_or_create(name=attr_dict["name"])
                         db_hit = Honour.objects.filter(
                             name=attr_dict["name"],
-                            self_content_type=Honour.get_content_type()
+                            self_contenttype=caching.get_contenttype_of_class(Honour)
                         )
                         if len(db_hit) > 1:
 
@@ -1448,7 +1450,7 @@ class TreesManager:
 
                         db_result = F20_Performance_Work.objects.get_or_create(
                             idno=attr_dict["idno"],
-                            self_content_type=F20_Performance_Work.get_content_type()
+                            self_contenttype=caching.get_contenttype_of_class(F20_Performance_Work)
                         )
 
                     elif attr_dict["name"] is not None:
@@ -1456,7 +1458,7 @@ class TreesManager:
                         # db_result = F20_Performance_Work.objects.get_or_create(name=attr_dict["name"])
                         db_hit = F20_Performance_Work.objects.filter(
                             name=attr_dict["name"],
-                            self_content_type=F20_Performance_Work.get_content_type()
+                            self_contenttype=caching.get_contenttype_of_class(F20_Performance_Work)
                         )
                         if len(db_hit) > 1:
 
@@ -1612,7 +1614,7 @@ class TreesManager:
 
                         db_result = F1_Work.objects.get_or_create(
                             idno=attr_dict["idno"],
-                            self_content_type=F1_Work.get_content_type()
+                            self_contenttype=caching.get_contenttype_of_class(F1_Work)
                         )
 
                     elif attr_dict["name"] is not None:
@@ -1620,7 +1622,7 @@ class TreesManager:
                         # db_result = F1_Work.objects.get_or_create(name=attr_dict["name"])
                         db_hit = F1_Work.objects.filter(
                             name=attr_dict["name"],
-                            self_content_type=F1_Work.get_content_type()
+                            self_contenttype=caching.get_contenttype_of_class(F1_Work)
                         )
                         if len(db_hit) > 1:
 
@@ -1770,7 +1772,7 @@ class TreesManager:
 
                         db_result = F21_Recording_Work.objects.get_or_create(
                             idno=attr_dict["idno"],
-                            self_content_type=F21_Recording_Work.get_content_type()
+                            self_contenttype=caching.get_contenttype_of_class(F21_Recording_Work)
                         )
 
                     elif attr_dict["name"] is not None:
