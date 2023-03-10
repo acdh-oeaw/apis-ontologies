@@ -582,7 +582,7 @@ additional_serializers_list = [
                     F1_Work.index_desc,                                
                     F1_Work.idno,                                
                     F1_Work.genre,
-                    E1_Crm_Entity.self_content_type,
+                    E1_Crm_Entity.self_contenttype,
                     {
                         E1_Crm_Entity.triple_set_from_obj: [
                             {
@@ -594,7 +594,7 @@ additional_serializers_list = [
                                     F1_Work.index_desc,                                
                                     F1_Work.idno,                                
                                     F1_Work.genre,
-                                    F1_Work.self_content_type
+                                    F1_Work.self_contenttype
                                 ]
                             },
                             {
@@ -620,7 +620,7 @@ additional_serializers_list = [
                     F1_Work.index_desc,                                
                     F1_Work.idno,                                
                     F1_Work.genre,
-                    E1_Crm_Entity.self_content_type,
+                    E1_Crm_Entity.self_contenttype,
                     {
                         E1_Crm_Entity.triple_set_from_obj: [
                             {
@@ -632,7 +632,7 @@ additional_serializers_list = [
                                     F1_Work.index_desc,                                
                                     F1_Work.idno,                                
                                     F1_Work.genre,
-                                    F1_Work.self_content_type
+                                    F1_Work.self_contenttype
                                 ]
                             },
                             {
@@ -660,7 +660,7 @@ additional_serializers_list = [
                     F31_Performance.short,
                     F31_Performance.start_date,
                     F31_Performance.start_date_written,
-                    E1_Crm_Entity.self_content_type,
+                    E1_Crm_Entity.self_contenttype,
                     {
                         E1_Crm_Entity.triple_set_from_obj: [
                             {
@@ -672,7 +672,7 @@ additional_serializers_list = [
                                     F1_Work.index_desc,                                
                                     F1_Work.idno,                                
                                     F1_Work.genre,
-                                    F1_Work.self_content_type
+                                    F1_Work.self_contenttype
                                 ]
                             },
                             {
@@ -697,7 +697,7 @@ additional_serializers_list = [
                     F31_Performance.short,
                     F31_Performance.start_date,
                     F31_Performance.start_date_written,
-                    E1_Crm_Entity.self_content_type,
+                    E1_Crm_Entity.self_contenttype,
                     {
                         E1_Crm_Entity.triple_set_from_obj: [
                             {
@@ -709,7 +709,7 @@ additional_serializers_list = [
                                     F1_Work.index_desc,                                
                                     F1_Work.idno,                                
                                     F1_Work.genre,
-                                    F1_Work.self_content_type
+                                    F1_Work.self_contenttype
                                 ]
                             },
                             {
@@ -746,7 +746,7 @@ additional_serializers_list = [
                 F3_Manifestation_Product_Type.short,
                 F3_Manifestation_Product_Type.untertitel,
                 F3_Manifestation_Product_Type.scope_style,
-                F3_Manifestation_Product_Type.self_content_type,
+                F3_Manifestation_Product_Type.self_contenttype,
                 {
                     F3_Manifestation_Product_Type.triple_set_from_subj: [
                         {
@@ -773,7 +773,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.short,
                                     F3_Manifestation_Product_Type.untertitel,
                                     F3_Manifestation_Product_Type.scope_style,
-                                    F3_Manifestation_Product_Type.self_content_type,
+                                    F3_Manifestation_Product_Type.self_contenttype,
                             ]
                         },
                         
@@ -805,7 +805,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.short,
                                     F3_Manifestation_Product_Type.untertitel,
                                     F3_Manifestation_Product_Type.scope_style,
-                                    F3_Manifestation_Product_Type.self_content_type,
+                                    F3_Manifestation_Product_Type.self_contenttype,
                             ]
                         },
                         
@@ -851,7 +851,7 @@ additional_serializers_list = [
                     Triple.subj: [
                         E1_Crm_Entity.name,
                         E1_Crm_Entity.id,
-                        E1_Crm_Entity.self_content_type,
+                        E1_Crm_Entity.self_contenttype,
                     ]
                 },
                 {
@@ -863,7 +863,7 @@ additional_serializers_list = [
                     Triple.obj: [
                         E1_Crm_Entity.name,
                         E1_Crm_Entity.id,
-                        E1_Crm_Entity.self_content_type,
+                        E1_Crm_Entity.self_contenttype,
                     ]
                 }
             ]
@@ -878,14 +878,14 @@ additional_serializers_list = [
                     Triple.subj: [
                         E1_Crm_Entity.name,
                         E1_Crm_Entity.id,
-                        E1_Crm_Entity.self_content_type,
+                        E1_Crm_Entity.self_contenttype,
                         {
                             E1_Crm_Entity.triple_set_from_obj: [
                                 {
                                     Triple.subj: [
                                         E1_Crm_Entity.id,
                                         E1_Crm_Entity.name,
-                                        E1_Crm_Entity.self_content_type
+                                        E1_Crm_Entity.self_contenttype
                                     ]
                                 },
                                 {
@@ -906,7 +906,7 @@ additional_serializers_list = [
                     Triple.obj: [
                         E1_Crm_Entity.name,
                         E1_Crm_Entity.id,
-                        E1_Crm_Entity.self_content_type,
+                        E1_Crm_Entity.self_contenttype,
                         E1_Crm_Entity.start_date,
                         E1_Crm_Entity.start_date_written,
                         F3_Manifestation_Product_Type.text_language,
@@ -916,7 +916,7 @@ additional_serializers_list = [
                                     Triple.obj: [
                                         E1_Crm_Entity.id,
                                         E1_Crm_Entity.name,
-                                        E1_Crm_Entity.self_content_type
+                                        E1_Crm_Entity.self_contenttype
                                     ]
                                 },
                                 {
