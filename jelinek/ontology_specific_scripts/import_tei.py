@@ -3995,7 +3995,7 @@ def parse_xml_as_entity(xml_file_path):
 
 
 def run(*args, **options):
-    # TODO RDF : delete all model instances
+    # TODO RDF: delete all model instances
 
     def reset_all():
 
