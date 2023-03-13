@@ -246,7 +246,8 @@ def construct_properties():
     p127_has_broader_term.save()
     
     host = Property.objects.create(
-        name="host",
+        name="has host",
+        name_reverse="is host"
     )
     host.subj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     host.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))

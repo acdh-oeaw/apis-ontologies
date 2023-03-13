@@ -757,7 +757,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
@@ -772,7 +772,7 @@ class TreesManager:
                                     and is_valid_text(xml_elem_child_child.text)
                                 ):
                                     if (xml_elem_child_child.attrib.get("type") == "sub"):
-                                        attr_dict["untertitel"] = remove_whitespace(xml_elem_child_child.text)
+                                        attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child_child, encoding="unicode").strip(xml_elem_child_child.tail)))
                                     else:
                                         attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
@@ -801,6 +801,10 @@ class TreesManager:
 
                                 attr_dict["ref_accessed"] = xml_elem_child.text
 
+                            elif xml_elem_child.attrib.get("to") is not None:
+
+                                attr_dict["start_date_written"] = attr_dict["start_date_written"] + " - " + xml_elem_child.text
+                            
                             else:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
@@ -836,7 +840,7 @@ class TreesManager:
                             and is_valid_text(path_node_sibling.xml_elem.text)
                             ):
                                 if (path_node_sibling.xml_elem.attrib.get("type") == "sub"):
-                                    attr_dict["untertitel"] = remove_whitespace(path_node_sibling.xml_elem.text)
+                                    attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(path_node_sibling, encoding="unicode").strip(path_node_sibling.tail)))
                                 else:
                                     attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(path_node_sibling.xml_elem, encoding="unicode").strip(path_node_sibling.xml_elem.tail)))
 
@@ -859,7 +863,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
@@ -884,6 +888,10 @@ class TreesManager:
 
                                 attr_dict["ref_accessed"] = xml_elem_child.text
 
+                            elif xml_elem_child.attrib.get("to") is not None:
+
+                                attr_dict["start_date_written"] = attr_dict["start_date_written"] + " - " + xml_elem_child.text
+                            
                             else:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
@@ -928,7 +936,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                         elif (
@@ -936,7 +944,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+                            attr_dict["name"] = attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif xml_elem_child.tag.endswith("series"):
 
@@ -952,6 +960,10 @@ class TreesManager:
 
                                 attr_dict["ref_accessed"] = xml_elem_child.text
 
+                            elif xml_elem_child.attrib.get("to") is not None:
+
+                                attr_dict["start_date_written"] = attr_dict["start_date_written"] + " - " + xml_elem_child.text
+                            
                             else:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
@@ -1258,8 +1270,15 @@ class TreesManager:
                     attr_dict["name"], attr_dict["forename"], attr_dict["surname"] = parse_persName(xml_elem)
 
                 elif (
+                    xml_elem.tag.endswith("personGrp")
+                ):
+
+                    attr_dict["name"] = remove_whitespace(xml_elem.text)
+
+                elif (
                     xml_elem.tag.endswith("item")
                     and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
+                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id").startswith("pers")
                 ):
 
                     attr_dict["pers_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
@@ -2494,7 +2513,7 @@ class TreesManager:
                     # direct manifestations
                     if (
                         neighbour_path_node.xml_elem.tag.endswith("div")
-                        and neighbour_path_node.xml_elem.attrib.get("type") == "frbroo:manifestations"
+                        and neighbour_path_node.xml_elem.attrib.get("type") in ["frbroo:manifestations", "audiocassette", "cd", "dvd"]
                     ):
 
                         for neighbour_child_path_node in neighbour_path_node.path_node_children_list:
@@ -2572,6 +2591,24 @@ class TreesManager:
                     for entity_other in child_path_node.entities_list:
 
                         if entity_other.__class__ == F10_Person:
+
+                            if child_path_node.xml_elem.tag.endswith("personGrp"):
+
+                                if (child_path_node.xml_elem.attrib.get("role") == "editor"):
+
+                                    create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is editor of")
+                                        )
+                                elif (child_path_node.xml_elem.attrib.get("role") == "author"):
+
+                                    create_triple(
+                                            entity_subj=entity_other,
+                                            entity_obj=entity_work,
+                                            prop=Property.objects.get(name="is author of")
+                                        )
+
 
                             for child_child_path_node in child_path_node.path_node_children_list:
 
@@ -2686,6 +2723,16 @@ class TreesManager:
                                                         entity_subj=entity_work,
                                                         prop=Property.objects.get(name="has been performed in")
                                                     )
+                                    if child_child_child_path_node.xml_elem.tag.endswith("p"):
+                                        for item_path_node in child_child_child_path_node.path_node_children_list:
+                                            for ptr_path_node in item_path_node.path_node_children_list:
+                                                for entity_other in ptr_path_node.entities_list:
+                                                    if entity_other.__class__ == F31_Performance:
+                                                        create_triple(
+                                                                    entity_obj=entity_other,
+                                                                    entity_subj=entity_work,
+                                                                    prop=Property.objects.get(name="has been performed in")
+                                                                )
                 
             def triples_from_f1_to_note(entity_work, path_node: PathNode):
 
@@ -2708,7 +2755,7 @@ class TreesManager:
 
                 for path_node_neighbour in path_node.path_node_parent.path_node_children_list:
 
-                    if path_node_neighbour.xml_elem.attrib.get("type") in ["broadcasts", "broadcast"]:
+                    if path_node_neighbour.xml_elem.attrib.get("type") in ["broadcasts", "broadcast", "radio", "cinemarelease"]:
 
                         for path_node_neighbour_child in path_node_neighbour.path_node_children_list:
 
@@ -2724,6 +2771,16 @@ class TreesManager:
                                                     entity_obj=entity_other,
                                                     prop=Property.objects.get(name="R13 is realised in"),
                                                 )
+
+                                        if path_node_neighbour_child_child_child.xml_elem.tag.endswith("p"):
+                                            for item_path_node in path_node_neighbour_child_child_child.path_node_children_list:
+                                                for entity_other in item_path_node.entities_list:
+                                                    if entity_other.__class__ is F26_Recording:
+                                                        create_triple(
+                                                            entity_subj=entity_recording_work,
+                                                            entity_obj=entity_other,
+                                                            prop=Property.objects.get(name="R13 is realised in"),
+                                                        )
 
                                 for entity_other in path_node_neighbour_child_child.entities_list:
 
@@ -2964,7 +3021,7 @@ class TreesManager:
                                 create_triple(
                                     entity_subj=entity_manifestation,
                                     entity_obj=entity_other,
-                                    prop=Property.objects.get(name="host")
+                                    prop=Property.objects.get(name="has host")
                                 )
 
             def triples_from_f3_to_f9(entity_manifestation, path_node: PathNode):
@@ -3016,12 +3073,48 @@ class TreesManager:
                                 prop=Property.objects.get(name="is editor of")
                             )
 
+                    for child_child_path_node in child_path_node.path_node_children_list:
+
+                        for entity_other in child_child_path_node.entities_list:
+
+                            if (
+                                entity_other.__class__ is E40_Legal_Body
+                                and child_child_path_node.xml_elem.tag.endswith("publisher")
+                            ):
+
+                                triple = create_triple(
+                                    entity_subj=entity_other,
+                                    entity_obj=entity_manifestation,
+                                    prop=Property.objects.get(name="is publisher of")
+                                )
+
+                            if (
+                                entity_other.__class__ is E40_Legal_Body
+                                and (child_child_path_node.xml_elem.attrib.get("role") == "editor"
+                                or child_child_path_node.xml_elem.attrib.get("role") == "possessor")
+                            ):
+
+                                triple = create_triple(
+                                    entity_subj=entity_other,
+                                    entity_obj=entity_manifestation,
+                                    prop=Property.objects.get(name="is editor of")
+                                )
+
                     if (
                         child_path_node.xml_elem.tag.endswith("date")
                         and is_valid_text(child_path_node.xml_elem.text)
                     ):
 
                         date = child_path_node.xml_elem.text
+
+                    if (
+                        child_path_node.xml_elem.tag.endswith("date")
+                        and is_valid_text(child_path_node.xml_elem.text)
+                    ):
+
+                        date = child_path_node.xml_elem.text
+
+                
 
                 if triple is not None:
                     if date is not None:
@@ -3112,6 +3205,23 @@ class TreesManager:
                     for entity_other in path_node.path_node_parent.entities_list:
 
                         if entity_other.__class__ is F3_Manifestation_Product_Type:
+
+                            if path_node.xml_elem.tag.endswith("personGrp"):
+
+                                if (path_node.xml_elem.attrib.get("role") == "editor"):
+
+                                    create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is editor of")
+                                        )
+                                elif (path_node.xml_elem.attrib.get("role") == "author"):
+
+                                    create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is author of")
+                                    )
 
                             for child_path_node in path_node.path_node_children_list:
 

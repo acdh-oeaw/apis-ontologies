@@ -19,10 +19,10 @@ class Person(TempEntityClass):
     Person, eine Subklasse von crm:E21_Person.
     Generated from model xml
     """
-    first_name = models.CharField(max_length=1024, blank=True, null=True)
+    first_name = models.CharField(max_length=1024, blank=True, null=True, verbose_name = "Vorname", help_text = "Vorname der Person.")
     GENDER_CHOICES = (("männlich", "männlich"), ("weiblich", "weiblich"), ("unbekannt", "unbekannt"), )
-    gender = models.CharField(max_length=9, choices=GENDER_CHOICES, blank=True)
-    alternative_label = models.TextField(blank=True, null=True)
+    gender = models.CharField(max_length=9, choices=GENDER_CHOICES, blank=True, verbose_name = "Geschlecht", help_text = "Geschlecht der Person.")
+    alternative_label = models.TextField(blank=True, null=True, verbose_name = "Alternativer Name", help_text = "Feld um alternative Namen anzugeben.")
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -31,7 +31,7 @@ class Function(TempEntityClass):
     Eine Funktion kann von einer Person an einer Institution oder einem Hof ausgeübt werden kann.
     Generated from model xml
     """
-    alternative_label = models.TextField(blank=True, null=True)
+    alternative_label = models.TextField(blank=True, null=True, verbose_name = "Alternativer Name", help_text = "Andere Namen für die Funktion.")
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -40,11 +40,11 @@ class Place(TempEntityClass):
     Orte in SiCProD, Subklasse von crm:E53_Place.
     Generated from model xml
     """
-    alternative_label = models.TextField(blank=True, null=True)
+    alternative_label = models.TextField(blank=True, null=True, verbose_name = "Alternativer Name", help_text = "Alternativer Name für einen Ort.")
     TYPE_CHOICES = (("Stadt", "Stadt"), ("Dorf/Nachbarschaft/Gemein/Siedlung/Weiler", "Dorf/Nachbarschaft/Gemein/Siedlung/Weiler"), ("Burg/Schloss", "Burg/Schloss"), ("Land/Herrschaftskomplex", "Land/Herrschaftskomplex"), ("Landschaft/Region", "Landschaft/Region"), ("Lehen", "Lehen"), ("Haus/Hof", "Haus/Hof"), ("Gericht", "Gericht"), ("Kloster", "Kloster"), ("Gewässer", "Gewässer"), ("Grundherrschaft", "Grundherrschaft"), ("Hofmark", "Hofmark"), ("Tal", "Tal"), ("Berg", "Berg"), ("Bergrevier", "Bergrevier"), ("Pflege", "Pflege"), ("(Land-)Vogtei", "(Land-)Vogtei"), ("Propstei", "Propstei"), )
-    type = models.CharField(max_length=41, choices=TYPE_CHOICES, blank=True)
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
+    type = models.CharField(max_length=41, choices=TYPE_CHOICES, blank=True, verbose_name = "Typ", help_text = "Art des Ortes.")
+    latitude = models.FloatField(null=True, blank=True, verbose_name = "Breitengrad", help_text = "Breitengrad des Ortes. Bei Polygonen wird die Mitte verwendet.")
+    longitude = models.FloatField(null=True, blank=True, verbose_name = "Längengrad", help_text = "Längengrad des Ortes. Bei Polygonen wird die Mitte verwendet.")
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -53,9 +53,9 @@ class Institution(TempEntityClass):
     SiCProD Institution, Subklasse von crm:E74_Group. Wird für alle Institutionen benutzt die kein Hof sind
     Generated from model xml
     """
-    alternative_label = models.TextField(blank=True, null=True)
+    alternative_label = models.TextField(blank=True, null=True, verbose_name = "Alternativer Name", help_text = "Alternativer Name der Institution.")
     TYPE_CHOICES = (("Kanzlei", "Kanzlei"), ("Hofkapelle", "Hofkapelle"), ("Küche", "Küche"), ("(Dom-)Kapitel", "(Dom-)Kapitel"), ("Universität", "Universität"), ("Kloster", "Kloster"), ("Frauenzimmer", "Frauenzimmer"), ("Bistum", "Bistum"), ("Pfarrei", "Pfarrei"), )
-    type = models.CharField(max_length=13, choices=TYPE_CHOICES, blank=True)
+    type = models.CharField(max_length=13, choices=TYPE_CHOICES, blank=True, verbose_name = "Typ", help_text = "Art der institution.")
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -64,9 +64,9 @@ class Court(TempEntityClass):
     SiCProD Hof, Subklasse von crm:E74_Group. Wird für alle Institutionen benutzt die ein Hof sind
     Generated from model xml
     """
-    alternative_label = models.TextField(blank=True, null=True)
+    alternative_label = models.TextField(blank=True, null=True, verbose_name = "Alternativer Name", help_text = "Alternativer Name des Hofes.")
     TYPE_CHOICES = (("Hof", "Hof"), ("Klosterhof", "Klosterhof"), ("Kaiserhof", "Kaiserhof"), ("Königshof", "Königshof"), ("Bischöflicher Hof", "Bischöflicher Hof"), ("Kurfürstlicher Hof", "Kurfürstlicher Hof"), ("Erzbischöflicher Hof", "Erzbischöflicher Hof"), ("Königlicher Hof", "Königlicher Hof"), ("Kaiserlicher Hof", "Kaiserlicher Hof"), ("Frauenzimmer", "Frauenzimmer"), )
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES, blank=True)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, blank=True, verbose_name = "Typ", help_text = "Art des Hofes")
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -75,9 +75,9 @@ class Event(TempEntityClass):
     SiCProD Ereignis, Subklasse von crm:E5_Event.
     Generated from model xml
     """
-    alternative_label = models.TextField(blank=True, null=True)
+    alternative_label = models.TextField(blank=True, null=True, verbose_name = "Alternativer Name", help_text = "Alternativer Name.")
     TYPE_CHOICES = (("Hochzeit", "Hochzeit"), ("Landtag", "Landtag"), ("Fest/Turnier", "Fest/Turnier"), ("Schlacht", "Schlacht"), ("Gesandtschaft/Reise", "Gesandtschaft/Reise"), ("Taufe", "Taufe"), ("Amtseinsetzung", "Amtseinsetzung"), ("Reichstag", "Reichstag"), )
-    type = models.CharField(max_length=19, choices=TYPE_CHOICES, blank=True)
+    type = models.CharField(max_length=19, choices=TYPE_CHOICES, blank=True, verbose_name = "Typ", help_text = "Typ des Ereignisses.")
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -86,10 +86,10 @@ class Salary(TempEntityClass):
     Ein Gehalt ist die Menge an Geld die eine Person als Gegenleistung erhalten hat. Das Gehalt muss keine wiederkehrende Zahlung sein.
     Generated from model xml
     """
-    TYP_CHOICES = (("Sold", "Sold"), ("Zehrung", "Zehrung"), ("Provision", "Provision"), ("Kredit", "Kredit"), ("Sonstiges", "Sonstiges"), )
-    typ = models.CharField(max_length=9, choices=TYP_CHOICES, blank=True)
+    TYP_CHOICES = (("Sold", "Sold"), ("Zehrung", "Zehrung"), ("Provision", "Provision"), ("Kredit", "Kredit"), ("Sonstiges", "Sonstiges"), ("Burghut", "Burghut"), ("Botenlohn", "Botenlohn"), )
+    typ = models.CharField(max_length=9, choices=TYP_CHOICES, blank=True, verbose_name = "Typ", help_text = "Art des Gehalts.")
     REPETITIONTYPE_CHOICES = (("einfach", "einfach"), ("wiederholend", "wiederholend"), )
-    repetitionType = models.CharField(max_length=12, choices=REPETITIONTYPE_CHOICES, blank=True)
+    repetitionType = models.CharField(max_length=12, choices=REPETITIONTYPE_CHOICES, blank=True, verbose_name = "Typ Wiederholungen", help_text = "Typ des Gehalts.")
 
 
 
@@ -309,6 +309,42 @@ def construct_properties():
     person_is_servant_of_person.obj_class.clear()
     person_is_servant_of_person.obj_class.add(ContentType.objects.get(model=Person.__name__))
 
+    person_has_hometown = Property.objects.get_or_create(
+        name="hat Heimatort in",
+        name_reverse="Heimatort von",
+    )[0]
+    person_has_hometown.subj_class.clear()
+    person_has_hometown.subj_class.add(ContentType.objects.get(model=Person.__name__))
+    person_has_hometown.obj_class.clear()
+    person_has_hometown.obj_class.add(ContentType.objects.get(model=Place.__name__))
+
+    person_sells_property_to = Property.objects.get_or_create(
+        name="verkauft Besitz an",
+        name_reverse="kauft Besitz von",
+    )[0]
+    person_sells_property_to.subj_class.clear()
+    person_sells_property_to.subj_class.add(ContentType.objects.get(model=Person.__name__))
+    person_sells_property_to.obj_class.clear()
+    person_sells_property_to.obj_class.add(ContentType.objects.get(model=Person.__name__))
+
+    person_has_dispute_with = Property.objects.get_or_create(
+        name="hat Streit mit",
+        name_reverse="hat Streit mit",
+    )[0]
+    person_has_dispute_with.subj_class.clear()
+    person_has_dispute_with.subj_class.add(ContentType.objects.get(model=Person.__name__))
+    person_has_dispute_with.obj_class.clear()
+    person_has_dispute_with.obj_class.add(ContentType.objects.get(model=Person.__name__))
+
+    person_executes_salary = Property.objects.get_or_create(
+        name="führt durch",
+        name_reverse="nimmt entgegen",
+    )[0]
+    person_executes_salary.subj_class.clear()
+    person_executes_salary.subj_class.add(ContentType.objects.get(model=Person.__name__))
+    person_executes_salary.obj_class.clear()
+    person_executes_salary.obj_class.add(ContentType.objects.get(model=Salary.__name__))
+
     function_is_located_at_institution = Property.objects.get_or_create(
         name="ist an",
         name_reverse="hat Funktion",
@@ -356,6 +392,15 @@ def construct_properties():
     function_was_located_in.obj_class.clear()
     function_was_located_in.obj_class.add(ContentType.objects.get(model=Place.__name__))
 
+    function_executes_salary = Property.objects.get_or_create(
+        name="führt durch",
+        name_reverse="nimmt entgegen",
+    )[0]
+    function_executes_salary.subj_class.clear()
+    function_executes_salary.subj_class.add(ContentType.objects.get(model=Function.__name__))
+    function_executes_salary.obj_class.clear()
+    function_executes_salary.obj_class.add(ContentType.objects.get(model=Salary.__name__))
+
     place_located_in_place = Property.objects.get_or_create(
         name="Teil von",
         name_reverse="hat Teil",
@@ -383,6 +428,33 @@ def construct_properties():
     institutionlocated_in.obj_class.clear()
     institutionlocated_in.obj_class.add(ContentType.objects.get(model=Place.__name__))
 
+    institution_given_in_mortage_to = Property.objects.get_or_create(
+        name="ist verpfändet an",
+        name_reverse="hat als Pfand",
+    )[0]
+    institution_given_in_mortage_to.subj_class.clear()
+    institution_given_in_mortage_to.subj_class.add(ContentType.objects.get(model=Institution.__name__))
+    institution_given_in_mortage_to.obj_class.clear()
+    institution_given_in_mortage_to.obj_class.add(ContentType.objects.get(model=Person.__name__))
+
+    institution_belongs_to_institution = Property.objects.get_or_create(
+        name="gehört zu",
+        name_reverse="zuständig für",
+    )[0]
+    institution_belongs_to_institution.subj_class.clear()
+    institution_belongs_to_institution.subj_class.add(ContentType.objects.get(model=Institution.__name__))
+    institution_belongs_to_institution.obj_class.clear()
+    institution_belongs_to_institution.obj_class.add(ContentType.objects.get(model=Institution.__name__))
+
+    institution_orders_salary = Property.objects.get_or_create(
+        name="weist an",
+        name_reverse="angewiesen von",
+    )[0]
+    institution_orders_salary.subj_class.clear()
+    institution_orders_salary.subj_class.add(ContentType.objects.get(model=Institution.__name__))
+    institution_orders_salary.obj_class.clear()
+    institution_orders_salary.obj_class.add(ContentType.objects.get(model=Salary.__name__))
+
     event_took_place_at = Property.objects.get_or_create(
         name="fand statt in",
         name_reverse="inkludierte",
@@ -400,3 +472,12 @@ def construct_properties():
     salary_paid_to.subj_class.add(ContentType.objects.get(model=Salary.__name__))
     salary_paid_to.obj_class.clear()
     salary_paid_to.obj_class.add(ContentType.objects.get(model=Function.__name__))
+
+    salary_ordered_by = Property.objects.get_or_create(
+        name="auf Anweisung von",
+        name_reverse="wies an",
+    )[0]
+    salary_ordered_by.subj_class.clear()
+    salary_ordered_by.subj_class.add(ContentType.objects.get(model=Salary.__name__))
+    salary_ordered_by.obj_class.clear()
+    salary_ordered_by.obj_class.add(ContentType.objects.get(model=Function.__name__))
