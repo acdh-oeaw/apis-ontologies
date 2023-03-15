@@ -880,7 +880,7 @@ additional_serializers_list = [
                         F10_Person.forename,
                         F10_Person.surname,
                         F10_Person.id,
-                        F10_Person.self_content_type,
+                        F10_Person.self_contenttype,
                     ]
                 },
                 {
@@ -892,7 +892,7 @@ additional_serializers_list = [
                     Triple.obj: [
                         F10_Person.name,
                         F10_Person.id,
-                        F10_Person.self_content_type,
+                        F10_Person.self_contenttype,
                     ]
                 }
             ]
