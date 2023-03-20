@@ -79,3 +79,13 @@ APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
 #INSTALLED_APPS.append("apis_highlighter")
 APIS_ENTITIES = {}
+
+
+# find out the path to the current settings file
+# and use it to add a custom template path to
+# the template backends
+ONTOLOGY_DIR = os.path.dirname(os.path.dirname(__file__))
+print(ONTOLOGY_DIR)
+for template in TEMPLATES:
+  template["DIRS"].append(os.path.join(ONTOLOGY_DIR, "templates"))
+  template["OPTIONS"]["context_processors"].append("apis_ontology.custom_context_processors.grouped_menus")
