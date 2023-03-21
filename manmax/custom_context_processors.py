@@ -8,7 +8,7 @@ def get_entity_groups():
     entity_groups = defaultdict(list)
     for cls in get_all_entity_classes():
         group = getattr(cls, "__entity_group__", "Other")
-        entity_groups[group].append((cls.__name__.lower(), cls._meta.verbose_name.title()))
+        entity_groups[group].append((cls.__name__.lower(), cls._meta.verbose_name_plural.title()))
     return entity_groups
 
 
