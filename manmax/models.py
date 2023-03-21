@@ -37,6 +37,9 @@ group_order = [
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Person(TempEntityClass):
+    """Person: a real person, identified by a label and (one or more) URIs. All information about Persons derived from sources
+    should be added as types of Statement, with the Person added as a Related Entity to the Statement."""
+
     class Meta:
         verbose_name = "Person"
 
@@ -64,21 +67,30 @@ class Person(TempEntityClass):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Place(TempEntityClass):
+    """Place: a real place, identified by a label and (one or more) URIS."""
+
     __entity_group__ = BASE_ENTITIES
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Organisation(TempEntityClass):
+    """Organisation: a real person, identified by a label and (one or more) URIS."""
+
     __entity_group__ = BASE_ENTITIES
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class GenericWork(TempEntityClass):
+    """A Work of art, literature, music, etc. Where possible, use specific subtypes (Artistic Work, Music Work, etc.)"""
+
     __entity_group__ = BASE_ENTITIES
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class GenericItem(TempEntityClass):
+    """An item which is not (as far as this project is concerned) created by a Person — in which case, use Generic Work — but
+    which may be owned or exchanged."""
+
     __entity_group__ = BASE_ENTITIES
 
 
@@ -87,11 +99,15 @@ class GenericItem(TempEntityClass):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class MusicWork(GenericWork):
+    """A piece of music"""
+
     __entity_group__ = MUSIC_ENTITIES
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class ArtWork(GenericWork):
+    """A work of art"""
+
     __entity_group__ = ART_ENTITIES
 
 
@@ -100,6 +116,8 @@ class ArtWork(GenericWork):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class GenericStatement(TempEntityClass):
+    """A Generic Statement about a Person (to be used when nothing else will work)."""
+
     __entity_group__ = BASE_STATEMENTS
 
 
@@ -313,11 +331,44 @@ def construct_properties():
     )
 
     ownership_by_person_start = build_property(
-        "start owner", "is start owner of", Acquisition, Person
+        "start owner", "is start owner of", Acquisition, [Person, Organisation]
     )
     ownership_by_person_start = build_property(
-        "end owner", "is end owner of", Acquisition, Person
+        "end owner", "is end owner of", Acquisition, [Person, Organisation]
     )
     ownership_of_entity = build_property(
-        "thing owned", "is thing owned", Acquisition, GenericItem
+        "thing owned", "is thing owned", Acquisition, [ArtWork, GenericItem]
+    )
+
+    artwork_comissioned = build_property(
+        "artwork commissioned", "is result of commission", ArtworkCommission, ArtWork
+    )
+    artwork_commissioned_by = build_property(
+        "commissioned by", "person commissioned artwork", ArtworkCommission, Person
+    )
+    artwork_commissioned_of_person = build_property(
+        "person commissioned for artwork",
+        "received commission for artwork",
+        ArtworkCommission,
+        Person,
+    )
+
+    artwork_created = build_property(
+        "artwork created", "is result of creation", ArtworkCreation, ArtWork
+    )
+    artwork_created_by = build_property(
+        "created by", "person created artwork", ArtworkCreation, Person
+    )
+    artwork_creation_result_of_commission = build_property(
+        "resulted from commission",
+        "was result of commission",
+        ArtworkCreation,
+        ArtworkCommission,
+    )
+
+    music_created = build_property(
+        "music work created", "is result of creation", MusicCreation, MusicWork
+    )
+    music_created_by = build_property(
+        "created by", "person created music work", MusicCreation, Person
     )
