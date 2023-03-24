@@ -541,14 +541,12 @@ class TreesManager:
                         attr_dict["name"] = attr_dict["name"][:255]
 
                     if attr_dict["idno"] is not None:
-                        db_hit = F1_Work.objects.filter(idno=attr_dict["idno"],
-                            self_contenttype=F1_Work.get_content_type())
+                        db_hit = F1_Work.objects.filter(idno=attr_dict["idno"])
 
                         if len(db_hit) <= 1:
                             
                             db_result = F1_Work.objects.get_or_create(
-                                idno=attr_dict["idno"],
-                                self_contenttype=F1_Work.get_content_type()
+                                idno=attr_dict["idno"]
                             )
                         else:
                             print("Multiple entries using the same idno found - that shouldn't happen")
@@ -1448,8 +1446,7 @@ class TreesManager:
                     if attr_dict["idno"] is not None:
 
                         db_result = F20_Performance_Work.objects.get_or_create(
-                            idno=attr_dict["idno"],
-                            self_contenttype=F20_Performance_Work.get_content_type()
+                            idno=attr_dict["idno"]
                         )
 
                     elif attr_dict["name"] is not None:
@@ -1612,8 +1609,7 @@ class TreesManager:
                     if attr_dict["idno"] is not None:
 
                         db_result = F1_Work.objects.get_or_create(
-                            idno=attr_dict["idno"],
-                            self_contenttype=F1_Work.get_content_type()
+                            idno=attr_dict["idno"]
                         )
 
                     elif attr_dict["name"] is not None:
@@ -1770,8 +1766,7 @@ class TreesManager:
                     if attr_dict["idno"] is not None:
 
                         db_result = F21_Recording_Work.objects.get_or_create(
-                            idno=attr_dict["idno"],
-                            self_contenttype=F21_Recording_Work.get_content_type()
+                            idno=attr_dict["idno"]
                         )
 
                     elif attr_dict["name"] is not None:
@@ -2303,7 +2298,7 @@ class TreesManager:
             # TODO : Consider ruling out Project members
             path_node.entities_list.extend(parse_f10_person(path_node))
 
-            path_node.entities_list.extend(parse_f20_performance_work(path_node))
+            # path_node.entities_list.extend(parse_f20_performance_work(path_node))
 
             path_node.entities_list.extend(parse_f21_recording_work(path_node))
 
@@ -4201,14 +4196,14 @@ def run(*args, **options):
 
                         current_type = "007_Kompositionen"
 
-                    elif "009_LibrettiOper" in xml_file_path:
+                    # elif "009_LibrettiOper" in xml_file_path:
 
-                        current_type = "009_LibrettiOper"
+                    #     current_type = "009_LibrettiOper"
 
 
-                    elif "013_TextefürInstallationenundProjektionenFotoarbeiten" in xml_file_path:
+                    # elif "013_TextefürInstallationenundProjektionenFotoarbeiten" in xml_file_path:
 
-                        current_type = "013_TextefürInstallationenundProjektionenFotoarbeiten"
+                    #     current_type = "013_TextefürInstallationenundProjektionenFotoarbeiten"
 
                     elif "broadcast_index" in xml_file_path:
 
