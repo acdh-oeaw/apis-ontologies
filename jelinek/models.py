@@ -296,7 +296,7 @@ def construct_properties():
     is_translator_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
-    is_translator_of.obj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
+    # is_translator_of.obj_class.add(ContentType.objects.get(model=F20_Performance_Work.__name__))
     is_translator_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_translator_of.save()
     
