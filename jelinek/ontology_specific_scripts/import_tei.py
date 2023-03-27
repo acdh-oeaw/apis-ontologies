@@ -565,7 +565,7 @@ class TreesManager:
                             # db_result = F1_Work.objects.get_or_create(name=attr_dict["name"])
                             db_hit = F1_Work.objects.filter(
                                 name=attr_dict["name"],
-                                self_contenttype=F1_Work.get_content_type()
+                                # self_contenttype=F1_Work.get_content_type()
                             )
                             if len(db_hit) > 1:
 
@@ -654,14 +654,12 @@ class TreesManager:
                         attr_dict["name"] = attr_dict["name"][:255]
 
                     if attr_dict["honour_id"] is not None:
-                        db_hit = Honour.objects.filter(honour_id=attr_dict["honour_id"],
-                            self_contenttype=Honour.get_content_type())
+                        db_hit = Honour.objects.filter(honour_id=attr_dict["honour_id"])
 
                         if len(db_hit) <= 1:
                             
                             db_result = Honour.objects.get_or_create(
-                                honour_id=attr_dict["honour_id"],
-                                self_contenttype=Honour.get_content_type()
+                                honour_id=attr_dict["honour_id"]
                             )
                         else:
                             print("Multiple entries using the same honour_id found - that shouldn't happen")
@@ -672,7 +670,7 @@ class TreesManager:
                         # db_result = Honour.objects.get_or_create(name=attr_dict["name"])
                         db_hit = Honour.objects.filter(
                             name=attr_dict["name"],
-                            self_contenttype=Honour.get_content_type()
+                            # self_contenttype=Honour.get_content_type()
                         )
                         if len(db_hit) > 1:
 
@@ -1454,7 +1452,7 @@ class TreesManager:
                         # db_result = F20_Performance_Work.objects.get_or_create(name=attr_dict["name"])
                         db_hit = F20_Performance_Work.objects.filter(
                             name=attr_dict["name"],
-                            self_contenttype=F20_Performance_Work.get_content_type()
+                            # self_contenttype=F20_Performance_Work.get_content_type()
                         )
                         if len(db_hit) > 1:
 
@@ -1617,7 +1615,7 @@ class TreesManager:
                         # db_result = F1_Work.objects.get_or_create(name=attr_dict["name"])
                         db_hit = F1_Work.objects.filter(
                             name=attr_dict["name"],
-                            self_contenttype=F1_Work.get_content_type()
+                            # self_contenttype=F1_Work.get_content_type()
                         )
                         if len(db_hit) > 1:
 
