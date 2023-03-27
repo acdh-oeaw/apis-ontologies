@@ -7,6 +7,7 @@ from typing import Type, List
 
 from apis_ontology.models import *
 from apis_core.apis_relations.models import Triple, TempTriple, Property
+from apis_core.helper_functions import caching
 from apis_core.apis_vocabularies.models import *
 from django.core.management.base import BaseCommand, CommandError
 from os import listdir
@@ -565,7 +566,7 @@ class TreesManager:
                             # db_result = F1_Work.objects.get_or_create(name=attr_dict["name"])
                             db_hit = F1_Work.objects.filter(
                                 name=attr_dict["name"],
-                                # self_contenttype=F1_Work.get_content_type()
+                                self_contenttype=caching.get_contenttype_of_class(F1_Work)
                             )
                             if len(db_hit) > 1:
 
@@ -659,7 +660,8 @@ class TreesManager:
                         if len(db_hit) <= 1:
                             
                             db_result = Honour.objects.get_or_create(
-                                honour_id=attr_dict["honour_id"]
+                                honour_id=attr_dict["honour_id"],
+                                self_contenttype=caching.get_contenttype_of_class(Honour)
                             )
                         else:
                             print("Multiple entries using the same honour_id found - that shouldn't happen")
@@ -670,7 +672,8 @@ class TreesManager:
                         # db_result = Honour.objects.get_or_create(name=attr_dict["name"])
                         db_hit = Honour.objects.filter(
                             name=attr_dict["name"],
-                            # self_contenttype=Honour.get_content_type()
+                            self_contenttype=caching.get_contenttype_of_class(Honour)
+                            
                         )
                         if len(db_hit) > 1:
 
@@ -1853,7 +1856,7 @@ class TreesManager:
                             helper_org = xml_elem_child.text
 
                         elif xml_elem_child.tag.endswith("title"):
-                            attr_dict["name"] = remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail))
+                            attr_dict["name"] = remove_whitespace(remove_outer_xml_tags((ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail))))
                         elif xml_elem_child.tag.endswith("note"):
                             attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
 
