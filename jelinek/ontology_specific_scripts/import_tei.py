@@ -858,7 +858,6 @@ class TreesManager:
                         if (
                             xml_elem_child.tag is not None
                             and xml_elem_child.tag.endswith("title")
-                            and is_valid_text(xml_elem_child.text)
                         ):
                             if (xml_elem_child.attrib.get("type") == "sub"):
                                 attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
