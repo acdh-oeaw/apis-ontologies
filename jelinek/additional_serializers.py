@@ -905,16 +905,16 @@ additional_serializers_list = [
             Triple: [
                 {
                     Triple.subj: [
-                        E1_Crm_Entity.name,
-                        E1_Crm_Entity.id,
-                        E1_Crm_Entity.self_contenttype,
+                        RootObject.name,
+                        RootObject.id,
+                        RootObject.self_contenttype,
                         {
-                            E1_Crm_Entity.triple_set_from_obj: [
+                            RootObject.triple_set_from_obj: [
                                 {
                                     Triple.subj: [
-                                        E1_Crm_Entity.id,
-                                        E1_Crm_Entity.name,
-                                        E1_Crm_Entity.self_contenttype
+                                        RootObject.id,
+                                        RootObject.name,
+                                        RootObject.self_contenttype
                                     ]
                                 },
                                 {
@@ -933,19 +933,98 @@ additional_serializers_list = [
                 },
                 {
                     Triple.obj: [
-                        E1_Crm_Entity.name,
-                        E1_Crm_Entity.id,
-                        E1_Crm_Entity.self_contenttype,
-                        E1_Crm_Entity.start_date,
-                        E1_Crm_Entity.start_date_written,
+                        F3_Manifestation_Product_Type.name,
+                        F3_Manifestation_Product_Type.id,
+                        F3_Manifestation_Product_Type.self_contenttype,
+                        F3_Manifestation_Product_Type.start_date,
+                        F3_Manifestation_Product_Type.start_date_written,
                         F3_Manifestation_Product_Type.text_language,
                          {
-                            E1_Crm_Entity.triple_set_from_subj: [
+                            F3_Manifestation_Product_Type.triple_set_from_subj: [
                                 {
                                     Triple.obj: [
-                                        E1_Crm_Entity.id,
-                                        E1_Crm_Entity.name,
-                                        E1_Crm_Entity.self_contenttype
+                                        RootObject.id,
+                                        RootObject.name,
+                                        RootObject.self_contenttype
+                                    ]
+                                },
+                                {
+                                    Triple.prop: [
+                                        Property.name
+                                    ]
+                                },
+                            ]
+                        },
+                    ]
+                }
+            ]
+        }
+    ),
+    AdditionalSerializerConfig( # Triples for filters (date, language,)
+        url="additional/search_filter_triples_subj_details",
+        name="search_filter_triples_subj_details",
+        path_structure={
+            Triple: [
+                
+                {
+                    Triple.subj: [
+                        RootObject.name,
+                        RootObject.id,
+                        RootObject.self_contenttype,
+                        {
+                            RootObject.triple_set_from_obj: [
+                                {
+                                    Triple.subj: [
+                                        RootObject.id,
+                                        RootObject.name,
+                                        RootObject.self_contenttype
+                                    ]
+                                },
+                                {
+                                    Triple.prop: [
+                                        Property.name
+                                    ]
+                                },
+                            ]
+                        },
+                    ]
+                },
+                {
+                    Triple.prop: [
+                        Property.name,
+                    ]
+                },
+                Triple.obj
+            ]
+        }
+    ),
+    AdditionalSerializerConfig( # Triples for filters (date, language,)
+        url="additional/search_filter_triples_obj_details",
+        name="search_filter_triples_obj_details",
+        path_structure={
+            Triple: [
+                
+                Triple.subj,
+                {
+                    Triple.prop: [
+                        Property.name,
+                    ]
+                },
+                {
+                    Triple.obj: [
+                        F3_Manifestation_Product_Type.name,
+                        F3_Manifestation_Product_Type.id,
+                        F3_Manifestation_Product_Type.self_contenttype,
+                        F3_Manifestation_Product_Type.start_date,
+                        F3_Manifestation_Product_Type.start_date_written,
+                        F3_Manifestation_Product_Type.text_language,
+                         {
+                            F3_Manifestation_Product_Type.triple_set_from_subj: [
+                                {
+                                    Triple.obj: [
+                                        RootObject.id,
+                                        RootObject.name,
+                                        RootObject.self_contenttype
                                     ]
                                 },
                                 {
