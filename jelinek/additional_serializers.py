@@ -103,7 +103,8 @@ additional_serializers_list = [
                             Triple.obj: [
                                     Chapter.id,                              
                                     Chapter.name,                              
-                                    Chapter.chapter_number
+                                    Chapter.chapter_number,
+                                    Chapter.chapter_type
                             ]
                         },
                         
