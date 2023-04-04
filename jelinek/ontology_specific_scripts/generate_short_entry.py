@@ -4,6 +4,7 @@ from apis_ontology.models import *
 from apis_core.apis_relations.models import Triple, TempTriple, Property
 from collections import namedtuple
 
+import re
 import datetime
 from lxml import etree
 
@@ -465,8 +466,10 @@ def generate_short_text():
                 relations.sort(key=lambda rel: rel.obj.start_date)
             if len(relations) > 0:
                 perf = relations[0].obj
-                institutions = [rel.obj for rel in Triple.objects.filter(prop__name="has been performed at", subj=perf)]
-                short = "UA | {} {}".format(perf.start_date_written, ", ".join([inst.name for inst in institutions]))
+                institutions = [re.sub(r"\<.*?\>", "", rel.obj.content) for rel in Triple.objects.filter(prop__name="has note", subj=perf) if "type=\"institutions\"" in rel.obj.content]
+                if len(institutions) == 0:
+                    institutions = [rel.obj.name for rel in Triple.objects.filter(prop__name="has been performed at", subj=perf)]
+                short = "UA | {} {}".format(perf.start_date_written, ", ".join([inst for inst in institutions]))
                 work.short = short
             return work
         def short_text_Sammelband(work):

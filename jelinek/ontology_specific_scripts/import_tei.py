@@ -74,6 +74,8 @@ def remove_outer_xml_tags(var_str):
     last = regex.sub("", last).strip()
     regex = re.compile(r"</ns0:head>$")
     last = regex.sub("", last).strip()
+    regex = re.compile(r"</ns0:orgName>$")
+    last = regex.sub("", last).strip()
     return last
 
 
@@ -244,6 +246,8 @@ class TreesManager:
                 ):
                     for child in xml_elem:
                         if child.tag.endswith("orgName") or child.tag.endswith("title"):
+                            attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(child, encoding="unicode").strip(child.tail)))
+                        elif child.tag.endswith("place") and child.attrib.get("type") == "venue":
                             attr_dict["name"] = child.text
                         elif child.tag.endswith("date"):
                             attr_dict["start_date_written"] = child.text.replace("gegr.", "")
