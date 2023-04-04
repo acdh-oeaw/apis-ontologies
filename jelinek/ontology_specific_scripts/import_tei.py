@@ -1984,6 +1984,7 @@ class TreesManager:
                         xml_elem.attrib.get("ana") == "staging" 
                         or xml_elem.attrib.get("ana") == "UA" 
                         or xml_elem.attrib.get("ana") == "UA_Film" 
+                        or xml_elem.attrib.get("ana") == "UA_film" 
                         or xml_elem.attrib.get("ana") == "EA" 
                         or xml_elem.attrib.get("ana") == "cinemarelease" 
                         or xml_elem.attrib.get("ana") == "EP"
@@ -1996,6 +1997,8 @@ class TreesManager:
                     if xml_elem.attrib.get("ana") == "UA":
                             attr_dict["performance_type"] = "UA"
                     elif xml_elem.attrib.get("ana") == "UA_Film":
+                            attr_dict["performance_type"] = "UA_Film"
+                    elif xml_elem.attrib.get("ana") == "UA_film":
                             attr_dict["performance_type"] = "UA_Film"
                     elif xml_elem.attrib.get("ana") == "cinemarelease":
                             attr_dict["performance_type"] = "cinemarelease"
