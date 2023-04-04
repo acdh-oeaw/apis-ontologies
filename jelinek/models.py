@@ -413,6 +413,14 @@ def construct_properties():
     is_choreographer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_choreographer_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_choreographer_of.save()
+
+    is_redactor_of = Property.objects.create(
+        name="is redactor of",
+        name_reverse="has redactor",
+    )
+    is_redactor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_redactor_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_redactor_of.save()
     
     was_published_in = Property.objects.create(
         name="was published in",

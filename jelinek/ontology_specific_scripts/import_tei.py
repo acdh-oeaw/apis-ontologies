@@ -3231,6 +3231,14 @@ class TreesManager:
                                             prop=Property.objects.get(name="is author of")
                                     )
 
+                                elif (path_node.xml_elem.attrib.get("role") == "redaktion"):
+
+                                    create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is redactor of")
+                                    )
+
                             for child_path_node in path_node.path_node_children_list:
 
                                 if (child_path_node.xml_elem.tag.endswith("persName")):
@@ -3295,6 +3303,14 @@ class TreesManager:
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
                                             prop=Property.objects.get(name="is director of")
+                                        )
+
+                                    elif (child_path_node.xml_elem.attrib.get("role") == "redaktion"):
+
+                                        create_triple(
+                                            entity_subj=entity_person,
+                                            entity_obj=entity_other,
+                                            prop=Property.objects.get(name="is redactor of")
                                         )
 
             def triple_from_f10_to_f21(entity_person, path_node: PathNode):
