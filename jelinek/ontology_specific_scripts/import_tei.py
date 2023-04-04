@@ -1719,6 +1719,13 @@ class TreesManager:
                         ):
 
                             attr_dict["idno"] = xml_elem_child.text
+                        
+                        if (
+                            xml_elem_child.tag.endswith("date")
+                            and attr_dict["untertitel"] is None
+                        ):
+                            attr_dict["untertitel"] = xml_elem_child.text
+
 
                 if (
                     (
