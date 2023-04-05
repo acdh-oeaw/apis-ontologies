@@ -1,14 +1,8 @@
-from dataclasses import dataclass
 from apis_ontology.models import *
 from apis_core.apis_relations.models import *
 from apis_core.apis_metainfo.models import *
+from apis_core.api_routers import AdditionalSerializerConfig
 
-@dataclass
-class AdditionalSerializerConfig:
-    url: str # For now, it is recommended to prefix the url with 'additional'
-    name: str # unique name for django
-    path_structure: dict # see example structure
-    viewset = None # will be programmatically generated
 
 additional_serializers_list = [
     AdditionalSerializerConfig( # Keep this example one for now
