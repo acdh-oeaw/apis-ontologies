@@ -1057,5 +1057,44 @@ additional_serializers_list = [
             ]
         }
     ),
-
+    AdditionalSerializerConfig( # EXPERIMENTAL, TODO: remove once not needed anymore
+        url="additional/triple_id",
+        name="triple_id",
+        path_structure={
+            Triple: [
+                Triple.id,
+            ]
+        }
+    ),
+    AdditionalSerializerConfig( # EXPERIMENTAL, TODO: remove once not needed anymore
+        url="additional/manifestation_main_select",
+        name="manifestation_main_select",
+        path_structure={
+            F3_Manifestation_Product_Type: [
+                F3_Manifestation_Product_Type.id,
+                F3_Manifestation_Product_Type.name,
+                {
+                    F3_Manifestation_Product_Type.triple_set_from_obj: [
+                        {
+                            Triple.subj: [
+                                F1_Work.name,
+                                F1_Work.short,
+                                F1_Work.id,
+                                F1_Work.index_in_chapter,
+                                F1_Work.index_desc,
+                                F1_Work.idno,
+                                F1_Work.genre,
+                                F1_Work.self_contenttype
+                            ]
+                        },
+                        {
+                            Triple.prop: [
+                                Property.name
+                            ]
+                        },
+                    ]
+                }
+            ],
+        }
+    ),
 ]
