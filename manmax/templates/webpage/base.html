@@ -1,0 +1,26 @@
+{% extends "webpage/base.html" %}
+
+
+{% block custom_dropdown_menus %}
+
+{% for key, entities in entity_groups.items %}
+   <li class="nav-item dropdown">
+    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+        aria-expanded="false">
+       {{key}}
+    <span class="caret"/>
+    </a>
+    <div class="dropdown-menu pb-0" aria-labelledby="navbarDropdown">
+
+    {% for ent in entities %}
+        <span class="d-flex border-bottom dropdown-item p-0">
+            <a class="dropdown-item pt-3" href="{% url 'apis:apis_entities:generic_entities_list' ent.0 %}"><span>{{ ent.1 }}</span></a>
+            <a class="btn btn-primary mt-2 mr-2" href="{% url 'apis:apis_entities:generic_entities_create_view' ent.0 %}">+</a>
+        </span>
+    {% endfor %}
+ 
+    
+    </div>
+</li>
+{% endfor %}
+{% endblock %}
