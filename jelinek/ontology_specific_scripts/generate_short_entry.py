@@ -470,6 +470,10 @@ def generate_short_text():
                 if len(institutions) == 0:
                     institutions = [rel.obj.name for rel in Triple.objects.filter(prop__name="has been performed at", subj=perf)]
                 short = "UA | {} {}".format(perf.start_date_written, ", ".join([inst for inst in institutions]))
+                short = re.sub(r"\n", " ", short,0,re.MULTILINE)
+                short = re.sub(r" *\(.*?\)", "", short,0,re.MULTILINE)
+                short = re.sub(r", *$", "", short)
+                
                 work.short = short
             return work
         def short_text_Sammelband(work):
