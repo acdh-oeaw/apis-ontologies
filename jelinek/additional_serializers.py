@@ -341,6 +341,23 @@ additional_serializers_list = [
         }
     ),
     
+    AdditionalSerializerConfig( # Lade Details pro Werk
+        url="additional/work",
+        name="work",
+        path_structure={
+            F1_Work: [
+                E1_Crm_Entity.name,
+                E1_Crm_Entity.id,
+                F1_Work.short,
+                F1_Work.index_in_chapter,                                
+                F1_Work.index_desc,                                
+                F1_Work.idno,                                
+                F1_Work.genre,
+                E1_Crm_Entity.self_contenttype
+            ]            
+        }
+    ),
+    
     AdditionalSerializerConfig( # Lade Details pro Würdigung
         url="additional/honour_details",
         name="honour_details",
