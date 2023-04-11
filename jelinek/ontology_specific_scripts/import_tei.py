@@ -2559,9 +2559,9 @@ class TreesManager:
                                         if entity_manifestation.__class__ is F3_Manifestation_Product_Type:
 
                                             create_triple(
-                                                entity_subj=entity_manifestation,
-                                                entity_obj=entity_work,
-                                                prop=Property.objects.get(name="is translation of")
+                                                entity_obj=entity_manifestation,
+                                                entity_subj=entity_work,
+                                                prop=Property.objects.get(name="is original for translation")
                                             )
 
                     # contained manifestations (aggregation_work)

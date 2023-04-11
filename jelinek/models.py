@@ -301,11 +301,11 @@ def construct_properties():
     is_translator_of.save()
     
     is_translator_of = Property.objects.create(
-        name="is translation of",
-        name_reverse="is original for translation",
+        name_reverse="is translation of",
+        name="is original for translation",
     )
-    is_translator_of.subj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
-    is_translator_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    is_translator_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_translator_of.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_translator_of.save()
     
     is_editor_of = Property.objects.create(
