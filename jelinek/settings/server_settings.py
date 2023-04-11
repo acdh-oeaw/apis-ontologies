@@ -74,7 +74,8 @@ CACHES = {
 
 APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
-MIDDLEWARE = ["django.middleware.gzip.GZipMiddleware"] + MIDDLEWARE #+ ["django.middleware.cache.UpdateCacheMiddleware","django.middleware.cache.FetchFromCacheMiddleware"]
+MIDDLEWARE = ["django.middleware.cache.UpdateCacheMiddleware", "django.middleware.gzip.GZipMiddleware"] + MIDDLEWARE 
+MIDDLEWARE += ["django.middleware.cache.FetchFromCacheMiddleware"]
 
 #INSTALLED_APPS.append("apis_highlighter")
 
