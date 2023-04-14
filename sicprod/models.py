@@ -356,6 +356,15 @@ def construct_properties():
     person_or_function_takes_salary.obj_class.clear()
     person_or_function_takes_salary.obj_class.add(ContentType.objects.get(model=Salary.__name__))
 
+    person_vouchers_for_person = Property.objects.get_or_create(
+        name="bürgt für",
+        name_reverse="wird gebürgt von",
+    )[0]
+    person_vouchers_for_person.subj_class.clear()
+    person_vouchers_for_person.subj_class.add(ContentType.objects.get(model=Person.__name__))
+    person_vouchers_for_person.obj_class.clear()
+    person_vouchers_for_person.obj_class.add(ContentType.objects.get(model=Person.__name__))
+
     function_is_located_at_institution = Property.objects.get_or_create(
         name="ist an",
         name_reverse="hat Funktion",
