@@ -9,7 +9,7 @@ import reversion
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from apis_core.apis_entities.models import TempEntityClass
-from apis_core.apis_relations.models import Property, Triple
+from apis_core.apis_relations.models import Property, Triple, AbstractReification
 from apis_core.helper_functions import caching
 
 from apis_ontology.helper_functions import remove_extra_spaces
@@ -256,6 +256,14 @@ class MusicPerformance(GenericStatement):
     __entity_group__ = MUSIC_STATEMENTS
 
 
+class IdentificationOfEntity(AbstractReification):
+    identified_by = models.CharField(max_length=100, choices=(
+        ("explicit_in_source", "Explicit in Source"), 
+        ("implicit_in_source", "Implicit in Source"), 
+        ("inferred_from_other_source", "Inferred from Other Source"), 
+        ("guess", "Guess"),
+    ))
+
 def build_property(
     name: str,
     name_reverse: str,
@@ -282,7 +290,14 @@ def construct_properties():
 
     naming_of_person = build_property("is naming of", "has naming", Naming, Person)
 
-    birth_event_of_person = build_property("is birth of", "has birth", Birth, Person)
+
+
+    birth_event_to_identification = build_property("is birth of", "has birth", Birth, IdentificationOfEntity)
+    identification_to_person = build_property("has birth identification", "is identification of", IdentificationOfEntity, Person)
+
+
+
+
     birth_event_in_location = build_property(
         "has location", "is location of birth", Birth, Place
     )

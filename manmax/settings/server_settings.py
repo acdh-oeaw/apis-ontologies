@@ -28,7 +28,7 @@ APIS_BIBSONOMY = [{
    'url': 'https://api.zotero.org', #url of the bibsonomy instance or zotero.org
    'user': os.environ.get('APIS_BIBSONOMY_USER'), #for zotero use the user id number found in settings
    'API key': os.environ.get('APIS_BIBSONOMY_PASSWORD'),
-   'group': '4853010'
+   'group': '2556736'
 }]
 APIS_BIBSONOMY_FIELDS = ['self']
 APIS_AUTOCOMPLETE_SETTINGS = "apis_ontology.settings.autocomplete_settings"
@@ -85,7 +85,7 @@ APIS_ENTITIES = {}
 # and use it to add a custom template path to
 # the template backends
 ONTOLOGY_DIR = os.path.dirname(os.path.dirname(__file__))
-print(ONTOLOGY_DIR)
+
 for template in TEMPLATES:
   template["DIRS"].append(os.path.join(ONTOLOGY_DIR, "templates"))
   template["OPTIONS"]["context_processors"].append("apis_ontology.custom_context_processors.grouped_menus")
