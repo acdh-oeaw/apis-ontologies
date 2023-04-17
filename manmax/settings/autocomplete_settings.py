@@ -73,7 +73,7 @@ autocomp_settings = {
         'fields': {
             'descr': (u'http://d-nb.info/standards/elementset/gnd#definition','String'),
             'name': (u'http://d-nb.info/standards/elementset/gnd#preferredNameForTheCorporateBody','String')}}],
-    'Person_backup': [{
+    'Person': [{
         'source': 'GND',
         'type': u'http://d-nb.info/standards/elementset/gnd#DifferentiatedPerson',
         'url': stb_find.format('gndPersons'),
