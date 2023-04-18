@@ -398,7 +398,7 @@ class TreesManager:
                     xml_elem.tag.endswith("bibl")
                     and (xml_elem.attrib.get("ana") == "frbroo:work" or xml_elem.attrib.get("ana") == "frbroo:aggregation_work")
                     and (trees_manager.helper_dict["current_type"] == "work" or trees_manager.helper_dict["current_type"] == "seklit")
-                    and not xml_elem.attrib.get("type") in ["audio_vis_work", "audio_work", "movie"]
+                    and not xml_elem.attrib.get("type") in ["audio_vis_work", "tv_work", "audio_work", "movie"]
                 ):
 
                     if (xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None and xml_elem.attrib.get("type") == "seklit"):
@@ -1669,6 +1669,7 @@ class TreesManager:
                         or trees_manager.helper_dict["current_type"] == "006_DrehbücherundTextefürFilme"
                         or trees_manager.helper_dict["current_type"] == "007_Kompositionen"
                         or xml_elem.attrib.get("type") == "audio_work"
+                        or xml_elem.attrib.get("type") == "tv_work"
                         or xml_elem.attrib.get("type") == "audio_vis_work"
                         or xml_elem.attrib.get("type") == "movie"
                     )
@@ -1748,7 +1749,7 @@ class TreesManager:
 
                 elif (
                     xml_elem.tag.endswith("rs")
-                    and (xml_elem.attrib.get("type") in ["audio_vis_work", "audio_work", "movie"])
+                    and (xml_elem.attrib.get("type") in ["audio_vis_work", "audio_work", "tv_work", "movie"])
                     and xml_elem.attrib.get("ref") is not None
                     and xml_elem.attrib.get("ref").startswith("audio_vis_work:")
                 ):
