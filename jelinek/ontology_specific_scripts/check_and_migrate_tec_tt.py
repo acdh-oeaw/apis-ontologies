@@ -3,7 +3,7 @@ from apis_core.apis_entities.models import *
 from apis_core.apis_relations.models import *
 from apis_core.apis_vocabularies.models import *
 from apis_ontology.models import *
-from apis_core.helper_functions import caching
+from apis_core.utils import caching
 
 
 def run(*args, **kwargs):
