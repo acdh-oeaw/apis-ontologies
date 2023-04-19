@@ -53,6 +53,7 @@ jobs:
      - name: Build models.py
        run: |
          cd xmltodjangomodel
+         cp ../sicprod-datamodel/methods/*.py templates/methods/ | true
          python3 convert.py ../sicprod-datamodel/model.xml ../apis-ontologies/sicprod/models.py
      - name: Create PR
        run: |
