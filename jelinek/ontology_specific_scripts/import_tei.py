@@ -2147,7 +2147,10 @@ class TreesManager:
                     and is_valid_text(xml_elem.text)
                 ):
 
-                    attr_dict["chapter_number"] = xml_elem.attrib.get("n").replace("-",".")
+                    if xml_elem.attrib.get("n").startswith("7-"):
+                        attr_dict["chapter_number"] = xml_elem.attrib.get("n").replace("7-", "7.x").replace("-",".")
+                    else:
+                        attr_dict["chapter_number"] = xml_elem.attrib.get("n").replace("-",".")
                     attr_dict["chapter_type"] = xml_elem.attrib.get("type")
                     attr_dict["name"] = remove_whitespace(xml_elem.text)
 
