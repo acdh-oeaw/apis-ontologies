@@ -1989,6 +1989,7 @@ class TreesManager:
                         or xml_elem.attrib.get("ana") == "EA" 
                         or xml_elem.attrib.get("ana") == "cinemarelease" 
                         or xml_elem.attrib.get("ana") == "EP"
+                        or xml_elem.attrib.get("ana") == "presentation"
                         )
                 ):
 
@@ -2007,6 +2008,8 @@ class TreesManager:
                             attr_dict["performance_type"] = "EA"
                     elif xml_elem.attrib.get("ana") == "EP":
                             attr_dict["performance_type"] = "EP"
+                    elif xml_elem.attrib.get("ana") == "presentation":
+                            attr_dict["performance_type"] = "presentation"
 
                     for xml_elem_child in xml_elem:
 
