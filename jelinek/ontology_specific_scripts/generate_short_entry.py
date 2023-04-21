@@ -579,14 +579,21 @@ def generate_short_text():
         return work
 
     def short_text_Installationen(work):
-        relations = Triple.objects.filter(subj=work, prop__name="R13 is realised in")
+        relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.performance_type == "EP"]
         if len(relations) > 0:
             recordings = [r.obj for r in relations]
             recordings.sort(key=lambda r: r.start_date if r.start_date is not None else datetime.datetime.now().date())
-            places = Triple.objects.filter(subj=recordings[0], prop__name="has been performed at")
-            if len(places) > 0:
-                short = "Erstpräsentation | {} {}".format(recordings[0].start_date_written, places[0].obj.name)
-                work.short = short
+            first = recordings[0]
+            institutions = [re.sub(r"\<.*?\>", "", rel.obj.content) for rel in Triple.objects.filter(prop__name="has note", subj=first) if "type=\"institutions\"" in rel.obj.content]
+            if len(institutions) == 0:
+                institutions = [rel.obj.name for rel in Triple.objects.filter(prop__name="has been performed at", subj=first)]
+            institutions = list(set(institutions))
+            short = "Erstpräsentation | {} {}".format(first.start_date_written, ", ".join([inst for inst in institutions]))
+            short = re.sub(r"\n", " ", short,0,re.MULTILINE)
+            short = re.sub(r" *\(.*?\)", "", short,0,re.MULTILINE)
+            short = re.sub(r", *$", "", short)
+            short = re.sub(r"  +", " ", short)
+            work.short = short
         return work
 
     def short_text_Herausgeberin(work):
@@ -702,25 +709,25 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            ("Lyrik", short_text_Lyrik, "1.1"), 
-            ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
-            ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
-            ("Romane", short_text_Romane, "1.2"), 
-            ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
-            ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
-            ("Theatertexte", short_text_Theatertexte, "1.4"), 
-            ("Kompositionen", short_text_Theatertexte, "1.7"), 
-            ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
-            ("Libretti", short_text_Theatertexte, "1.9"), 
-            ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
-            ("Übersetzungen", short_text_Essays, "1.11"),
+            # ("Lyrik", short_text_Lyrik, "1.1"), 
+            # ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
+            # ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
+            # ("Romane", short_text_Romane, "1.2"), 
+            # ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
+            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
+            # ("Theatertexte", short_text_Theatertexte, "1.4"), 
+            # ("Kompositionen", short_text_Theatertexte, "1.7"), 
+            # ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
+            # ("Libretti", short_text_Theatertexte, "1.9"), 
+            # ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
+            # ("Übersetzungen", short_text_Essays, "1.11"),
             ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen, "1.12"),
-            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
-            ("Interviews", short_text_Interviews, "3"),
-            ("Bearbeitungen von anderen", short_text_Bearbeitungen, "4"),
-            ("Sekundärliteratur", short_text_Seklit, "6"),
-            ("Würdigungen", short_text_Honour, "5"),
-            ("Sendungen und Filmporträts", short_text_Sendungen, "7"),
+            # ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
+            # ("Interviews", short_text_Interviews, "3"),
+            # ("Bearbeitungen von anderen", short_text_Bearbeitungen, "4"),
+            # ("Sekundärliteratur", short_text_Seklit, "6"),
+            # ("Würdigungen", short_text_Honour, "5"),
+            # ("Sendungen und Filmporträts", short_text_Sendungen, "7"),
             
             ]
         for short_text_generator in short_text_generators:
