@@ -425,7 +425,7 @@ class TreesManager:
                             and (xml_elem_child.attrib.get("type") == "main" or (xml_elem_child.attrib.get("type") == None and attr_dict["name"] == ""))
                         ):
 
-                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+                            attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         if (
                             xml_elem_child.tag.endswith("title")
@@ -467,7 +467,7 @@ class TreesManager:
                             and is_valid_text(xml_elem_child.text)
                         ):
 
-                            attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+                            attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif (
                             xml_elem_child.tag.endswith("ref")
