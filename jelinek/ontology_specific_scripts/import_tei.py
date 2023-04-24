@@ -3931,7 +3931,7 @@ class TreesManager:
 
                                             for entity_work in path_node_bibl.entities_list:
 
-                                                if has_class_as_parent(entity_work.__class__, F1_Work):
+                                                if has_class_as_parent(entity_work.__class__, F1_Work) or has_class_as_parent(entity_work.__class__, Honour):
 
                                                     create_triple(
                                                         entity_subj=entity_work,
@@ -3949,7 +3949,7 @@ class TreesManager:
 
                                                     for entity_work in path_node_bibl.entities_list:
 
-                                                        if has_class_as_parent(entity_work.__class__, F1_Work):
+                                                        if has_class_as_parent(entity_work.__class__, F1_Work) or has_class_as_parent(entity_work.__class__, Honour):
 
                                                             create_triple(
                                                                 entity_subj=entity_work,
@@ -3962,7 +3962,7 @@ class TreesManager:
 
                                                             for entity_work in path_node_bibl.entities_list:
 
-                                                                if has_class_as_parent(entity_work.__class__, F1_Work):
+                                                                if has_class_as_parent(entity_work.__class__, F1_Work) or has_class_as_parent(entity_work.__class__, Honour):
 
                                                                     create_triple(
                                                                         entity_subj=entity_work,
