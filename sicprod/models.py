@@ -365,6 +365,15 @@ def construct_properties():
     person_vouchers_for_person.obj_class.clear()
     person_vouchers_for_person.obj_class.add(ContentType.objects.get(model=Person.__name__))
 
+    person_possible_identical_with_person = Property.objects.get_or_create(
+        name="ist möglicherweise identisch mit",
+        name_reverse="ist möglicherweise identisch mit",
+    )[0]
+    person_possible_identical_with_person.subj_class.clear()
+    person_possible_identical_with_person.subj_class.add(ContentType.objects.get(model=Person.__name__))
+    person_possible_identical_with_person.obj_class.clear()
+    person_possible_identical_with_person.obj_class.add(ContentType.objects.get(model=Person.__name__))
+
     function_is_located_at_institution = Property.objects.get_or_create(
         name="ist an",
         name_reverse="hat Funktion",
