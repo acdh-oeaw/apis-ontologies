@@ -715,6 +715,7 @@ class TreesManager:
 
                 attr_dict = {
                     "bibl_id": None,
+                    "koha_id": None,
                     "name": None,
                     "title_in_note": None,
                     "series": None,
@@ -919,6 +920,14 @@ class TreesManager:
                             and xml_elem_child.tag.endswith("note")
                         ):
                             attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
+
+                        elif (
+                            xml_elem_child.tag.endswith("relatedItem")
+                            and xml_elem_child.attrib.get("ana") == "has_expression"
+                            ):
+                            for ref in xml_elem_child:
+                                if (ref.attrib.get("type") == "koha" and ref.attrib.get("target") is not None):
+                                    attr_dict["koha_id"] = ref.attrib.get("target").replace("koha:", "")
 
                 elif (
                     xml_elem.tag.endswith("bibl")
@@ -3091,6 +3100,27 @@ class TreesManager:
                                 prop=Property.objects.get(name="is editor of")
                             )
 
+                        if (
+                            entity_other.__class__ is E40_Legal_Body
+                            and (child_path_node.xml_elem.attrib.get("role") == "author")
+                        ):
+
+                            triple = create_triple(
+                                entity_subj=entity_other,
+                                entity_obj=entity_manifestation,
+                                prop=Property.objects.get(name="is author of")
+                            )
+                        if (
+                            entity_other.__class__ is E40_Legal_Body
+                            and (child_path_node.xml_elem.attrib.get("role") == "interviewer")
+                        ):
+
+                            triple = create_triple(
+                                entity_subj=entity_other,
+                                entity_obj=entity_manifestation,
+                                prop=Property.objects.get(name="is interviewer of")
+                            )
+
                     for child_child_path_node in child_path_node.path_node_children_list:
 
                         for entity_other in child_child_path_node.entities_list:
@@ -3116,6 +3146,26 @@ class TreesManager:
                                     entity_subj=entity_other,
                                     entity_obj=entity_manifestation,
                                     prop=Property.objects.get(name="is editor of")
+                                )
+                            if (
+                                entity_other.__class__ is E40_Legal_Body
+                                and (child_child_path_node.xml_elem.attrib.get("role") == "author")
+                            ):
+
+                                triple = create_triple(
+                                    entity_subj=entity_other,
+                                    entity_obj=entity_manifestation,
+                                    prop=Property.objects.get(name="is author of")
+                                )
+                            if (
+                                entity_other.__class__ is E40_Legal_Body
+                                and (child_child_path_node.xml_elem.attrib.get("role") == "interviewer")
+                            ):
+
+                                triple = create_triple(
+                                    entity_subj=entity_other,
+                                    entity_obj=entity_manifestation,
+                                    prop=Property.objects.get(name="is interviewer of")
                                 )
 
                     if (

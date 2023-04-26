@@ -58,7 +58,6 @@ class Honour(E1_Crm_Entity):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F3_Manifestation_Product_Type(E1_Crm_Entity):
-    
     idno = models.CharField(max_length=1024, blank=True, null=True)
     bibl_id = models.CharField(max_length=1024, blank=True, null=True) # TODO __sresch__ : Maybe replace with idno?
     note = models.TextField(blank=True, null=True)
@@ -73,7 +72,7 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
     short = models.CharField(max_length=1024, blank=True, null=True)
     untertitel = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
     scope_style = models.CharField(max_length=1024, blank=True, null=True)
-
+    koha_id = models.CharField(max_length=1024, blank=True, null=True)
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F9_Place(E1_Crm_Entity):
@@ -258,6 +257,7 @@ def construct_properties():
         name_reverse="has been written by",
     )
     is_author_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_author_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     is_author_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_author_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_author_of.save()
@@ -267,6 +267,7 @@ def construct_properties():
         name_reverse="has been interviewed by",
     )
     is_interviewer_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
+    is_interviewer_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     is_interviewer_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_interviewer_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_interviewer_of.save()
