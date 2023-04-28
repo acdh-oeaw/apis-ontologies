@@ -1833,6 +1833,7 @@ class TreesManager:
                     "airing_date": None,
                     "broadcast_id": None,
                     "start_date_written": None,
+                    "recording_type": None,
                     "note": None
                 }
                 helper_org = None
@@ -1842,6 +1843,10 @@ class TreesManager:
                     and xml_elem.attrib.get("type") == "broadcast"
                 ):
 
+                    if (
+                        xml_elem.attrib.get("ana") is not None
+                    ):
+                        attr_dict["recording_type"] = xml_elem.attrib.get("ana")
                     if (
                         xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
                     ):

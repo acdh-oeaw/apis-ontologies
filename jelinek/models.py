@@ -159,6 +159,7 @@ class F26_Recording(E1_Crm_Entity):
     note = models.TextField(blank=True, null=True)
     airing_date = models.CharField(max_length=1024, blank=True, null=True)
     broadcast_id = models.CharField(max_length=1024, blank=True, null=True)
+    recording_type = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])

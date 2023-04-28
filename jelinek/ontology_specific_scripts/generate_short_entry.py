@@ -348,8 +348,6 @@ def generate_short_text():
                 short = "Erstsendung | {} {}".format(recordings[0].start_date_written, ", ".join(institutions))
                 short = re.sub(r"\(.*?\)", "", short)
                 work.short = short
-        else: #Jelka
-            work.short = "Erstsendung | 1977 Südwestfunk"
                 
         return work
 
