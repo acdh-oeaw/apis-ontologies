@@ -815,7 +815,7 @@ class TreesManager:
                         elif xml_elem_child.tag.endswith("ref"):
 
                             attr_dict["ref_target"] = xml_elem_child.attrib.get("target")
-                            attr_dict["series"] = xml_elem_child.text
+                            attr_dict["series"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif xml_elem_child.tag.endswith("textLang"):
 
@@ -901,7 +901,7 @@ class TreesManager:
                         elif xml_elem_child.tag.endswith("ref"):
 
                             attr_dict["ref_target"] = xml_elem_child.attrib.get("target")
-                            attr_dict["series"] = xml_elem_child.text
+                            attr_dict["series"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif xml_elem_child.tag.endswith("textLang"):
 
