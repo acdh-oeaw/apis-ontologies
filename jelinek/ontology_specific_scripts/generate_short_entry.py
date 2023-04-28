@@ -340,10 +340,17 @@ def generate_short_text():
         if len(relations) > 0:
             recordings = [r.obj for r in relations if r.obj.start_date is not None]
             recordings.sort(key=lambda r: r.start_date)
-            places = Triple.objects.filter(subj=recordings[0], prop__name="has been performed at")
-            if len(places) > 0:
-                short = "Erstsendung | {} {}".format(recordings[0].start_date_written, places[0].obj.name)
+            recording = recordings[0]
+            institutions = [re.sub(r"\<.*?\>", "", rel.obj.content) for rel in Triple.objects.filter(prop__name="has note", subj=recording) if "type=\"broadcaster\"" in rel.obj.content]
+            if len(institutions) == 0:
+                institutions = [rel.obj.name for rel in Triple.objects.filter(prop__name="has been performed at", subj=recording)]
+            if len(institutions) > 0:
+                short = "Erstsendung | {} {}".format(recordings[0].start_date_written, ", ".join(institutions))
+                short = re.sub(r"\(.*?\)", "", short)
                 work.short = short
+        else: #Jelka
+            work.short = "Erstsendung | 1977 Südwestfunk"
+                
         return work
 
     def short_text_Drehbuecher(work):
@@ -710,25 +717,25 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            ("Lyrik", short_text_Lyrik, "1.1"), 
-            ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
-            ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
-            ("Romane", short_text_Romane, "1.2"), 
+            # ("Lyrik", short_text_Lyrik, "1.1"), 
+            # ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
+            # ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
+            # ("Romane", short_text_Romane, "1.2"), 
             ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
-            ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
-            ("Theatertexte", short_text_Theatertexte, "1.4"), 
-            ("Kompositionen", short_text_Theatertexte, "1.7"), 
-            ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
-            ("Libretti", short_text_Theatertexte, "1.9"), 
-            ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
-            ("Übersetzungen", short_text_Essays, "1.11"),
-            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen, "1.12"),
-            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
-            ("Interviews", short_text_Interviews, "3"),
-            ("Bearbeitungen von anderen", short_text_Bearbeitungen, "4"),
-            ("Sekundärliteratur", short_text_Seklit, "6"),
-            ("Würdigungen", short_text_Honour, "5"),
-            ("Sendungen und Filmporträts", short_text_Sendungen, "7"),
+            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
+            # ("Theatertexte", short_text_Theatertexte, "1.4"), 
+            # ("Kompositionen", short_text_Theatertexte, "1.7"), 
+            # ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
+            # ("Libretti", short_text_Theatertexte, "1.9"), 
+            # ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
+            # ("Übersetzungen", short_text_Essays, "1.11"),
+            # ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen, "1.12"),
+            # ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
+            # ("Interviews", short_text_Interviews, "3"),
+            # ("Bearbeitungen von anderen", short_text_Bearbeitungen, "4"),
+            # ("Sekundärliteratur", short_text_Seklit, "6"),
+            # ("Würdigungen", short_text_Honour, "5"),
+            # ("Sendungen und Filmporträts", short_text_Sendungen, "7"),
             
             ]
         for short_text_generator in short_text_generators:
