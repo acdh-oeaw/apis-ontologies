@@ -557,6 +557,7 @@ def generate_short_text():
             short = "<b>{}: <i>{}{}</i></b> {}".format(interviewer_string, work.name, point, new_short)
         else:
             short = "{}{} {}".format(work.name, point, new_short)
+        short = short.replace("N., N.", "N. N.")
         work.short = short
         return work
 
