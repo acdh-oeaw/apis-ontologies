@@ -747,6 +747,7 @@ additional_serializers_list = [
                 F3_Manifestation_Product_Type.start_date_written,
                 F3_Manifestation_Product_Type.note,
                 F3_Manifestation_Product_Type.bibl_id,
+                F3_Manifestation_Product_Type.koha_id,
                 F3_Manifestation_Product_Type.series,
                 F3_Manifestation_Product_Type.edition,
                 F3_Manifestation_Product_Type.page,
@@ -774,6 +775,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.start_date_written,
                                     F3_Manifestation_Product_Type.note,
                                     F3_Manifestation_Product_Type.bibl_id,
+                                    F3_Manifestation_Product_Type.koha_id,
                                     F3_Manifestation_Product_Type.series,
                                     F3_Manifestation_Product_Type.edition,
                                     F3_Manifestation_Product_Type.page,
@@ -806,6 +808,7 @@ additional_serializers_list = [
                                     F3_Manifestation_Product_Type.start_date_written,
                                     F3_Manifestation_Product_Type.note,
                                     F3_Manifestation_Product_Type.bibl_id,
+                                    F3_Manifestation_Product_Type.koha_id,
                                     F3_Manifestation_Product_Type.series,
                                     F3_Manifestation_Product_Type.edition,
                                     F3_Manifestation_Product_Type.page,
@@ -833,6 +836,7 @@ additional_serializers_list = [
             XMLNote: [
                 XMLNote.id,
                 XMLNote.content,
+                XMLNote.context,
                 XMLNote.rendition,
                 XMLNote.type,
                 {
