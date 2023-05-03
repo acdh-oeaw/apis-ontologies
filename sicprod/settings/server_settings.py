@@ -206,3 +206,4 @@ for template in TEMPLATES:
   template["DIRS"].append(os.path.join(ONTOLOGY_DIR, "templates"))
 
 BIBSONOMY_REFERENCE_SIMILARITY = ['bibs_url', 'pages_start', 'pages_end', 'folio']
+ROOT_URLCONF="apis_ontology.urls"
