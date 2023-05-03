@@ -164,7 +164,6 @@ class F26_Recording(E1_Crm_Entity):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F31_Performance(E1_Crm_Entity):
-    
     note = models.TextField(blank=True, null=True)
     performance_id = models.CharField(max_length=1024, blank=True, null=True)
     performance_type = models.CharField(max_length=1024, blank=True, null=True)
@@ -186,6 +185,7 @@ class Keyword(TempEntityClass):
 @reversion.register(follow=["tempentityclass_ptr"])
 class XMLNote(TempEntityClass):
     content = models.TextField(blank=True, null=True)
+    context = models.CharField(max_length=1024, blank=True, null=True)
     rendition = models.CharField(max_length=1024, blank=True, null=True)
     type = models.CharField(max_length=1024, blank=True, null=True)
 

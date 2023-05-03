@@ -78,6 +78,11 @@ def remove_outer_xml_tags(var_str):
     last = regex.sub("", last).strip()
     return last
 
+def get_uppermost_parent(path_node):
+    parent = path_node.path_node_parent
+    while parent.path_node_parent is not None:
+        parent = parent.path_node_parent
+    return parent
 
 
 
@@ -2264,6 +2269,7 @@ class TreesManager:
                 attr_dict = {
                     "name": None,
                     "content": None,
+                    "context": None,
                     "type": None,
                     "rendition": None,
                 }
@@ -2273,6 +2279,32 @@ class TreesManager:
                     and xml_elem.tag.endswith("note")
                 ):
 
+                    top_level_node = get_uppermost_parent(path_node)
+                    # navigate to chapters
+                    def find_all_entities_of_class(subtree, class_name, found_elements=[], stop_after_tag=None):
+                        queue = []     #Initialize a queue
+                        found_elements += [e for e in subtree.entities_list if e.__class__ == class_name]
+                        queue.append(subtree)
+
+                        while queue:          # Creating loop to visit each node
+                            node = queue.pop(0) 
+                            for child in node.path_node_children_list:
+                                found_elements += [e for e in child.entities_list if e.__class__ == class_name]
+                                queue.append(child)
+                                if stop_after_tag is not None and child.xml_elem.tag.endswith(stop_after_tag):
+                                    break
+                        return found_elements
+                    chapters = find_all_entities_of_class(top_level_node, Chapter, [])
+                    if len(chapters) > 0:
+                        leaf_chapters = []
+                        for (idx, c) in enumerate(chapters):
+                            if idx > 0 and len(c.chapter_number.split("-")[0]) == 1:
+                                leaf_chapters.append(chapters[idx-1])
+                        if chapters[-1] not in leaf_chapters:
+                            leaf_chapters.append(chapters[-1])
+                        if len(leaf_chapters) > 0:
+                            attr_dict["context"] = ", ".join(c.chapter_number for c in leaf_chapters)
+                        
                     attr_dict["content"] = ET.tostring(xml_elem, encoding="unicode").strip(xml_elem.tail)
 
                     if(xml_elem.attrib.get("rendition") is not None):
@@ -2417,12 +2449,6 @@ class TreesManager:
             else:
 
                 return path_node
-
-        def get_uppermost_parent(path_node):
-            parent = path_node.path_node_parent
-            while parent.path_node_parent is not None:
-                parent = parent.path_node_parent
-            return parent
 
         def create_triple(entity_subj, entity_obj, prop):
 
