@@ -89,7 +89,7 @@ def generate_short_text():
             relations = get_sorted_manifestations_for_work(work)
             if len(relations) > 0:
                 first_manifestation = relations[0].obj
-                hosts = Triple.objects.filter(subj=first_manifestation, prop__name="host")
+                hosts = Triple.objects.filter(subj=first_manifestation, prop__name="has host")
                 if hosts.count() > 0:
                     host = hosts[0].obj
                     date_written = first_manifestation.start_date_written
@@ -146,7 +146,7 @@ def generate_short_text():
         relations = get_sorted_manifestations_for_work(work)
         if len(relations) > 0:
             first_manifestation = relations[0].obj
-            hosts = Triple.objects.filter(subj=first_manifestation, prop__name="host")
+            hosts = Triple.objects.filter(subj=first_manifestation, prop__name="has host")
             if hosts.count() > 0:
                 host = hosts[0].obj
                 publishers = Triple.objects.filter(prop__name="is publisher of", obj=host)
@@ -187,7 +187,7 @@ def generate_short_text():
             relations = get_sorted_manifestations_for_work(work, include_translations=True)
             if len(relations) > 0:
                 first_manifestation = relations[0].obj
-                hosts = Triple.objects.filter(subj=first_manifestation, prop__name="host")
+                hosts = Triple.objects.filter(subj=first_manifestation, prop__name="has host")
                 if hosts.count() > 0:
                     host = hosts[0].obj
                     publishers = Triple.objects.filter(prop__name="is publisher of", obj=host)
@@ -218,7 +218,7 @@ def generate_short_text():
                             else:
                                 is_supplement = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name__in=["supplement", "booklet"])
                                 if is_supplement.count() > 0:
-                                    hosts = Triple.objects.filter(subj=host, prop__name="host")
+                                    hosts = Triple.objects.filter(subj=host, prop__name="has host")
                                     if hosts.count() > 0:
                                         host_host = hosts[0].obj
                                         publishers = Triple.objects.filter(prop__name="is publisher of", obj=host_host)
@@ -241,7 +241,7 @@ def generate_short_text():
                                     else:
                                         is_analytic_publication = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name="analyticPublication")
                                         if is_analytic_publication.count() > 0:
-                                            hosts = Triple.objects.filter(subj=host, prop__name="host")
+                                            hosts = Triple.objects.filter(subj=host, prop__name="has host")
                                             if hosts.count() > 0:
                                                 host_host = hosts[0].obj
                                                 is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host_host, obj__name__in=["journal", "newspaper"])
