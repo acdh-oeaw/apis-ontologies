@@ -76,6 +76,8 @@ def remove_outer_xml_tags(var_str):
     last = regex.sub("", last).strip()
     regex = re.compile(r"</ns0:orgName>$")
     last = regex.sub("", last).strip()
+    regex = re.compile(r"</ns0:ref>$")
+    last = regex.sub("", last).strip()
     return last
 
 def get_uppermost_parent(path_node):
