@@ -1892,23 +1892,23 @@ class TreesManager:
                         elif xml_elem_child.tag.endswith("note"):
                             attr_dict["note"] = ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)
 
-                    if attr_dict["name"] is None:
+                    # if attr_dict["name"] is None:
 
-                        if attr_dict["airing_date"] is not None and helper_org is not None:
+                    #     if attr_dict["airing_date"] is not None and helper_org is not None:
 
-                            attr_dict["name"] = "aired on " + airing_date + " at " + helper_org
+                    #         attr_dict["name"] = "aired on " + airing_date + " at " + helper_org
 
-                        elif attr_dict["airing_date"] is not None:
+                    #     elif attr_dict["airing_date"] is not None:
 
-                            attr_dict["name"] = "aired on " + airing_date
+                    #         attr_dict["name"] = "aired on " + airing_date
 
-                        elif helper_org is not None:
+                    #     elif helper_org is not None:
 
-                            attr_dict["name"] = "aired at " + helper_org
+                    #         attr_dict["name"] = "aired at " + helper_org
 
-                        else:
+                    #     else:
 
-                            attr_dict["name"] = "Unknown recording date"
+                    #         attr_dict["name"] = "Unknown recording date"
 
                     if (
                         attr_dict["broadcast_id"] is None or attr_dict["broadcast_id"] == ""
