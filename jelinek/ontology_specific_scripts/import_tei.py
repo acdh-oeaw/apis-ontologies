@@ -440,9 +440,9 @@ class TreesManager:
                         ):
 
                             if attr_dict["untertitel"] is not None:
-                                attr_dict["untertitel"] = attr_dict["untertitel"] + "<br>" + remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = attr_dict["untertitel"] + "<br>" + remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
-                                attr_dict["untertitel"] = remove_whitespace(xml_elem_child.text)
+                                attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         if (
                             xml_elem_child.tag.endswith("title")
@@ -1728,7 +1728,7 @@ class TreesManager:
 
                             if attr_dict["untertitel"] is None:
                                 attr_dict["untertitel"] = ""
-                            attr_dict["untertitel"] = attr_dict["untertitel"] + remove_whitespace(xml_elem_child.text)
+                            attr_dict["untertitel"] = attr_dict["untertitel"] + remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         if (
                             xml_elem_child.tag.endswith("idno")
