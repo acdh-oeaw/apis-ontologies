@@ -53,10 +53,22 @@ DATABASES = {}
 
 DATABASES["default"] = dj_database_url.config(conn_max_age=600)
 
+# DATABASES = {
+#     "default": {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'apis_jelinek',
+#         'USER': 'apis_jelinek',
+#         'PASSWORD': 'TWL9WF59xzT0',
+#         'HOST': 'helios.arz.oeaw.ac.at',
+#         'PORT': '5434',
+#     }
+# }
+
 MAIN_TEXT_NAME = "ÖBL Haupttext"
 
 LANGUAGE_CODE = "de"
-
+#mysql://apis-jelinek:AD11U6XI7B4k@helios.arz.oeaw.ac.at:3306/apis-jelinek
+# postgresql://apis_jelinek:TWL9WF59xzT0@helios.arz.oeaw.ac.at:5434/apis_jelinek
 #INSTALLED_APPS += ["apis_ontology"]
 
 #STATICFILES_DIRS = [BASE_DIR + "/member_images"]
@@ -65,17 +77,17 @@ LANGUAGE_CODE = "de"
 
 # APIS_BLAZEGRAPH = ('https://blazegraph.herkules.arz.oeaw.ac.at/metaphactory-play/sparql', 'metaphactory-play', 'KQCsD24treDY')
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
-        "LOCATION": "my_cache_table",
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+#         "LOCATION": "my_cache_table",
+#     }
+# }
 
 APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
-MIDDLEWARE = ["django.middleware.cache.UpdateCacheMiddleware", "django.middleware.gzip.GZipMiddleware"] + MIDDLEWARE 
-MIDDLEWARE += ["django.middleware.cache.FetchFromCacheMiddleware"]
+# MIDDLEWARE = ["django.middleware.cache.UpdateCacheMiddleware", "django.middleware.gzip.GZipMiddleware"] + MIDDLEWARE 
+# MIDDLEWARE += ["django.middleware.cache.FetchFromCacheMiddleware"]
 
 #INSTALLED_APPS.append("apis_highlighter")
 
