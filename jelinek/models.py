@@ -190,7 +190,6 @@ class XMLNote(TempEntityClass):
     type = models.CharField(max_length=1024, blank=True, null=True)
 
 
-
 def construct_properties():
     
     from apis_core.apis_vocabularies.models import TextType
@@ -199,8 +198,8 @@ def construct_properties():
     # from apis_highlighter.models import AnnotationProject, Project
     from django.contrib.auth.models import User
     
-    TextType.objects.all().delete()
-    tt = TextType.objects.create(entity="E1_Crm_Entity")
+    # TextType.objects.all().delete()
+    # tt = TextType.objects.create(entity="E1_Crm_Entity")
     #tt.collections.add(Collection.objects.get_or_create(name="manually created entity"))
     
     # AnnotationProject.objects.create(name="test__annotation_project_1")

@@ -64,17 +64,17 @@ LANGUAGE_CODE = "de"
 
 # APIS_BLAZEGRAPH = ('https://blazegraph.herkules.arz.oeaw.ac.at/metaphactory-play/sparql', 'metaphactory-play', 'KQCsD24treDY')
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
-        "LOCATION": "my_cache_table",
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+#         "LOCATION": "my_cache_table",
+#     }
+# }
 
 APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
-MIDDLEWARE = ["django.middleware.cache.UpdateCacheMiddleware", "django.middleware.gzip.GZipMiddleware"] + MIDDLEWARE 
-MIDDLEWARE += ["django.middleware.cache.FetchFromCacheMiddleware"]
+# MIDDLEWARE = ["django.middleware.cache.UpdateCacheMiddleware", "django.middleware.gzip.GZipMiddleware"] + MIDDLEWARE 
+# MIDDLEWARE += ["django.middleware.cache.FetchFromCacheMiddleware"]
 
 #INSTALLED_APPS.append("apis_highlighter")
 
