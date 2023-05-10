@@ -75,7 +75,7 @@ APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
 MIDDLEWARE = ["django.middleware.gzip.GZipMiddleware"] + MIDDLEWARE 
 #MIDDLEWARE += ["django.middleware.cache.FetchFromCacheMiddleware"]
-
+INSTALLED_APPS.append("django.contrib.postgres")
 #INSTALLED_APPS.append("apis_highlighter")
 
 import sentry_sdk
