@@ -1095,4 +1095,27 @@ additional_serializers_list = [
             ],
         }
     ),
+    AdditionalSerializerConfig(
+        url="additional/xml_content_dump",
+            name="xml_content_dump",
+            path_structure={
+                Xml_Content_Dump: [
+                    Xml_Content_Dump.id,
+                    {
+                    Xml_Content_Dump.triple_set_from_obj: [
+                        {Triple.subj: [
+                            F1_Work.name,
+                                F1_Work.short,
+                                F1_Work.id,
+                                F1_Work.index_in_chapter,
+                                F1_Work.index_desc,
+                                F1_Work.idno,
+                                F1_Work.genre,
+                                F1_Work.self_contenttype
+                        ]}
+                    ]
+                    }
+                ],
+            }
+    )
 ]

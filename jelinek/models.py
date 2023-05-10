@@ -12,6 +12,10 @@ class Xml_File(TempEntityClass):
     file_path = models.CharField(max_length=1024, blank=True, null=True)
     file_content = models.TextField(blank=True)
 
+@reversion.register(follow=["tempentityclass_ptr"])
+class Xml_Content_Dump(TempEntityClass):
+    file_content = models.TextField(blank=True)
+
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class E1_Crm_Entity(TempEntityClass):
@@ -556,3 +560,10 @@ def construct_properties():
     )
     is_located_in.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     is_located_in.obj_class.add(ContentType.objects.get(model=F9_Place.__name__))
+
+    data_read_from_dump = Property.objects.create(
+        name="data read from dump",
+        name_reverse="is dump of",
+    )
+    data_read_from_dump.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    data_read_from_dump.obj_class.add(ContentType.objects.get(model=Xml_Content_Dump.__name__))

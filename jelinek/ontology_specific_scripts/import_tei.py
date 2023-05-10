@@ -14,6 +14,7 @@ from os import listdir
 from os.path import isfile, isdir, join
 from .generate_short_entry import run as generate_short
 from .generate_genre import run as generate_genre
+from .generate_xml_dumps import run as generate_xml_dumps
 import os
 
 
@@ -4024,6 +4025,22 @@ class TreesManager:
 
                                                 break
 
+                                        if path_node_div.xml_elem.attrib.get("type") == "honour":    
+                                            for path_node_div_div in path_node_div.path_node_children_list: 
+                                                for path_node_bibl in path_node_div_div.path_node_children_list:
+
+                                                    for entity_work in path_node_bibl.entities_list:
+
+                                                        if has_class_as_parent(entity_work.__class__, F1_Work) or has_class_as_parent(entity_work.__class__, Honour):
+
+                                                            create_triple(
+                                                                entity_subj=entity_work,
+                                                                entity_obj=entity_keyword,
+                                                                prop=Property.objects.get(name="has keyword"),
+                                                            )
+
+                                                        break
+
                                         for path_node_div_div in path_node_div.path_node_children_list:
 
                                             if path_node_div_div.xml_elem.tag.endswith("div") and path_node_div_div.xml_elem.attrib.get("type") == "head_section":
@@ -4395,5 +4412,6 @@ def run(*args, **options):
 
         generate_genre()
         generate_short()
+        generate_xml_dumps()
 
     main_run()

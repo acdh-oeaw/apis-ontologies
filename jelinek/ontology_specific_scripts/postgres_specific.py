@@ -7,9 +7,12 @@ def postgres_workaround_for_case_sensitive_contenttypes():
     for contenttype in ContentType.objects.all():
         related_class_name = [c for c in all_classes if str.lower(c) == contenttype.model]
         if (len(related_class_name) == 1):
-            contenttype.model = related_class_name[0]
-            contenttype.save()
-            print(contenttype.model, related_class_name)
+            if (len(ContentType.objects.filter(model=related_class_name[0], app_label=contenttype.app_label)) <= 0): 
+                contenttype.model = related_class_name[0]
+                contenttype.save()
+                print(contenttype.model, related_class_name)
+            else:
+                print(contenttype, " already exists")
         else:
             print("No model found for ", contenttype.model)
 
