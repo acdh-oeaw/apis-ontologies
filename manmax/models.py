@@ -16,18 +16,22 @@ from apis_ontology.helper_functions import remove_extra_spaces
 
 # Entity categories
 
+
 GENERIC = "Generic"
 ROLE_ORGANISATIONS = "Roles/Organisations"
 LIFE_FAMILY = "Life/Family"
 ART = "Art"
 MUSIC = "Music"
+ARMOURING = "Armouring"
 OTHER = "Other"
+
 
 
 ENTITY = "Entities"
 STATEMENT = "Statements"
 
 group_order = [
+
     GENERIC,
     LIFE_FAMILY,
     ROLE_ORGANISATIONS,
@@ -36,6 +40,12 @@ group_order = [
     OTHER,
 ]
 
+
+@reversion.register(follow=["tempentityclass_ptr"])
+class Factoid(TempEntityClass):
+    
+    
+    created_by = models.CharField(max_length=300)
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Person(TempEntityClass):
@@ -85,7 +95,7 @@ class Organisation(TempEntityClass):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class GenericWork(TempEntityClass):
+class ConceptualObject(TempEntityClass):
     """A Work of art, literature, music, etc. Where possible, use specific subtypes (Artistic Work, Music Work, etc.)"""
 
     __entity_group__ = GENERIC
@@ -93,9 +103,8 @@ class GenericWork(TempEntityClass):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class GenericItem(TempEntityClass):
-    """An item which is not (as far as this project is concerned) created by a Person — in which case, use Generic Work — but
-    which may be owned or exchanged."""
+class PhysicalObject(TempEntityClass):
+    """A physical object (rather than a conceptual object). Where possible, use specific subtypes (Work, Music Work, Armour)"""
 
     __entity_group__ = GENERIC
     __entity_type__ = ENTITY
@@ -108,12 +117,15 @@ class Role(TempEntityClass):
     __entity_group__ = ROLE_ORGANISATIONS
     __entity_type__ = ENTITY
 
+# Base Armour subtypes
+
+
 
 # Base Work subtypes
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class MusicWork(GenericWork):
+class MusicWork(ConceptualObject):
     """A piece of music"""
 
     __entity_group__ = MUSIC
@@ -121,7 +133,7 @@ class MusicWork(GenericWork):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class ArtWork(GenericWork):
+class ArtWork(ConceptualObject):
     """A work of art"""
 
     __entity_group__ = ART
@@ -137,6 +149,14 @@ class GenericStatement(TempEntityClass):
 
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
+    
+
+@reversion.register(follow=["tempentityclass_ptr"])
+class PropertyExchange(TempEntityClass):
+    __entity_group__ = GENERIC
+    __entity_type__ = STATEMENT
+    
+    description_of_property_exchanged = models.CharField(max_length=300, blank=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -183,7 +203,6 @@ def update_person_label_on_naming_change(sender, instance: Naming, **kwargs):
     for nt in naming_triples:
         person: Person = nt.obj
         person.update_label_from_namings()
-
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Birth(GenericStatement):
@@ -364,6 +383,16 @@ def build_property(
 
 
 def construct_properties():
+    # Generic Statement attached to Factoid
+    for sc in list(GenericStatement.__subclasses__()):
+    
+        is_part_of_factoid = build_property("has statement", "is part of factoid", Factoid, sc)
+    
+    # Property Exchange
+    giver = build_property("giver of property", "gave property in property exchange" , PropertyExchange, [Person, Organisation])
+    receiver = build_property("receiver of property", "received property in property exchange" , PropertyExchange, [Person, Organisation])
+    is_part_of_factoid = build_property("has statement", "is part of factoid", Factoid, PropertyExchange)
+    
     # Place located within
     place_located_in_place = build_property("located within", "contains place", Place, Place)
 
@@ -490,6 +519,7 @@ def construct_properties():
             ArtworkCreation,
             MusicCreation,
             MusicPerformance,
+            PropertyExchange
         ],
     )
 
