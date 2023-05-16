@@ -155,14 +155,17 @@ def generate_short_text():
                     publisher = publishers[0].subj
                     place = places[0].obj
                     editors = Triple.objects.filter(prop__name="is editor of", obj=host)
+                    start_date = first_manifestation.start_date_written
+                    if start_date is None:
+                        start_date = host.start_date_written
                     if editors.count() > 0:
                         editor = editors[0].subj
                         if editor.__class__ == E40_Legal_Body:
-                            short = "{} | In: {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.name, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                            short = "{} | In: {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.name, host.name, place.name, publisher.name, start_date, _format_page(first_manifestation.page))
                         elif editor.__class__ == F10_Person:
-                            short = "{} | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.surname, editor.forename, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                            short = "{} | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.surname, editor.forename, host.name, place.name, publisher.name, start_date, _format_page(first_manifestation.page))
                     else:
-                        short = "{} | In: {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                        short = "{} | In: {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, place.name, publisher.name, start_date, _format_page(first_manifestation.page))
                     work.short = short
                 else:
                     is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name__in=["journal", "newspaper"])
