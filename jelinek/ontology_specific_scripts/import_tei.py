@@ -2218,7 +2218,8 @@ class TreesManager:
                 xml_elem = path_node.xml_elem
 
                 attr_dict = {
-                    "name": None
+                    "name": None,
+                    "keyword_id": None
                 }
 
                 if (
@@ -2229,6 +2230,15 @@ class TreesManager:
                     and is_valid_text(xml_elem.text)
                 ):
                     attr_dict["name"] = remove_whitespace(xml_elem.text)
+                    if (xml_elem.attrib.get("ref") is not None):
+                        attr_dict["keyword_id"] = xml_elem.attrib.get("ref").replace("term:", "")
+                        
+                if (xml_elem.tag.endswith("gloss")
+                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
+                    and is_valid_text(xml_elem.text)
+                ):
+                    attr_dict["name"] = remove_whitespace(xml_elem.text)
+                    attr_dict["keyword_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -2248,9 +2258,9 @@ class TreesManager:
 
                     db_result = None
 
-                    if attr_dict["name"] is not None:
+                    if attr_dict["keyword_id"] is not None:
 
-                        db_result = Keyword.objects.get_or_create(name=attr_dict["name"])
+                        db_result = Keyword.objects.get_or_create(keyword_id=attr_dict["keyword_id"])
 
                     else:
 

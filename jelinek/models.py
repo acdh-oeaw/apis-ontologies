@@ -184,7 +184,7 @@ class Chapter(TempEntityClass):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Keyword(TempEntityClass):
-    pass
+    keyword_id = models.CharField(max_length=1024, blank=True, null=True)
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class XMLNote(TempEntityClass):
