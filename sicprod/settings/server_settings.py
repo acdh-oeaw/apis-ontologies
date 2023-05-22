@@ -204,3 +204,5 @@ ONTOLOGY_DIR = os.path.dirname(os.path.dirname(__file__))
 print(ONTOLOGY_DIR)
 for template in TEMPLATES:
   template["DIRS"].append(os.path.join(ONTOLOGY_DIR, "templates"))
+
+BIBSONOMY_REFERENCE_SIMILARITY = ['bibs_url', 'pages_start', 'pages_end', 'folio']
