@@ -3165,6 +3165,17 @@ class TreesManager:
                                 prop=Property.objects.get(name="is interviewer of")
                             )
 
+                        if (
+                            entity_other.__class__ is E40_Legal_Body
+                            and (child_path_node.xml_elem.attrib.get("role") == "broadcaster")
+                        ):
+
+                            triple = create_triple(
+                                entity_subj=entity_other,
+                                entity_obj=entity_manifestation,
+                                prop=Property.objects.get(name="is broadcaster of")
+                            )
+
                     for child_child_path_node in child_path_node.path_node_children_list:
 
                         for entity_other in child_child_path_node.entities_list:
@@ -3210,6 +3221,16 @@ class TreesManager:
                                     entity_subj=entity_other,
                                     entity_obj=entity_manifestation,
                                     prop=Property.objects.get(name="is interviewer of")
+                                )
+                            if (
+                            entity_other.__class__ is E40_Legal_Body
+                            and (child_child_path_node.xml_elem.attrib.get("role") == "broadcaster")
+                            ):
+
+                                triple = create_triple(
+                                    entity_subj=entity_other,
+                                    entity_obj=entity_manifestation,
+                                    prop=Property.objects.get(name="is broadcaster of")
                                 )
 
                     if (
