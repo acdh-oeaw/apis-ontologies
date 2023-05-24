@@ -458,11 +458,11 @@ def construct_properties():
         name="is broadcaster of",
         name_reverse="has broadcaster",
     )
-    is_broadcaster_of.subj_class.add(ContentType.objects.get(E40_Legal_Body.__name__))
-    is_broadcaster_of.obj_class.add(ContentType.objects.get(F3_Manifestation_Product_Type.__name__))
-    is_broadcaster_of.obj_class.add(ContentType.objects.get(F31_Performance.__name__))
-    is_broadcaster_of.obj_class.add(ContentType.objects.get(F26_Recording.__name__))
-    is_broadcaster_of.obj_class.add(ContentType.objects.get(Honour.__name__))
+    is_broadcaster_of.subj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
+    is_broadcaster_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
+    is_broadcaster_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
+    is_broadcaster_of.obj_class.add(ContentType.objects.get(model=F26_Recording.__name__))
+    is_broadcaster_of.obj_class.add(ContentType.objects.get(model=Honour.__name__))
     is_broadcaster_of.save()
     
     has_been_performed_in = Property.objects.create(
