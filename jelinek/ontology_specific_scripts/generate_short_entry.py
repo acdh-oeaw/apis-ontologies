@@ -199,14 +199,17 @@ def generate_short_text():
                         publisher = publishers[0].subj
                         place = places[0].obj
                         editors = Triple.objects.filter(prop__name="is editor of", obj=host)
+                        first_date = first_manifestation.start_date_written
+                        if first_date is None:
+                            first_date = host.start_date_written
                         if editors.count() > 0:
                             editor = editors[0].subj
                             if editor.__class__ == E40_Legal_Body:
-                                short = "{} | In: {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.name, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                                short = "{} | In: {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.name, host.name, place.name, publisher.name, first_date, _format_page(first_manifestation.page))
                             elif editor.__class__ == F10_Person:
-                                short = "{} | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.surname, editor.forename, host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                                short = "{} | In: {}, {} (Hg.): {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), editor.surname, editor.forename, host.name, place.name, publisher.name, first_date, _format_page(first_manifestation.page))
                         else:
-                            short = "{} | In: {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, place.name, publisher.name, first_manifestation.start_date_written, _format_page(first_manifestation.page))
+                            short = "{} | In: {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, place.name, publisher.name, first_date, _format_page(first_manifestation.page))
                         work.short = short
                     else:
                         is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name__in=["journal", "newspaper"])
@@ -511,6 +514,34 @@ def generate_short_text():
         else:
             work = short_text_Einzeltext(work)
         return work
+    
+    def short_text_Uebersetzungen(work):
+        def short_test_Uebersetzte_Theaterstuecke(work):
+            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.performance_type == "UA"]
+            if len(relations) == 0:
+                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.start_date is not None]
+                relations.sort(key=lambda rel: rel.obj.start_date)
+            if len(relations) > 0:
+                perf = relations[0].obj
+                institutions = [re.sub(r"\<.*?\>", "", rel.obj.content) for rel in Triple.objects.filter(prop__name="has note", subj=perf) if "type=\"institutions\"" in rel.obj.content]
+                if len(institutions) == 0:
+                    institutions = [rel.obj.name for rel in Triple.objects.filter(prop__name="has been performed at", subj=perf)]
+                directors = [rel.subj for rel in Triple.objects.filter(obj=perf, prop__name="is director of")]
+                short = "EA | {} {}".format(perf.start_date_written, ", ".join([inst for inst in institutions]))
+                if (len(directors) > 0):
+                    short = short + ", I: {}".format(directors[0].name)
+               
+                short = re.sub(r"\n", " ", short,0,re.MULTILINE)
+                short = re.sub(r" *\(.*?\)", "", short,0,re.MULTILINE)
+                short = re.sub(r", *$", "", short)
+                
+                work.short = short
+            return work
+        if Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Theaterstücke").count() > 0:
+            work = short_test_Uebersetzte_Theaterstuecke(work)
+        else:
+            work = short_text_Essays(work)
+        return work
 
     def short_text_Uebersetzte_Werke(work):
         def short_text_Sammelbaende(work):
@@ -729,7 +760,7 @@ def generate_short_text():
             ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
             ("Libretti", short_text_Theatertexte, "1.9"), 
             ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
-            ("Übersetzungen", short_text_Essays, "1.11"),
+            ("Übersetzungen", short_text_Uebersetzungen, "1.11"),
             ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen, "1.12"),
             ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
             ("Interviews", short_text_Interviews, "3"),
