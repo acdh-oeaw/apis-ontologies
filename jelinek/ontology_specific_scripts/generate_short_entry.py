@@ -19,11 +19,14 @@ def generate_short_text():
         else:
             return "S. {}".format(page)
 
-    def _format_issue(issue, date):
+    def _format_issue(issue, date, scopeStyle=None):
         if issue is None:
             return date
         else:
-            return "{}/{}".format(issue, date)
+            if scopeStyle is not None and scopeStyle == "annual":
+                return "{}/{}".format(issue, date)
+            else:
+                return "{} ({})".format(issue, date)
 
     def get_sorted_manifestations_for_work(work, include_translations=False):
         relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
@@ -170,7 +173,7 @@ def generate_short_text():
                 else:
                     is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name__in=["journal", "newspaper"])
                     if is_journal.count() > 0:
-                        short = "{} | In: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, _format_issue(first_manifestation.issue, first_manifestation.start_date_written), _format_page(first_manifestation.page))
+                        short = "{} | In: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, _format_issue(first_manifestation.issue, first_manifestation.start_date_written, host.scope_style), _format_page(first_manifestation.page))
                         work.short = short
                     else:
                         print("No journal")
@@ -214,7 +217,7 @@ def generate_short_text():
                     else:
                         is_journal = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name__in=["journal", "newspaper"])
                         if is_journal.count() > 0:
-                            short = "Erstdruck | In: {} {}, {}.".format(host.name, _format_issue(first_manifestation.issue, first_manifestation.start_date_written), _format_page(first_manifestation.page))
+                            short = "Erstdruck | In: {} {}, {}.".format(host.name, _format_issue(first_manifestation.issue, first_manifestation.start_date_written, host.scope_style), _format_page(first_manifestation.page))
                             work.short = short
                         else:
                             is_playbill = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name="playbill")
@@ -749,25 +752,25 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            ("Lyrik", short_text_Lyrik, "1.1"), 
-            ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
-            ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
-            ("Romane", short_text_Romane, "1.2"), 
-            ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
-            ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
-            ("Theatertexte", short_text_Theatertexte, "1.4"), 
-            ("Kompositionen", short_text_Theatertexte, "1.7"), 
-            ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
-            ("Libretti", short_text_Theatertexte, "1.9"), 
-            ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
+            # ("Lyrik", short_text_Lyrik, "1.1"), 
+            # ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
+            # ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
+            # ("Romane", short_text_Romane, "1.2"), 
+            # ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
+            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
+            # ("Theatertexte", short_text_Theatertexte, "1.4"), 
+            # ("Kompositionen", short_text_Theatertexte, "1.7"), 
+            # ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
+            # ("Libretti", short_text_Theatertexte, "1.9"), 
+            # ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
             ("Übersetzungen", short_text_Uebersetzungen, "1.11"),
-            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen, "1.12"),
-            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
-            ("Interviews", short_text_Interviews, "3"),
-            ("Bearbeitungen von anderen", short_text_Bearbeitungen, "4"),
-            ("Sekundärliteratur", short_text_Seklit, "6"),
-            ("Würdigungen", short_text_Honour, "5"),
-            ("Sendungen und Filmporträts", short_text_Sendungen, "7"),
+            # ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen, "1.12"),
+            # ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
+            # ("Interviews", short_text_Interviews, "3"),
+            # ("Bearbeitungen von anderen", short_text_Bearbeitungen, "4"),
+            # ("Sekundärliteratur", short_text_Seklit, "6"),
+            # ("Würdigungen", short_text_Honour, "5"),
+            # ("Sendungen und Filmporträts", short_text_Sendungen, "7"),
             
             ]
         for short_text_generator in short_text_generators:
