@@ -287,7 +287,7 @@ def generate_short_text():
                                     manifestation_name = "{}. ".format(first_manifestation.name)
                                 short = "<b><i>{}</i></b>{}: {} {}.".format(manifestation_name, place.name, publisher.name, first_manifestation.start_date_written)
                                 if is_translation:
-                                    short = "{}: {} {}.".format(place.name, publisher.name, first_manifestation.start_date_written)
+                                    short = "Erstdruck | {}: {} {}.".format(place.name, publisher.name, first_manifestation.start_date_written)
                                 
                                 work.short = short
                             else:
