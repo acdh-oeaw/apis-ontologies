@@ -188,7 +188,7 @@ def generate_short_text():
             print("No manifestations")
         return work
 
-    def short_text_Essays(work):
+    def short_text_Essays(work, is_translation=False):
         def short_text_Einzeln(work):
             relations = get_sorted_manifestations_for_work(work, include_translations=True)
             if len(relations) > 0:
@@ -286,6 +286,9 @@ def generate_short_text():
                                 if len(first_manifestation.name) > 0:
                                     manifestation_name = "{}. ".format(first_manifestation.name)
                                 short = "<b><i>{}</i></b>{}: {} {}.".format(manifestation_name, place.name, publisher.name, first_manifestation.start_date_written)
+                                if is_translation:
+                                    short = "{}: {} {}.".format(place.name, publisher.name, first_manifestation.start_date_written)
+                                
                                 work.short = short
                             else:
                                 print("No publishers")
@@ -543,7 +546,7 @@ def generate_short_text():
         if Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Theaterstücke").count() > 0:
             work = short_test_Uebersetzte_Theaterstuecke(work)
         else:
-            work = short_text_Essays(work)
+            work = short_text_Essays(work, is_translation=True)
         return work
 
     def short_text_Uebersetzte_Werke(work):
@@ -752,25 +755,25 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            # ("Lyrik", short_text_Lyrik, "1.1"), 
-            # ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
-            # ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
-            # ("Romane", short_text_Romane, "1.2"), 
-            # ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
-            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
-            # ("Theatertexte", short_text_Theatertexte, "1.4"), 
-            # ("Kompositionen", short_text_Theatertexte, "1.7"), 
-            # ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
-            # ("Libretti", short_text_Theatertexte, "1.9"), 
-            # ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
+            ("Lyrik", short_text_Lyrik, "1.1"), 
+            ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
+            ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
+            ("Romane", short_text_Romane, "1.2"), 
+            ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
+            ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
+            ("Theatertexte", short_text_Theatertexte, "1.4"), 
+            ("Kompositionen", short_text_Theatertexte, "1.7"), 
+            ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
+            ("Libretti", short_text_Theatertexte, "1.9"), 
+            ("Übersetzte Werke", short_text_Uebersetzte_Werke, "2"),
             ("Übersetzungen", short_text_Uebersetzungen, "1.11"),
-            # ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen, "1.12"),
-            # ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
-            # ("Interviews", short_text_Interviews, "3"),
-            # ("Bearbeitungen von anderen", short_text_Bearbeitungen, "4"),
-            # ("Sekundärliteratur", short_text_Seklit, "6"),
-            # ("Würdigungen", short_text_Honour, "5"),
-            # ("Sendungen und Filmporträts", short_text_Sendungen, "7"),
+            ("Texte für Installationen und Projektionen, Fotoarbeiten", short_text_Installationen, "1.12"),
+            ("Herausgeberin- und Redaktionstätigkeit", short_text_Herausgeberin, "1.13"),
+            ("Interviews", short_text_Interviews, "3"),
+            ("Bearbeitungen von anderen", short_text_Bearbeitungen, "4"),
+            ("Sekundärliteratur", short_text_Seklit, "6"),
+            ("Würdigungen", short_text_Honour, "5"),
+            ("Sendungen und Filmporträts", short_text_Sendungen, "7"),
             
             ]
         for short_text_generator in short_text_generators:
