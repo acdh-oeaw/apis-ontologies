@@ -79,9 +79,12 @@ def generate_short_text():
                     places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
                     if places.count() > 0:
                         place = places[0].obj
-                        short = "<b><i>{}.</i></b> {}{}: {} {}.".format(first_manifestation.name, translator_string, place.name, publisher.name, first_manifestation.start_date_written)
+                        short = "<b><i>{}.</i></b> {}{}: {} {}".format(first_manifestation.name, translator_string, place.name, publisher.name, first_manifestation.start_date_written)
+                        if first_manifestation.name == "o. T.":
+                           short = "<b>{} <i>{}.</i></b> {}{}: {} {}".format(first_manifestation.name, work.untertitel, translator_string, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
                             short = short + " ({})".format(first_manifestation.series)
+                        short = short + "."
                         work.short = short
                 else:
                     print("No publishers")                        
