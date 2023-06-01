@@ -94,6 +94,11 @@ def generate_short_text():
         def short_text_Einzelgedichte(work):
             relations = get_sorted_manifestations_for_work(work)
             if len(relations) > 0:
+                if len(relations) > 1:
+                    print("Multiple first editions")
+                    filtered_relations = [r for r in relations if len([t for t in Triple.objects.filter(subj=r.obj, prop__name="has host") if t.obj.bibl_id == "bibl_000657"]) > 0]
+                    if len(filtered_relations) > 0:
+                        relations = filtered_relations
                 first_manifestation = relations[0].obj
                 hosts = Triple.objects.filter(subj=first_manifestation, prop__name="has host")
                 if hosts.count() > 0:
@@ -102,6 +107,8 @@ def generate_short_text():
                     if date_written is None:
                         date_written = host.start_date_written
                     short = "{} | In: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, date_written, _format_page(first_manifestation.page))
+                    if host.name == "o. T.":
+                        short = "{} | In: {} {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, host.untertitel, date_written, _format_page(first_manifestation.page))
                     work.short = short
                 else:
                     if work.idno == "work00875": #Sonderfall: Postkarte
