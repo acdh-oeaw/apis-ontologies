@@ -106,10 +106,22 @@ def generate_short_text():
                     date_written = first_manifestation.start_date_written
                     if date_written is None:
                         date_written = host.start_date_written
-                    short = "{} | In: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, date_written, _format_page(first_manifestation.page))
-                    if host.name == "o. T.":
-                        short = "{} | In: {} {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, host.untertitel, date_written, _format_page(first_manifestation.page))
-                    work.short = short
+                    is_book = Triple.objects.filter(prop__name="p2 has type", subj=host, obj__name="book")
+                    if is_book.count() > 0:
+                        publishers = Triple.objects.filter(prop__name="is publisher of", obj=host)
+                        publishers = [p for p in publishers]
+                        if len(publishers) > 0:
+                            publisher = publishers[0].subj
+                            places = Triple.objects.filter(subj__id=host.id, prop__name="was published in")
+                            if places.count() > 0:
+                                place = places[0].obj
+                                short = "{} | In: {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, place.name, publisher.name, date_written, _format_page(first_manifestation.page))
+                                if host.name == "o. T.":
+                                    short = "{} | In: {} {}. {}: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, host.untertitel,place.name, publisher.name, date_written, _format_page(first_manifestation.page))
+                                work.short = short
+                    else:
+                        short = "{} | In: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, date_written, _format_page(first_manifestation.page))
+                        work.short = short
                 else:
                     if work.idno == "work00875": #Sonderfall: Postkarte
                         short = "{}, {}".format(first_manifestation.name, first_manifestation.start_date_written)
