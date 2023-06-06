@@ -737,11 +737,12 @@ def generate_short_text():
             if len(xml_doc) > 0:
                 xml_doc = xml_doc[0]
                 root = etree.fromstring(xml_doc.file_content)
-                head_section = root.xpath("//*[@type='head_section']")
+                head_section = root.xpath("//*[@type='head_section']/*[name()='head']")
                 if len(head_section) > 0:
                     xmlString = "".join([t for t in head_section[0].itertext() if t != work.name])
-                    short = "<i>{}</i>{}".format(work.name, xmlString.lstrip())
+                    short = "<i>{}</i> {}".format(work.name, xmlString.lstrip())
                     short = " ".join(short.split())
+                    short = re.sub(r" \(.*?\)", "", short)
                     work.short = short
             return work
         def short_text_Filme(work):
@@ -758,6 +759,8 @@ def generate_short_text():
                     director = ", ".join([d.text for d in directors])
                     date = [d.text for d in head_section.xpath(".//*") if d.tag.endswith("date")][0]
                     first_row = "{}: {} ({})".format(director, work.name, date)
+                    if len(director) == 0:
+                        first_row = "{} ({})".format(work.name, date)
                     short = first_row
                     performances = [t.obj for t in Triple.objects.filter(subj=work, prop__name="has been performed in")]
                     performances.sort(key=lambda e: e.start_date if e.start_date is not None else datetime.datetime.now().date())
