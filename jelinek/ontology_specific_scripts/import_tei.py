@@ -484,6 +484,13 @@ class TreesManager:
                         ):
 
                             attr_dict["gnd_url"] = xml_elem_child.attrib.get("target")
+
+                        elif (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "index_desc"
+                        ):
+
+                            attr_dict["index_desc"] = remove_whitespace(xml_elem_child.text)
                 elif (
                     (xml_elem.tag.endswith("item")
                     and xml_elem.attrib.get("ana") is not None
@@ -507,6 +514,13 @@ class TreesManager:
                         ):
 
                             attr_dict["name"] = remove_whitespace(xml_elem_child.text)
+
+                        elif (
+                            xml_elem_child.tag.endswith("title")
+                            and xml_elem_child.attrib.get("type") == "index_desc"
+                        ):
+
+                            attr_dict["index_desc"] = remove_whitespace(xml_elem_child.text)
 
                         elif (
                             xml_elem_child.tag.endswith("ref")
