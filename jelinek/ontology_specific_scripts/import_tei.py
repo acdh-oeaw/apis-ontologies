@@ -535,6 +535,8 @@ class TreesManager:
                     and xml_elem.attrib.get("type") == "work"
                     and xml_elem.attrib.get("ref") is not None
                     and xml_elem.attrib.get("ref").startswith("works:")
+                    and trees_manager.helper_dict["current_type"] != "broadcast_index"
+                    
                 ):
 
                     attr_dict["idno"] = xml_elem.attrib.get("ref").replace("works:", "")
@@ -1811,6 +1813,7 @@ class TreesManager:
                         db_result = F21_Recording_Work.objects.get_or_create(
                             idno=attr_dict["idno"]
                         )
+
 
                     elif attr_dict["name"] is not None:
 
@@ -4432,6 +4435,8 @@ def run(*args, **options):
         if len(xml_file_list) == 0:
             print("No files nor directories in env found")
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
+            work_xml_idx = next(i for i,file in enumerate(xml_file_list) if '/work_index.xml' in file)
+            xml_file_list.append(xml_file_list.pop(work_xml_idx))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))

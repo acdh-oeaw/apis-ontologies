@@ -83,7 +83,7 @@ def generate_short_text():
                         if first_manifestation.name == "o. T.":
                            short = "<b>{} <i>{}.</i></b> {}{}: {} {}".format(first_manifestation.name, work.untertitel, translator_string, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
-                            short = short + " ({})".format(first_manifestation.series)
+                            short = short + " (= {})".format(first_manifestation.series)
                         short = short + "."
                         work.short = short
                 else:
@@ -122,6 +122,11 @@ def generate_short_text():
                     else:
                         short = "{} | In: {} {}, {}.".format(get_erstdruck_string(first_manifestation), host.name, date_written, _format_page(first_manifestation.page))
                         work.short = short
+                    short = "{} | In: {} {}, {}".format(get_erstdruck_string(first_manifestation), host.name, date_written, _format_page(first_manifestation.page))
+                    if host.series is not None:
+                            short = short + " (= {})".format(host.series)
+                    short = short + "."
+                    work.short = short
                 else:
                     if work.idno == "work00875": #Sonderfall: Postkarte
                         short = "{}, {}".format(first_manifestation.name, first_manifestation.start_date_written)
