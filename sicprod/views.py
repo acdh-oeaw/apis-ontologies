@@ -10,6 +10,7 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.edit import FormMixin, FormView, View, DeleteView
 from dal import autocomplete
+from django.db.models import Q
 
 class TempEntityClassAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
