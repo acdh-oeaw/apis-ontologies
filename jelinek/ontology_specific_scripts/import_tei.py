@@ -1175,16 +1175,45 @@ class TreesManager:
                 xml_elem = path_node.xml_elem
 
                 attr_dict = {
-                    "name": None
+                    "name": None,
+                    "place_id": None,
+                    "country": None
                 }
 
                 if (
-                    (xml_elem.tag.endswith("pubPlace") or xml_elem.tag.endswith("places"))
-                    and is_valid_text(xml_elem.text)
+                    xml_elem.tag.endswith("rs") and xml_elem.attrib.get("type") == "place"
                 ):
+                    
+                    attr_dict["place_id"] = xml_elem.attrib.get("ref").replace("place:", "")
 
-                    attr_dict["name"] = remove_whitespace(xml_elem.text).replace("pubPlace", "")
+                    for child in xml_elem:
 
+                        if (
+                            (child.tag.endswith("pubPlace") or child.tag.endswith("places"))
+                            and is_valid_text(child.text)
+                        ):
+
+                            attr_dict["name"] = remove_whitespace(child.text).replace("pubPlace", "")
+
+                elif (xml_elem.tag.endswith("place")):
+                    attr_dict["place_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+                    for child in xml_elem:
+                        if (
+                            child.tag.endswith("placeName")
+                            and is_valid_text(child.text)
+                        ):
+                            attr_dict["name"] = remove_whitespace(child.text)
+                        elif (
+                            child.tag.endswith("country")
+                            and is_valid_text(child.text)
+                        ):
+                            attr_dict["country"] = remove_whitespace(child.text)
+                elif (
+                    xml_elem.tag.endswith("pubPlace")
+                    and not path_node.path_node_parent.xml_elem.tag.endswith("rs")):
+
+                                attr_dict["name"] = remove_whitespace(xml_elem.text).replace("pubPlace", "")
+              
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
                     return attr_dict
@@ -1201,9 +1230,17 @@ class TreesManager:
 
                 if attr_dict is not None:
 
-                    db_result = F9_Place.objects.get_or_create(name=attr_dict["name"])
+                    db_result = None
 
-                    entities_list.append(handle_after_creation(db_result, {}))
+                    if attr_dict["place_id"] is not None:
+
+                        db_result = F9_Place.objects.get_or_create(place_id=attr_dict["place_id"])
+
+                    elif attr_dict["name"] is not None:
+
+                        db_result = F9_Place.objects.get_or_create(name=attr_dict["name"])                    
+
+                    entities_list.append(handle_after_creation(db_result, attr_dict))
 
                 return entities_list
 
@@ -3120,7 +3157,6 @@ class TreesManager:
 
                         if (
                             entity_other.__class__ is F9_Place
-                            and child_path_node.xml_elem.tag.endswith("pubPlace")
                         ):
 
                             create_triple(

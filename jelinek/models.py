@@ -80,8 +80,9 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F9_Place(E1_Crm_Entity):
+    place_id = models.CharField(max_length=1024, blank=True, null=True)
+    country = models.CharField(max_length=1024, blank=True, null=True)
     
-    pass
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
