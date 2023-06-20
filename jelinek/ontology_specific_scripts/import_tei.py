@@ -541,6 +541,17 @@ class TreesManager:
 
                     attr_dict["idno"] = xml_elem.attrib.get("ref").replace("works:", "")
 
+                elif (
+                    xml_elem.tag.endswith("rs")
+                    and xml_elem.attrib.get("type") == "seklit"
+                    and xml_elem.attrib.get("ref") is not None
+                    and xml_elem.attrib.get("ref").startswith("seklit:")
+                    and trees_manager.helper_dict["current_type"] != "broadcast_index"
+                    
+                ):
+
+                    attr_dict["idno"] = xml_elem.attrib.get("ref").replace("seklit:", "")
+
                     # TODO : 'ref type="category"'
                     # for xml_elem_child in xml_elem:
 
@@ -790,7 +801,8 @@ class TreesManager:
 
                         elif (
                              xml_elem_child.tag.endswith("rs")
-                            and xml_elem_child.attrib.get("type") == "work"
+                            and (xml_elem_child.attrib.get("type") == "work"
+                            or xml_elem_child.attrib.get("type") == "seklit")
                         ):
                             for xml_elem_child_child in xml_elem_child:
                                 if (
@@ -802,6 +814,7 @@ class TreesManager:
                                         attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child_child, encoding="unicode").strip(xml_elem_child_child.tail)))
                                     else:
                                         attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
+                                        attr_dict["name"] = attr_dict["name"].replace("</ns0:title> </ns0:rs>", "")
 
                         elif (
                              xml_elem_child.tag.endswith("note")
@@ -2706,6 +2719,28 @@ class TreesManager:
                                                 entity_obj=entity_manifestation,
                                                 prop=Property.objects.get(name="contains")
                                             )
+                    elif (
+                        neighbour_path_node.xml_elem.tag.endswith("listBibl")
+                        and neighbour_path_node.xml_elem.attrib.get("type") == "content"
+                    ):
+
+                        for list_bibl_child_path_node in neighbour_path_node.path_node_children_list:
+
+                            if (
+                                list_bibl_child_path_node.xml_elem.tag is not None
+                                and list_bibl_child_path_node.xml_elem.tag.endswith("bibl")
+                            ):
+
+                                for entity_manifestation in list_bibl_child_path_node.entities_list:
+
+                                    if entity_manifestation.__class__ is F3_Manifestation_Product_Type:
+
+                                        create_triple(
+                                            entity_subj=entity_work,
+                                            entity_obj=entity_manifestation,
+                                            prop=Property.objects.get(name="contains")
+                                        )
+
                 # for seklit works + manifestations
                 for path_node_child in path_node.path_node_children_list:
                     if path_node_child.xml_elem.tag.endswith("listBibl"):
@@ -4496,8 +4531,9 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/outputs/bd2/0006_Sekundärliterat/0008_EinzelneGattung/0002_EigeneWerkeRoma/0002_ZueinzelnenRoma/0003_DieLiebhaberinn.xml")
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0001_Bibliographien/"))
         
-        places_xml_idx = next(i for i,file in enumerate(xml_file_list) if '/places_index.xml' in file)
-        xml_file_list.pop(places_xml_idx)
+        places_xml_idx = next((i for i,file in enumerate(xml_file_list) if '/places_index.xml' in file), None)
+        if places_xml_idx is not None:
+            xml_file_list.pop(places_xml_idx)
         crawl_xml_list(xml_file_list)
 
         generate_genre()
