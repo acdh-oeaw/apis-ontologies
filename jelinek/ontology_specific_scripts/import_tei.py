@@ -1184,7 +1184,8 @@ class TreesManager:
                     xml_elem.tag.endswith("rs") and xml_elem.attrib.get("type") == "place"
                 ):
                     
-                    attr_dict["place_id"] = xml_elem.attrib.get("ref").replace("place:", "")
+                    if xml_elem.attrib.get("ref") is not None:
+                        attr_dict["place_id"] = xml_elem.attrib.get("ref").replace("place:", "")
 
                     for child in xml_elem:
 
@@ -1196,7 +1197,8 @@ class TreesManager:
                             attr_dict["name"] = remove_whitespace(child.text).replace("pubPlace", "")
 
                 elif (xml_elem.tag.endswith("place")):
-                    attr_dict["place_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+                    if xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None:
+                        attr_dict["place_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
                     for child in xml_elem:
                         if (
                             child.tag.endswith("placeName")
