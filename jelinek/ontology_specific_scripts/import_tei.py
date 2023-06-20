@@ -1358,7 +1358,9 @@ class TreesManager:
 
                     for xml_elem_child in xml_elem:
 
-                        if xml_elem_child.tag.endswith("persName"):
+                        if (xml_elem_child.tag.endswith("persName") 
+                        and xml_elem_child.attrib.get("type") is not None
+                        and xml_elem_child.attrib.get("type") == "register"):
 
                             attr_dict["name"], attr_dict["forename"], attr_dict["surname"] = parse_persName(xml_elem_child)
 
@@ -4494,8 +4496,8 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/outputs/bd2/0006_Sekundärliterat/0008_EinzelneGattung/0002_EigeneWerkeRoma/0002_ZueinzelnenRoma/0003_DieLiebhaberinn.xml")
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0001_Bibliographien/"))
         
-    
-
+        places_xml_idx = next(i for i,file in enumerate(xml_file_list) if '/places_index.xml' in file)
+        xml_file_list.pop(places_xml_idx)
         crawl_xml_list(xml_file_list)
 
         generate_genre()
