@@ -81,15 +81,19 @@ from apis_ontology.filters import name_alternative_name_filter
 #INSTALLED_APPS.append("apis_highlighter")
 APIS_ENTITIES = {
     "Salary": {
+        "relations_per_page": 100,
         "search": ["name"]
     },
     "Function": {
+        "relations_per_page": 100,
         "search": ["name", "alternative_label"]
     },
     "Court": {
+        "relations_per_page": 100,
         "search": ["name", "alternative_label"]
     },
     "Place": {
+        "relations_per_page": 100,
         "merge": True,
         "search": ["name", "alternative_label"],
         "form_order": ["name", "kind", "lat", "lng", "status", "collection"],
@@ -97,6 +101,7 @@ APIS_ENTITIES = {
         "additional_cols": ["id", "lat", "lng", "part_of"],
     },
     "Person": {
+        "relations_per_page": 100,
         "merge": True,
         "search": ["name", "first_name", "alternative_label"],
         "form_order": [
@@ -119,9 +124,10 @@ APIS_ENTITIES = {
         "additional_cols": ["id", "profession", "gender"],
         "list_filters": {
             "name": {"method": name_alternative_name_filter, "label": "Name or first name or alternative name"},
-        }
+        },
     },
     "Institution": {
+        "relations_per_page": 100,
         "merge": True,
         "search": ["name", "alternative_label"],
         "form_order": [
@@ -138,6 +144,7 @@ APIS_ENTITIES = {
         ],
     },
     "Work": {
+        "relations_per_page": 100,
         "merge": True,
         "search": ["name"],
         "additional_cols": [
@@ -146,6 +153,7 @@ APIS_ENTITIES = {
         ],
     },
     "Event": {
+        "relations_per_page": 100,
         "merge": True,
         "search": ["name", "alternative_label"],
         "additional_cols": [
