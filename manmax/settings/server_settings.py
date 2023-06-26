@@ -39,7 +39,7 @@ APIS_AUTOCOMPLETE_SETTINGS = "apis_ontology.settings.autocomplete_settings"
 ALLOWED_HOSTS = re.sub(
     r"https?://",
     "",
-    os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,sicprod.acdh-dev.oeaw.ac.at"),
+    os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,manmax.acdh-dev.oeaw.ac.at"),
 ).split(",")
 # You need to allow '10.0.0.0/8' for service health checks.
 
