@@ -109,7 +109,6 @@ APIS_ENTITIES = {
             "name",
             "start_date_written",
             "end_date_written",
-            "profession",
             "status",
             "collection",
         ],
@@ -121,7 +120,7 @@ APIS_ENTITIES = {
             "alternative_label",
             "status",
         ],
-        "additional_cols": ["id", "profession", "gender"],
+        "additional_cols": ["id", "gender"],
         "list_filters": {
             "name": {"method": name_alternative_name_filter, "label": "Name or first name or alternative name"},
         },
