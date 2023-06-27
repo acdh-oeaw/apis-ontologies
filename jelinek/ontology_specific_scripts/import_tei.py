@@ -4531,13 +4531,14 @@ def run(*args, **options):
         # xml_file_list.append("./manuelle-korrektur/outputs/bd2/0006_Sekundärliterat/0008_EinzelneGattung/0002_EigeneWerkeRoma/0002_ZueinzelnenRoma/0003_DieLiebhaberinn.xml")
         # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0001_Bibliographien/"))
         
-        places_xml_idx = next((i for i,file in enumerate(xml_file_list) if '/places_index.xml' in file), None)
-        if places_xml_idx is not None:
-            xml_file_list.pop(places_xml_idx)
+        # places_xml_idx = next((i for i,file in enumerate(xml_file_list) if '/places_index.xml' in file), None)
+        # if places_xml_idx is not None:
+        #     xml_file_list.pop(places_xml_idx)
         crawl_xml_list(xml_file_list)
 
         generate_genre()
-        generate_short()
         generate_xml_dumps()
+        generate_short()
+        
 
     main_run()
