@@ -8,6 +8,71 @@ import re
 import datetime
 from lxml import etree
 
+def format_name(entity):
+    if entity.__class__ == F10_Person:
+        return "{}, {}".format(entity.surname, entity.forename)
+    else:
+        return "{}".format(entity.name)
+
+def generate_manifestation_short(manifestation):
+    relations = [rel for rel in Triple.objects.filter(subj=manifestation)]
+    relations = relations + [rel for rel in Triple.objects.filter(obj=manifestation)]
+    types = [r.obj.name for r in relations if r.prop.name == "p2 has type"]
+    authors = [r.subj for r in relations if r.prop.name == "is author of" and r.subj.name != "Elfriede Jelinek"]
+    editors = [r.subj for r in relations if r.prop.name == "is editor of"]
+    translators = [r.subj for r in relations if r.prop.name == "is translator of"]
+    places = [r.obj.name for r in relations if r.prop.name == "was published in"]
+    publishers = [r.subj.name for r in relations if r.prop.name == "is publisher of"]
+    hosts = [r.obj for r in relations if r.prop.name == "has host" and r.subj.id == manifestation.id]
+    short = ""
+    if len(editors) > 0:
+        short = short + " / ".join(["{}".format(format_name(author)) for author in editors]) + " (Hg.): "
+    if len(authors) > 0:
+        short = short + " / ".join(["{}".format(format_name(author)) for author in authors]) + ": "
+    short = short + "{}. ".format(manifestation.name)
+    if len(hosts) > 0:
+        short = short + "In: "
+        host_relations = [rel for rel in Triple.objects.filter(subj=hosts[0])]
+        host_relations = host_relations + [rel for rel in Triple.objects.filter(obj=hosts[0])]
+        host_authors = [r.subj for r in host_relations if r.prop.name == "is author of" and r.subj.name != "Elfriede Jelinek"]
+        host_editors = [r.subj for r in host_relations if r.prop.name == "is editor of"]
+        host_translators = [r.subj for r in host_relations if r.prop.name == "is translator of"]
+        host_publishers = [r.subj.name for r in host_relations if r.prop.name == "is publisher of"]
+        host_places = [r.obj.name for r in host_relations if r.prop.name == "was published in"]
+        if len(host_editors) > 0:
+            short = short + " / ".join(["{}".format(format_name(author)) for author in host_editors]) + " (Hg.): "
+        if len(host_authors) > 0:
+            short = short + " / ".join(["{}".format(format_name(author)) for author in host_authors]) + ": "
+        short = short + "{}. ".format(hosts[0].name)
+        if hosts[0].untertitel is not None:
+            short = short + "{}. ".format(hosts[0].untertitel)
+        if len(host_places) > 0:
+            short = short + "{}: ".format(host_places[0])
+        if len(host_publishers) > 0:
+            short = short + "{} ".format(host_publishers[0])
+        if hosts[0].start_date_written is not None:
+            short = short + "{}".format(hosts[0].start_date_written)
+        if hosts[0].series is not None and hosts[0].series != manifestation.series:
+            short = short + " (= {})".format(hosts[0].series)
+        if hosts[0].page is not None:
+            short = short + ", S. {}".format(hosts[0].page)
+
+    if len(places) > 0:
+        short = short + "{}: ".format(places[0])
+    if len(publishers) > 0:
+        short = short + "{} ".format(publishers[0])
+    if manifestation.start_date_written is not None:
+        short = short + "{}".format(manifestation.start_date_written)
+    if manifestation.series is not None:
+        short = short + " (= {})".format(manifestation.series)
+    if manifestation.page is not None:
+        short = short + ", S. {}".format(manifestation.page)
+    if len(translators) > 0:
+        short = short + " (Ü: " + ", ".join(["{}".format(author.name) for author in translators]) + ")"
+
+    manifestation.short = short
+    return manifestation
+
 
 def generate_short_text():
 
@@ -820,12 +885,23 @@ def generate_short_text():
                     work.save()
                     print("-> {}".format(work.short))
 
-        # Generate short entried for performances
+        # Generate short entries for performances
         print("_____Performances_____")
         performances = F31_Performance.objects.all()
         for p in performances:
             print(p.name)
             p = short_text_Performance(p)
+            if p.short is not None:  
+                p.short = p.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
+            p.save()
+            print("-> {}".format(p.short))
+
+        # Generate short entries for manifestations
+        print("_____Manifestations_____")
+        manifestations = F3_Manifestation_Product_Type.objects.all()
+        for p in manifestations:
+            print(p.name)
+            p = generate_manifestation_short(p)
             if p.short is not None:  
                 p.short = p.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
             p.save()
