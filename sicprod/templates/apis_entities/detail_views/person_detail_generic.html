@@ -42,6 +42,7 @@
       {{ object.gender }}
     </td>
   </tr>
+  {% if user.is_authenticated %}
   <tr>
     <th>
       Notes
@@ -50,6 +51,7 @@
       {{ object.notes }}
     </td>
   </tr>
+  {% endif %}
   <tr>
     <th>
       References
