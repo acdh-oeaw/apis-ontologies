@@ -46,19 +46,7 @@ group_order = [
 ]
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
-class Factoid(TempEntityClass):
-    created_by = models.CharField(max_length=300)
-    language = models.CharField(
-        max_length=4,
-        choices=(
-            ("DE", "German"),
-            ("LA", "Latin"),
-            ("FR", "French"),
-            ("NL", "Dutch"),
-            ("IT", "Italian"),
-        ),
-    )
+
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -194,6 +182,9 @@ class GenericStatement(TempEntityClass):
 
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
+
+    created_by = models.CharField(max_length=300)
+    head_statement = models.BooleanField(default=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -687,10 +678,6 @@ def subclasses(model: TempEntityClass):
 
 def construct_properties():
     # Generic Statement attached to Factoid
-
-    is_part_of_factoid = build_property(
-        "has statement", "is part of factoid", Factoid, subclasses(GenericStatement)
-    )
 
     activity_has_place = build_property(
         "location of activity", "activity took place in", subclasses(Activity), Place
