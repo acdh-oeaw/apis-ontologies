@@ -13,7 +13,7 @@ from apis_core.apis_relations.models import Property, Triple
 from apis_core.utils import caching
 
 from apis_ontology.helper_functions import remove_extra_spaces
-
+from apis_ontology.middleware.get_request import current_request
 # Entity categories
 
 
@@ -46,11 +46,28 @@ group_order = [
 ]
 
 
+@reversion.register(follow=["tempentityclass_ptr"])
+class ManMaxTempEntityClass(TempEntityClass):
+    class Meta:
+        abstract = True
+    
+    
+    created_by = models.CharField(max_length=300, blank=True, editable=False)
+    created_when = models.DateTimeField(auto_now_add=True, editable=False)
+    modified_by = models.CharField(max_length=300, blank=True, editable=False)
+    modified_when = models.DateTimeField(auto_now=True, editable=False)
+
+    
+    def save(self, *args, **kwargs):
+        if not self.created_by:
+            self.created_by = current_request().user.username
+        self.modified_by = current_request().user.username
+        super().save(*args, **kwargs)
 
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Person(TempEntityClass):
+class Person(ManMaxTempEntityClass):
     """Person: a real person, identified by a label and (one or more) URIs. All information about Persons derived from sources
     should be added as types of Statement, with the Person added as a Related Entity to the Statement."""
 
@@ -82,7 +99,7 @@ class Person(TempEntityClass):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Place(TempEntityClass):
+class Place(ManMaxTempEntityClass):
     """Place: a real place, identified by a label and URIs."""
 
     __entity_group__ = GENERIC
@@ -91,7 +108,7 @@ class Place(TempEntityClass):
 
 # TODO: sort out this focking hierarchy
 @reversion.register(follow=["tempentityclass_ptr"])
-class GroupOfPersons(TempEntityClass):
+class GroupOfPersons(ManMaxTempEntityClass):
     """Group of persons identified by a label and URIs."""
 
     __entity_group__ = ROLE_ORGANISATIONS
@@ -99,7 +116,7 @@ class GroupOfPersons(TempEntityClass):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Organisation(TempEntityClass):
+class Organisation(ManMaxTempEntityClass):
     """Organisation: an organisation or other group, identified by a label and URIs."""
 
     __entity_group__ = ROLE_ORGANISATIONS
@@ -115,12 +132,12 @@ class Foundation(Organisation):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Family(TempEntityClass):  # TODO: should be group of persons subclass
+class Family(ManMaxTempEntityClass):  # TODO: should be group of persons subclass
     family_name = models.CharField(max_length=200, blank=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class ConceptualObject(TempEntityClass):
+class ConceptualObject(ManMaxTempEntityClass):
     """A Work of art, literature, music, etc. Where possible, use specific subtypes (Artistic Work, Music Work, etc.)"""
 
     __entity_group__ = CONCEPTUAL_OBJECTS
@@ -136,7 +153,7 @@ class CompositeConceptualObject(ConceptualObject):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class PhysicalObject(TempEntityClass):
+class PhysicalObject(ManMaxTempEntityClass):
     """A physical object (rather than a conceptual object). Where possible, use specific subtypes (Work, Music Work, Armour)"""
 
     __entity_group__ = PHYSICAL_OBJECTS
@@ -152,7 +169,7 @@ class CompositePhysicalObject(PhysicalObject):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Role(TempEntityClass):
+class Role(ManMaxTempEntityClass):
     """A Role in an Organisation, occupied by one or more Person in RoleOccupation, or assigned/removed via AssignmentToRole/RemovalFromRole"""
 
     __entity_group__ = ROLE_ORGANISATIONS
@@ -160,7 +177,7 @@ class Role(TempEntityClass):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Task(TempEntityClass):
+class Task(ManMaxTempEntityClass):
     """A task, fulfilled by person, potentially as part of a Role"""
 
     __entity_group__ = GENERIC
@@ -177,14 +194,13 @@ class FictionalPerson(ConceptualObject):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class GenericStatement(TempEntityClass):
+class GenericStatement(ManMaxTempEntityClass):
     """A Generic Statement about a Person (to be used when nothing else will work)."""
 
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
 
-    created_by = models.CharField(max_length=300)
-    head_statement = models.BooleanField(default=True)
+    
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
