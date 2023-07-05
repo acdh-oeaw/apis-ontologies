@@ -73,6 +73,8 @@ LANGUAGE_CODE = "de"
 INSTALLED_APPS += ["apis_bibsonomy"]
 
 
+MIDDLEWARE += ["apis_ontology.middleware.get_request.RequestMiddleware"]
+
 # STATICFILES_DIRS = [BASE_DIR + "/member_images"]
 
 # APIS_COMPONENTS = ['deep learning']
@@ -142,6 +144,12 @@ APIS_ENTITIES = {
     "SecretarialAct": {"search": ["name"]},
     "SiblingRelation": {"search": ["name"]},
     "TextualCreationAct": {"search": ["name"]},
+    "TextualWork": {"search": ["name"]},
+    "ArtisticWork": {"search": ["name"]},
+    "Battle": {"search": ["name"]},
+    "UseInBattle": {"search": ["name"]},
+    "ParticipationInBattle": {"search": ["name"]},
+    "Cannon": {"search": ["name"]},
 }
 
 

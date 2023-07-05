@@ -18,14 +18,14 @@ from apis_ontology.middleware.get_request import current_request
 
 
 GENERIC = "Generic"
-CONCEPTUAL_OBJECTS = "Conceptual Objects"
-PHYSICAL_OBJECTS = "Physical Objects"
+#CONCEPTUAL_OBJECTS = "Conceptual Objects"
+#PHYSICAL_OBJECTS = "Physical Objects"
 ROLE_ORGANISATIONS = "Roles/Organisations"
 LIFE_FAMILY = "Life/Family"
 ART = "Art"
 MUSIC = "Music"
 ARMOURING = "Armouring"
-PRINT = "Print"
+TEXT = "Text"
 OTHER = "Other"
 
 
@@ -34,14 +34,14 @@ STATEMENT = "Statements"
 
 group_order = [
     GENERIC,
-    CONCEPTUAL_OBJECTS,
-    PHYSICAL_OBJECTS,
+    #CONCEPTUAL_OBJECTS,
+    #PHYSICAL_OBJECTS,
     LIFE_FAMILY,
     ROLE_ORGANISATIONS,
     ART,
     MUSIC,
     ARMOURING,
-    PRINT,
+    TEXT,
     OTHER,
 ]
 
@@ -134,21 +134,24 @@ class Foundation(Organisation):
 @reversion.register(follow=["tempentityclass_ptr"])
 class Family(ManMaxTempEntityClass):  # TODO: should be group of persons subclass
     family_name = models.CharField(max_length=200, blank=True)
+    
+    __entity_group__ = LIFE_FAMILY
+    __entity_type__ = ENTITY
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class ConceptualObject(ManMaxTempEntityClass):
     """A Work of art, literature, music, etc. Where possible, use specific subtypes (Artistic Work, Music Work, etc.)"""
 
-    __entity_group__ = CONCEPTUAL_OBJECTS
+    __entity_group__ = OTHER
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["conceptualobject_ptr"])
 class CompositeConceptualObject(ConceptualObject):
     """A Work of art, literature, music, etc., comprised of individually identifiable sub-works"""
 
-    __entity_group__ = CONCEPTUAL_OBJECTS
+    __entity_group__ = OTHER
     __entity_type__ = ENTITY
 
 
@@ -156,15 +159,15 @@ class CompositeConceptualObject(ConceptualObject):
 class PhysicalObject(ManMaxTempEntityClass):
     """A physical object (rather than a conceptual object). Where possible, use specific subtypes (Work, Music Work, Armour)"""
 
-    __entity_group__ = PHYSICAL_OBJECTS
+    __entity_group__ = OTHER
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["physicalobject_ptr"])
 class CompositePhysicalObject(PhysicalObject):
     """An object composed of more than one other objects"""
 
-    __entity_group__ = PHYSICAL_OBJECTS
+    __entity_group__ = OTHER
     __entity_type__ = ENTITY
 
 
@@ -200,19 +203,25 @@ class GenericStatement(ManMaxTempEntityClass):
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
 
-    
-
 
 @reversion.register(follow=["tempentityclass_ptr"])
+class GenericEvent(ManMaxTempEntityClass):
+    """A Generic Statement about a Person (to be used when nothing else will work)."""
+
+    __entity_group__ = GENERIC
+    __entity_type__ = ENTITY
+
+
+@reversion.register(follow=["genericstatement_ptr"])
 class Activity(GenericStatement):
-    __entity_group__ = CONCEPTUAL_OBJECTS
+    __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
 
     class Meta:
         verbose_name_plural = "Activities"
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["activity_ptr"])
 class OwnershipTransfer(Activity):
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
@@ -226,13 +235,13 @@ class GiftGiving(OwnershipTransfer):
 """
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["activity_ptr"])
 class CreationCommission(Activity):
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class Naming(GenericStatement):
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
@@ -260,7 +269,7 @@ class Naming(GenericStatement):
     )
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["generticstatement_ptr"])
 class Gendering(GenericStatement):
     __entity_group__ = LIFE_FAMILY
     __entity_type__ = STATEMENT
@@ -275,48 +284,72 @@ class Gendering(GenericStatement):
     )
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["activity_ptr"])
 class CreationAct(Activity):
-    __entity_group__ = CONCEPTUAL_OBJECTS
+    __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["creationact_ptr"])
 class CreationOfOrganisation(CreationAct):
     __entity_group__ = ROLE_ORGANISATIONS
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["creationact_ptr"])
 class AssemblyOfCompositeObject(CreationAct):
-    __entity_group__ = CONCEPTUAL_OBJECTS
+    __entity_group__ = OTHER
     __entity_type__ = STATEMENT
 
 
 # ARMOUR TYPES
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["physicalobject_ptr"])
 class ArmourPiece(PhysicalObject):
     __entity_group__ = ARMOURING
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["compositephysicalobject_ptr"])
 class ArmourSuit(CompositePhysicalObject):
+    """Suit of armour, comprising possibly many pieces"""
+
+    __entity_group__ = ARMOURING
+    __entity_type__ = ENTITY
+    
+@reversion.register(follow=["physicalobject_ptr"])
+class Cannon(PhysicalObject):
+    """Suit of armour, comprising possibly many pieces"""
+
+    __entity_group__ = ARMOURING
+    __entity_type__ = ENTITY
+
+@reversion.register(follow=["event_ptr"])
+class Battle(GenericEvent):
     """Suit of armour, comprising possibly many pieces"""
 
     __entity_group__ = ARMOURING
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
+class ParticipationInBattle(GenericStatement):
+    __entity_group__ = ARMOURING
+    __entity_type__ = STATEMENT
+
+@reversion.register(follow=["genericstatement_ptr"])
+class UseInBattle(GenericStatement):
+    __entity_group__ = ARMOURING
+    __entity_type__ = STATEMENT
+
+@reversion.register(follow=["creationact_ptr"])
 class ArmourCreationAct(CreationAct):
     __entity_group__ = ARMOURING
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["assemblyofcompositeobject_ptr"])
 class ArmourAssemblyAct(AssemblyOfCompositeObject):
     __entity_group__ = ARMOURING
     __entity_type__ = STATEMENT
@@ -325,118 +358,118 @@ class ArmourAssemblyAct(AssemblyOfCompositeObject):
 # Print
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["conceptualobject_ptr"])
 class Image(ConceptualObject):
-    __entity_type__ = CONCEPTUAL_OBJECTS
+    __entity_type__ = GENERIC
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["image_ptr"])
 class Woodcut(Image):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["compositephysicalobject_ptr"])
 class PrintedWork(CompositePhysicalObject):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["printedwork_ptr"])
 class Leaflet(PrintedWork):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["printedwork_ptr"])
 class Book(PrintedWork):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["compositephysicalobject_ptr"])
 class Manuscript(CompositePhysicalObject):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["conceptualobject_ptr"])
 class TextualWork(ConceptualObject):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["textualwork_ptr"])
 class Poem(TextualWork):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["compositetextualwork_ptr"])
 class CompositeTextualWork(CompositeConceptualObject):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["textualwork_ptr"])
 class Preface(TextualWork):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["textualwork_ptr"])
 class DedicatoryText(TextualWork):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class Dedication(GenericStatement):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["creationact_ptr"])
 class TextualCreationAct(CreationAct):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["textualcreationact_ptr"])
 class Authoring(TextualCreationAct):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["textualcreationact_ptr"])
 class Printing(TextualCreationAct):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["textualcreationact_ptr"])
 class SecretarialAct(TextualCreationAct):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["textualcreationact_ptr"])
 class Redacting(TextualCreationAct):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["textualcreationact_ptr"])
 class PreparationOfConceptualText(TextualCreationAct):
-    __entity_group__ = PRINT
+    __entity_group__ = TEXT
     __entity_type__ = STATEMENT
 
 
 # Base Work subtypes
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["conceptualobject_ptr"])
 class MusicWork(ConceptualObject):
     """A piece of music"""
 
@@ -444,7 +477,7 @@ class MusicWork(ConceptualObject):
     __entity_type__ = ENTITY
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["physicalobject_ptr"])
 class ArtisticWork(PhysicalObject):
     """A work of art"""
 
@@ -470,31 +503,31 @@ def update_person_label_on_naming_change(sender, instance: Naming, **kwargs):
         person.update_label_from_namings()
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class Birth(GenericStatement):
     __entity_group__ = LIFE_FAMILY
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class Death(GenericStatement):
     __entity_group__ = LIFE_FAMILY
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow="tempentityclass_ptr")
+@reversion.register(follow="genericstatement_ptr")
 class OrganisationLocation(GenericStatement):
     __entity_group__ = ROLE_ORGANISATIONS
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow="tempentityclass_ptr")
+@reversion.register(follow="genericstatement_ptr")
 class AcceptanceOfStatement(GenericStatement):
     __entity_group__ = ROLE_ORGANISATIONS
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class Election(GenericStatement):
     __entity_group__ = ROLE_ORGANISATIONS
     __entity_type__ = STATEMENT
@@ -504,19 +537,19 @@ class Election(GenericStatement):
     )
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["activity_ptr"])
 class PerformanceOfTask(Activity):
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["activity_ptr"])
 class PerformanceOfWork(Activity):
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class RoleOccupation(GenericStatement):
     """Describes the occupation of a Role by a Person"""
 
@@ -524,7 +557,7 @@ class RoleOccupation(GenericStatement):
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class AssignmentToRole(GenericStatement):
     """Describes the assignment of a Role to a Person (assignee), by an Person (assigner)"""
 
@@ -537,7 +570,7 @@ class AssignmentToRole(GenericStatement):
     description = models.CharField(max_length=200)
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class RemovalFromRole(GenericStatement):
     """Describes the removal from a Role of a Person (role occupier), by an Person (remover)"""
 
@@ -550,13 +583,13 @@ class RemovalFromRole(GenericStatement):
     description = models.CharField(max_length=200)
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class FamilialRelation(GenericStatement):
     __entity_group__ = LIFE_FAMILY
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["familialrelation_ptr"])
 class ParentalRelation(FamilialRelation):
     __entity_group__ = LIFE_FAMILY
     __entity_type__ = STATEMENT
@@ -570,7 +603,7 @@ class ParentalRelation(FamilialRelation):
     )
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["familialrelation_ptr"])
 class SiblingRelation(FamilialRelation):
     __entity_group__ = LIFE_FAMILY
     __entity_type__ = STATEMENT
@@ -589,29 +622,30 @@ class SiblingRelation(FamilialRelation):
     )
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["familialrelation_ptr"])
 class MarriageBeginning(FamilialRelation):
     __entity_group__ = LIFE_FAMILY
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["familialrelation_ptr"])
 class MarriageEnd(FamilialRelation):
     __entity_group__ = LIFE_FAMILY
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class Payment(GenericStatement):
     """Payment of money for Item, Work, Acquisition, or other Activity"""
 
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
 
-    amount = models.IntegerField(blank=True)
+    amount = models.CharField(max_length=200, blank=True)
+    currency = models.CharField(max_length=200, blank=True)
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class Order(GenericStatement):
     """An order given by someone to do something"""
 
@@ -619,7 +653,7 @@ class Order(GenericStatement):
     __entity_type__ = STATEMENT
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class Acquisition(GenericStatement):
     __entity_group__ = GENERIC
     __entity_type__ = STATEMENT
@@ -628,7 +662,7 @@ class Acquisition(GenericStatement):
 # Art Statements
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["creationact_ptr"])
 class ArtworkCreationAct(CreationAct):
     __entity_group__ = ART
     __entity_type__ = STATEMENT
@@ -643,7 +677,7 @@ class ArtworkAcquisition(Acquisition):
 # Music Statements
 
 
-@reversion.register(follow=["tempentityclass_ptr"])
+@reversion.register(follow=["genericstatement_ptr"])
 class MusicPerformance(GenericStatement):
     __entity_group__ = MUSIC
     __entity_type__ = STATEMENT
@@ -662,10 +696,10 @@ def build_property(
         name_reverse=name_reverse,
     )[0]
 
-    print("PROPERTY_NAME", name)
+ 
     prop.subj_class.clear()
     if isinstance(subj_class, Iterable):
-        print("SUBJCLASS", subj_class)
+       
         for sclass in subj_class:
 
             prop.subj_class.add(ContentType.objects.get_for_model(sclass))
@@ -675,7 +709,7 @@ def build_property(
 
     prop.obj_class.clear()
     if isinstance(obj_class, Iterable):
-        print("objclass", obj_class)
+    
         for oclass in set(obj_class):
 
             prop.obj_class.add(ContentType.objects.get_for_model(oclass))
@@ -984,3 +1018,9 @@ def construct_properties():
         AcceptanceOfStatement,
         [Person, Organisation, GroupOfPersons],
     )
+
+    use_in_battle_battle = build_property("battle used in", "has use in", UseInBattle, Battle)
+    use_in_battle_item = build_property("item used", "had use in", UseInBattle, [ArmourPiece, ArmourSuit, Cannon])
+    
+    participation_in_battle_battle = build_property("battle participated in", "has participation", ParticipationInBattle, Battle)
+    participation_in_battle_person = build_property("participating", "has participation", ParticipationInBattle, [Person, Organisation, Family])
