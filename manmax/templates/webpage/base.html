@@ -3,10 +3,6 @@
 
 {% block custom_dropdown_menus %}
 
- <span class="btn-group" role="group" aria-label="Basic example">
-            <a type="button" class="btn btn-primary" href="{% url 'apis:apis_entities:generic_entities_list' 'factoid' %}"><span>Factoids</span></a>
-            <a type="button" class="btn btn-secondary" href="{% url 'apis:apis_entities:generic_entities_create_view' 'factoid' %}">+</a>
-        </span>
 
 {% for key, entity_types in entity_groups.items %}
    <li class="nav-item dropdown">
