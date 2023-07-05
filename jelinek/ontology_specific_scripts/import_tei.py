@@ -860,7 +860,7 @@ class TreesManager:
 
                         elif xml_elem_child.tag.endswith("series"):
 
-                            attr_dict["series"] = xml_elem_child.text
+                            attr_dict["series"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif xml_elem_child.tag.endswith("edition"):
 
@@ -946,7 +946,7 @@ class TreesManager:
 
                         elif xml_elem_child.tag.endswith("series"):
 
-                            attr_dict["series"] = xml_elem_child.text
+                            attr_dict["series"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif xml_elem_child.tag.endswith("edition"):
 
@@ -995,7 +995,7 @@ class TreesManager:
 
                         elif xml_elem_child.tag.endswith("series"):
 
-                            attr_dict["series"] = xml_elem_child.text
+                            attr_dict["series"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
 
                         elif xml_elem_child.tag.endswith("edition"):
 
@@ -4518,22 +4518,7 @@ def run(*args, **options):
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2"))
             
 
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0005_Sammelbände"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/004_Theatertexte"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/012_Übersetzungen/003_Theaterstücke"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke/011_EssayistischeTexteRedenundStatements"))
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/003_Interviews/FRBR-Works/interview_0024.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/broadcast_index.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/insz_index.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/entities/bibls_2.xml")
-        # xml_file_list.append("./manuelle-korrektur/korrigiert/bd1/001_Werke/005_TextefürHörspiele/014_WasgeschahnachdemNor.xml")
-        # xml_file_list.append("./manuelle-korrektur/outputs/bd2/0006_Sekundärliterat/0008_EinzelneGattung/0002_EigeneWerkeRoma/0002_ZueinzelnenRoma/0003_DieLiebhaberinn.xml")
-        # xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd2/0006_Sekundärliterat/0001_Bibliographien/"))
-        
-        # places_xml_idx = next((i for i,file in enumerate(xml_file_list) if '/places_index.xml' in file), None)
-        # if places_xml_idx is not None:
-        #     xml_file_list.pop(places_xml_idx)
+
         crawl_xml_list(xml_file_list)
 
         generate_genre()
