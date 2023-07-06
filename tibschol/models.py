@@ -4,12 +4,6 @@ from django.db import models
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Identifier(TempEntityClass):
-
-    class_uri = "http://id.loc.gov/ontologies/bibframe/Identifier"
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
 class Instance(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Instance"
