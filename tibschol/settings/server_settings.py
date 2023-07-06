@@ -1,9 +1,8 @@
-
-from apis.settings.base import *
-import re
-import dj_database_url
 import os
+import re
 
+import dj_database_url
+from apis.settings.base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -15,19 +14,23 @@ FEATURED_COLLECTION_NAME = "FEATURED"
 BIRTH_REL_NAME = "geboren in"
 DEATH_REL_NAME = "verstorben in"
 APIS_LOCATED_IN_ATTR = ["located in"]
-APIS_BASE_URI = "https://paas.acdh.oeaw.ac.at/"
+APIS_BASE_URI = "https://tibschol.acdh-dev.oeaw.ac.at/"
 # APIS_OEBL_BIO_COLLECTION = "ÖBL Biographie"
 
 APIS_SKOSMOS = {
-    "url": os.environ.get("APIS_SKOSMOS", "https://vocabs.acdh-dev.oeaw.ac.at"),
-    "vocabs-name": os.environ.get("APIS_SKOSMOS_THESAURUS", "apisthesaurus"),
-    "description": "Thesaurus of the APIS project. Used to type entities and relations.",
+    "url":
+    os.environ.get("APIS_SKOSMOS", "https://vocabs.acdh-dev.oeaw.ac.at"),
+    "vocabs-name":
+    os.environ.get("APIS_SKOSMOS_THESAURUS", "apisthesaurus"),
+    "description":
+    "Thesaurus of the APIS project. Used to type entities and relations.",
 }
 
 ALLOWED_HOSTS = re.sub(
     r"https?://",
     "",
-    os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,paas.acdh-dev.oeaw.ac.at"),
+    os.environ.get("ALLOWED_HOSTS",
+                   "localhost,127.0.0.1,paas.acdh-dev.oeaw.ac.at"),
 ).split(",")
 # You need to allow '10.0.0.0/8' for service health checks.
 
@@ -71,7 +74,8 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
 sentry_sdk.init(
-    dsn="https://26617c9eabdc4fb7b54a8d8d2037c67d@o4504360778661888.ingest.sentry.io/4504360943484928",
+    dsn=
+    "https://26617c9eabdc4fb7b54a8d8d2037c67d@o4504360778661888.ingest.sentry.io/4504360943484928",
     integrations=[
         DjangoIntegration(),
     ],
@@ -84,5 +88,4 @@ sentry_sdk.init(
 
     # If you wish to associate users to errors (assuming you are using
     # django.contrib.auth) you may enable sending PII data.
-    send_default_pii=True
-)
+    send_default_pii=True)
