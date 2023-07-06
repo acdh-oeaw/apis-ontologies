@@ -76,13 +76,18 @@ class Instance(TempEntityClass):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Person(TempEntityClass):
-
     class_uri = "http://id.loc.gov/ontologies/bibframe/Person"
+    GENDERS = [
+        ("male", "Male"),
+        ("female", "Female"),
+    ]
+    gender = models.CharField(max_length=6, choices=GENDERS, default="male")
+    comments = models.TextField(blank=True, null=True)
+    external_link = models.CharField(max_length=255, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Work(TempEntityClass):
-
     class_uri = "http://id.loc.gov/ontologies/bibframe/Work"
     subject = models.CharField(
         max_length=255,
@@ -90,11 +95,12 @@ class Work(TempEntityClass):
         null=True,
         verbose_name="subject",
     )  # should be a controlled vocabulary field
+    comments = models.TextField(blank=True, null=True)
+    external_link = models.CharField(max_length=255, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Place(TempEntityClass):
-
     class_uri = "http://id.loc.gov/ontologies/bibframe/Place"
     longitude = models.DecimalField(max_digits=22,
                                     decimal_places=16,
@@ -104,3 +110,4 @@ class Place(TempEntityClass):
                                    decimal_places=16,
                                    blank=True,
                                    null=True)
+    external_link = models.CharField(max_length=255, blank=True, null=True)
