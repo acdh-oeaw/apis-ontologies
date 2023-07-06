@@ -22,12 +22,6 @@ class Person(TempEntityClass):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Role(TempEntityClass):
-
-    class_uri = "http://id.loc.gov/ontologies/bibframe/Role"
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
 class Work(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Work"
