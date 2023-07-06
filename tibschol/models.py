@@ -40,6 +40,8 @@ class Work(TempEntityClass):
         null=True,
         verbose_name="subject",
     )  # should be a controlled vocabulary field
+    comments = models.TextField(blank=True, null=True)
+    external_link = models.URLField(max_length=255, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
