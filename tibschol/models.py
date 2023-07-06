@@ -16,12 +16,6 @@ class Instance(TempEntityClass):
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
-class Item(TempEntityClass):
-
-    class_uri = "http://id.loc.gov/ontologies/bibframe/Item"
-
-
-@reversion.register(follow=["tempentityclass_ptr"])
 class Person(TempEntityClass):
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Person"
