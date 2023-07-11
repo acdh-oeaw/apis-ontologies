@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 from apis_core.apis_labels.models import Label
 from apis_core.apis_relations.models import Property, Triple
@@ -7,12 +9,11 @@ from tqdm.auto import tqdm
 
 
 def rename_columns(df):
-    new_col_names = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC AD AE AF AG AH AI AJ AK AL AM AN".split(
-    )
+    new_col_names = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC AD AE AF AG AH AI AJ AK AL AM AN".split()
     col_name_mapping = {}
     for i, c in enumerate(df.columns):
         if i >= len(new_col_names):
-            print('not mapping from', c)
+            print("not mapping from", c)
             break
 
         col_name_mapping[c] = new_col_names[i]
@@ -22,19 +23,21 @@ def rename_columns(df):
 
 
 def run():
+    logger = logging.getLogger(__name__)
+
     df = pd.read_csv(
         "apis_ontology/ontology_specific_scripts/KDSB Repertoire 20230116 PH.csv"
     ).fillna("")
     df = rename_columns(df)
     # Reference label type
     text_ref, _ = LabelType.objects.get_or_create(
-        name="Ref Nr", description="TibSchol internal reference number")
-    instanceOf = Property.objects.get(name="instance of")
+        name="Ref Nr", description="TibSchol internal reference number"
+    )
+    instance_of = Property.objects.get(name="instance of")
 
     missing_rows = []
     unlinked_works = []
     for i, row in tqdm(df.iterrows()):
-
         # Use label
         label = row.A.strip()
         try:
@@ -52,14 +55,21 @@ def run():
             instance.drepung_number = f"{row.M}".strip()
             instance.provenance = f"{row.N}".strip()
             instance.save()
+            logger.info(f"{i}, Updated instance {instance.id}.")
             work = Work.objects.get(
-                id=Triple.objects.get(subj=instance, prop=instanceOf).obj.id)
+                id=Triple.objects.get(subj=instance, prop=instance_of).obj.id
+            )
             work.subject = f"{row.H}".strip()
             work.save()
+            logger.info(f"{i}, Updated work {instance.id}.")
+
         except Label.DoesNotExist:
-            missing_rows.append(f'{i} - {label}')
+            missing_rows.append(f"{i} - {label}")
         except Triple.DoesNotExist:
             unlinked_works.append(f"{i} - {label}")
+        except Exception as e:
+            logger.error(f"{i}, Exception {e}\n---\n{row}")
+            continue
 
     if missing_rows:
         print("Missing rows from input file", ", ".join(missing_rows))
