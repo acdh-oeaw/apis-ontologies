@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 from apis_core.apis_labels.models import Label
 from apis_core.apis_relations.models import Property, Triple
@@ -21,6 +23,8 @@ def rename_columns(df):
 
 
 def run():
+    logger = logging.getLogger(__name__)
+
     df = pd.read_csv(
         "apis_ontology/ontology_specific_scripts/KDSB Repertoire 20230116 PH.csv"
     ).fillna("")
@@ -29,7 +33,7 @@ def run():
     text_ref, _ = LabelType.objects.get_or_create(
         name="Ref Nr", description="TibSchol internal reference number"
     )
-    instanceOf = Property.objects.get(name="instance of")
+    instance_of = Property.objects.get(name="instance of")
 
     missing_rows = []
     unlinked_works = []
@@ -51,15 +55,21 @@ def run():
             instance.drepung_number = f"{row.M}".strip()
             instance.provenance = f"{row.N}".strip()
             instance.save()
+            logger.info(f"{i}, Updated instance {instance.id}.")
             work = Work.objects.get(
-                id=Triple.objects.get(subj=instance, prop=instanceOf).obj.id
+                id=Triple.objects.get(subj=instance, prop=instance_of).obj.id
             )
             work.subject = f"{row.H}".strip()
             work.save()
+            logger.info(f"{i}, Updated work {instance.id}.")
+
         except Label.DoesNotExist:
             missing_rows.append(f"{i} - {label}")
         except Triple.DoesNotExist:
             unlinked_works.append(f"{i} - {label}")
+        except Exception as e:
+            logger.error(f"{i}, Exception {e}\n---\n{row}")
+            continue
 
     if missing_rows:
         print("Missing rows from input file", ", ".join(missing_rows))
