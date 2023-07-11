@@ -7,12 +7,11 @@ from tqdm.auto import tqdm
 
 
 def rename_columns(df):
-    new_col_names = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC AD AE AF AG AH AI AJ AK AL AM AN".split(
-    )
+    new_col_names = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC AD AE AF AG AH AI AJ AK AL AM AN".split()
     col_name_mapping = {}
     for i, c in enumerate(df.columns):
         if i >= len(new_col_names):
-            print('not mapping from', c)
+            print("not mapping from", c)
             break
 
         col_name_mapping[c] = new_col_names[i]
@@ -28,13 +27,13 @@ def run():
     df = rename_columns(df)
     # Reference label type
     text_ref, _ = LabelType.objects.get_or_create(
-        name="Ref Nr", description="TibSchol internal reference number")
+        name="Ref Nr", description="TibSchol internal reference number"
+    )
     instanceOf = Property.objects.get(name="instance of")
 
     missing_rows = []
     unlinked_works = []
     for i, row in tqdm(df.iterrows()):
-
         # Use label
         label = row.A.strip()
         try:
@@ -53,11 +52,12 @@ def run():
             instance.provenance = f"{row.N}".strip()
             instance.save()
             work = Work.objects.get(
-                id=Triple.objects.get(subj=instance, prop=instanceOf).obj.id)
+                id=Triple.objects.get(subj=instance, prop=instanceOf).obj.id
+            )
             work.subject = f"{row.H}".strip()
             work.save()
         except Label.DoesNotExist:
-            missing_rows.append(f'{i} - {label}')
+            missing_rows.append(f"{i} - {label}")
         except Triple.DoesNotExist:
             unlinked_works.append(f"{i} - {label}")
 
