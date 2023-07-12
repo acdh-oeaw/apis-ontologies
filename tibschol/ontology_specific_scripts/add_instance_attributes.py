@@ -43,7 +43,7 @@ def run():
         try:
             label_object = Label.objects.get(label_type=text_ref, label=label)
             instance = Instance.objects.get(id=label_object.temp_entity.id)
-            if len(str(row.C).strip()):
+            if str(row.C).strip():
                 instance.set_num = f"Set {str(row.C)[0]}"
 
             instance.volume = f"{row.D}".strip()
