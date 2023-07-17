@@ -78,6 +78,8 @@ MIDDLEWARE = ["django.middleware.gzip.GZipMiddleware"] + MIDDLEWARE
 INSTALLED_APPS.append("django.contrib.postgres")
 #INSTALLED_APPS.append("apis_highlighter")
 
+ROOT_URLCONF = "apis_ontology.urls"
+
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
