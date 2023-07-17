@@ -71,7 +71,7 @@ def patch_serializer(model):
     serializer = serializers_cache.get(model.__name__, create_serializer(model))
     dict_class = {
 
-        #"triple_set_from_obj": TripleSerializerFromObj(many=True, read_only=True),
+        "triple_set_from_obj": TripleSerializerFromObj(many=True, read_only=True),
         "triple_set_from_subj": TripleSerializerFromSubj(many=True, read_only=True),
     }
 
@@ -98,14 +98,9 @@ class TripleSerializerFromObj(TripleSerializer):
     related_entity = serializers.SerializerMethodField(method_name="add_related_entity")
 
     def add_related_entity(self, obj):
-        if obj.prop.name == "has host": 
-            serializer = serializers_cache_patched.get(
-                obj.subj.__class__.__name__, patch_serializer(obj.subj.__class__)
-            )
-        else:
-            serializer = serializers_cache.get(
-                obj.subj.__class__.__name__, create_serializer(obj.subj.__class__)
-            )
+        serializer = serializers_cache.get(
+            obj.subj.__class__.__name__, create_serializer(obj.subj.__class__)
+        )
         return serializer(obj.subj).data
 
 
