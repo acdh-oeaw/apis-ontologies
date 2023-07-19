@@ -26,7 +26,9 @@ def run():
     logger = logging.getLogger(__name__)
 
     df = pd.read_csv(
-        "apis_ontology/ontology_specific_scripts/KDSB Repertoire 20230116 PH.csv"
+        # fmt: off
+        "apis_ontology/ontology_specific_scripts/data/KDSB Repertoire 20230116 PH.csv"
+        # fmt: on
     ).fillna("")
     df = rename_columns(df)
     # Reference label type
@@ -43,7 +45,7 @@ def run():
         try:
             label_object = Label.objects.get(label_type=text_ref, label=label)
             instance = Instance.objects.get(id=label_object.temp_entity.id)
-            if len(str(row.C).strip()):
+            if str(row.C).strip():
                 instance.set_num = f"Set {str(row.C)[0]}"
 
             instance.volume = f"{row.D}".strip()
@@ -55,20 +57,20 @@ def run():
             instance.drepung_number = f"{row.M}".strip()
             instance.provenance = f"{row.N}".strip()
             instance.save()
-            logger.info(f"{i}, Updated instance {instance.id}.")
+            logger.info("%s, Updated instance", instance.id)
             work = Work.objects.get(
                 id=Triple.objects.get(subj=instance, prop=instance_of).obj.id
             )
             work.subject = f"{row.H}".strip()
             work.save()
-            logger.info(f"{i}, Updated work {instance.id}.")
+            logger.info("%s, Updated work", work.id)
 
         except Label.DoesNotExist:
             missing_rows.append(f"{i} - {label}")
         except Triple.DoesNotExist:
             unlinked_works.append(f"{i} - {label}")
         except Exception as e:
-            logger.error(f"{i}, Exception {e}\n---\n{row}")
+            logger.error("%s, Exception %s\n---\n%s", i, repr(e), row)
             continue
 
     if missing_rows:
