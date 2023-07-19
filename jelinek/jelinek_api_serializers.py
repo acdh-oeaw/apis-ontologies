@@ -3,7 +3,8 @@ from operator import itemgetter
 from apis_core.apis_relations.models import TempTriple, Triple
 from rest_framework import serializers
 from rest_framework.fields import empty
-from .models import F3_Manifestation_Product_Type
+from django.contrib.contenttypes.models import ContentType
+from apis_ontology.models import E1_Crm_Entity, F3_Manifestation_Product_Type, F1_Work, Honour
 
 serializers_cache = {}
 serializers_cache_patched = {}
@@ -40,7 +41,6 @@ def create_serializer(model):
         "model": model,
         "exclude": [
             "source",
-            "self_contenttype",
             "references",
             "notes",
             "review",
@@ -117,6 +117,15 @@ class TripleSerializerFromSubj(TripleSerializer):
                 obj.obj.__class__.__name__, create_serializer(obj.obj.__class__)
             )
         return serializer(obj.obj).data
+    
+class SimpleTripleSerializerFromSubj(TripleSerializer):
+    related_entity = serializers.SerializerMethodField(method_name="add_related_entity")
+
+    def add_related_entity(self, obj):
+        serializer = serializers_cache.get(
+            obj.obj.__class__.__name__, create_serializer(obj.obj.__class__)
+        )
+        return serializer(obj.obj).data
 
 
 class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
@@ -135,7 +144,6 @@ class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
         exclude = [
             "source",
             "status",
-            "self_contenttype",
             "ref_target",
             "ref_accessed",
             "references",
@@ -151,3 +159,34 @@ class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
 
     # def add_triple_set_from(self, obj):
     #     return obj.get_triple_set()
+
+class SearchSerializer(serializers.ModelSerializer):
+    """
+    Custom search endpoint
+    """
+    # triple_set_from_obj = TripleSerializerFromObj(many=True, read_only=True)
+    # triple_set_from_subj = SimpleTripleSerializerFromSubj(many=True, read_only=True)
+    short = serializers.SerializerMethodField()
+    class Meta:
+        
+        model = E1_Crm_Entity
+        fields = (
+            "name",
+            "id",
+            "self_contenttype",
+            "start_date_written",
+            "start_date",
+            "short"
+        )
+        depth=1
+    def get_short(self, obj):
+        if obj.self_contenttype == ContentType.objects.get_for_model(F3_Manifestation_Product_Type):
+            return getattr(obj, obj.self_contenttype.model).short
+        elif obj.self_contenttype == ContentType.objects.get_for_model(Honour):
+            return getattr(obj, obj.self_contenttype.model).short
+        return obj.f1_work.short
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return remove_null_empty_from_dict(ret)
+        
