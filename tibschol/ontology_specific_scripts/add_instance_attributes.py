@@ -35,7 +35,7 @@ def run():
     text_ref, _ = LabelType.objects.get_or_create(
         name="Ref Nr", description="TibSchol internal reference number"
     )
-    instance_of = Property.objects.get(name="instance of")
+    instance_of = Property.objects.get(name="has as an instance")
 
     missing_rows = []
     unlinked_works = []
