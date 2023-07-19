@@ -1,7 +1,9 @@
 import reversion
 from apis_core.apis_entities.models import TempEntityClass
 from django.db import models
+import logging
 
+logger = logging.getLogger(__name__)
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Instance(TempEntityClass):
@@ -68,7 +70,7 @@ class Instance(TempEntityClass):
             return f"bKa' gdams gsung ‘bum phyogs bsgrigs theng gsum pa, vol. {self.volume}, dPal brtsegs bod yig dpe rnying zhib 'jug khang [dPe sgrig 'gan 'khur ba: dByang can lha mo et al.], Chengdu [khreng tu’u]: Si khron mi rigs dpe skrun khang, 2009, pp. {self.pp_kdsb}."
 
         if self.set_num == 'Set 4':
-            return f""
+            return f"bKa' gdams gsung ‘bum phyogs bsgrigs thengs bzhi pa, vol. {self.volume}, dPal brtsegs bod yig dpe rnying zhib 'jug khang [dPe sgrig 'gan 'khur ba: dByang can lha mo et al.], Chengdu [khreng tu’u]: Si khron mi rigs dpe skrun khang, 2015, pp. {self.pp_kdsb}."
 
         logger.warn(f"Unknown {self.set_num}. Cannot build citation.")
         return f"Unknown {self.set_num}. Cannot build citation."
