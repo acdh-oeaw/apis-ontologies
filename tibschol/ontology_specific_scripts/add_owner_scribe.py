@@ -42,6 +42,7 @@ def run():
 
     def get_person_object(person_name):
         if not person_name.strip() or "none" in person_name.lower():
+            # logger.warn("None or no value for person %s", person_name)
             return None
         try:
             p, _ = Person.objects.get_or_create(name=person_name)
@@ -74,4 +75,25 @@ def run():
             TempTriple.objects.get_or_create(subj=scribe, obj=instance, prop=scribe_of)
         if owner is not None:
             logger.debug("Found owner %s - %s", scribe, row.AQ.strip())
+            TempTriple.objects.get_or_create(subj=owner, obj=instance, prop=owner_of)
+
+    # New version
+    df = pd.read_csv(
+        # fmt: off
+        "apis_ontology/ontology_specific_scripts/data/KDSB Repertoire New.csv"
+        # fmt: on
+    ).fillna("")
+    df = rename_columns(df)
+    for i, row in df.iterrows():
+        instance = get_instance_object(row.A.strip())
+        if not instance:
+            logger.error("Instance not found. %s", repr(instance))
+            continue
+        scribe = get_person_object(row.AP.strip())
+        owner = get_person_object(row.AQ.strip())
+        if scribe is not None:
+            logger.debug("Found scribe %s - %s", scribe, row.AQ.strip())
+            TempTriple.objects.get_or_create(subj=scribe, obj=instance, prop=scribe_of)
+        if owner is not None:
+            logger.debug("Found owner %s - %s", scribe, row.AR.strip())
             TempTriple.objects.get_or_create(subj=owner, obj=instance, prop=owner_of)
