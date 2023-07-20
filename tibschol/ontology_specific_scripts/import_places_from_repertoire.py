@@ -1,11 +1,12 @@
-'''import places from
-'''
+"""import places from
+"""
 import logging
 
 import pandas as pd
 from apis_ontology.models import Place
 
 logger = logging.getLogger(__name__)
+
 
 def rename_columns(df):
     new_col_names = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z AA AB AC AD AE AF AG AH AI AJ AK AL AM AN AO".split()
@@ -20,16 +21,44 @@ def rename_columns(df):
     df.rename(col_name_mapping, axis="columns", inplace=True)
     return df
 
+
 def import_places(places):
     logger.info("Importing %s places...", len(places))
+    REJECTS = [
+        "author",
+        "title",
+        "place",
+        "person",
+        "people",
+        "colophon",
+        "check",
+        "limited",
+        "name",
+        "lineage",
+        "indian",
+        "date",
+        "per",
+        "done",
+        "owner",
+        "scribe",
+        "same",
+    ]
     for place in places:
-        if not place or "no place" in place:
-            logger.info("Not importing - %s", place)
+        if not place:
             continue
+        if any([t in place.lower() for t in REJECTS]):
+            try:
+                p = Place.objects.get(name=place.strip())
+                p.delete()
+                logging.info("------Deleted %s", place.strip())
+                continue
+            except Place.DoesNotExist:
+                continue
+
         Place.objects.get_or_create(name=place.strip())
 
-def run():
 
+def run():
     logger = logging.getLogger(__name__)
     # Benchmarked version
     df = pd.read_csv(
@@ -38,8 +67,6 @@ def run():
         # fmt: on
     ).fillna("")
     df = rename_columns(df)
-    import_places(df.AM.unique())  # Import places from column M
-    import_places(df.AN.unique())  # Import places from column N
     import_places(df.AO.unique())  # Import places from column O
 
     # New version
@@ -47,8 +74,6 @@ def run():
         # fmt: off
         "apis_ontology/ontology_specific_scripts/data/KDSB Repertoire New.csv"
         # fmt: on
-        ).fillna("")
+    ).fillna("")
     df = rename_columns(df)
-    import_places(df.AM.unique())  # Import places from column M
-    import_places(df.AN.unique())  # Import places from column N
     import_places(df.AO.unique())  # Import places from column O
