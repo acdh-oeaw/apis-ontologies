@@ -59,7 +59,6 @@ def import_places(places):
 
 
 def run():
-    logger = logging.getLogger(__name__)
     # Benchmarked version
     df = pd.read_csv(
         # fmt: off
@@ -76,4 +75,6 @@ def run():
         # fmt: on
     ).fillna("")
     df = rename_columns(df)
+    import_places(df.AM.unique())  # Import places from column M
+    import_places(df.AN.unique())  # Import places from column N
     import_places(df.AO.unique())  # Import places from column O
