@@ -16,10 +16,10 @@ class F3ManifestationProductTypeFilter(django_filters.FilterSet):
 def filter_entity(expr_to_entity, class_to_check=None, role=None, lookup_expr="in"):
         criteria_to_join = []
         for expr in expr_to_entity:
-            class_criterion_lookup = "__".join([expr, "self_contenttype__id"])
+            class_criterion_lookup = "__".join([expr, "self_contenttype__model", "iexact"])
             class_criterion = Q()
             if class_to_check is not None:
-                class_criterion = Q(**{class_criterion_lookup: ContentType.objects.get_for_model(class_to_check).id})
+                class_criterion = Q(**{class_criterion_lookup: ContentType.objects.get_for_model(class_to_check).model})
             name_lookup = '__'.join([expr, 'name', lookup_expr])
             if len(expr) == 0:
                 name_lookup = '__'.join(['name', lookup_expr])
