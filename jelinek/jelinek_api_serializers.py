@@ -167,6 +167,9 @@ class SearchSerializer(serializers.ModelSerializer):
     # triple_set_from_obj = TripleSerializerFromObj(many=True, read_only=True)
     # triple_set_from_subj = SimpleTripleSerializerFromSubj(many=True, read_only=True)
     short = serializers.SerializerMethodField()
+    genre = serializers.SerializerMethodField()
+    related_work_id = serializers.SerializerMethodField()
+    
     class Meta:
         
         model = E1_Crm_Entity
@@ -176,19 +179,47 @@ class SearchSerializer(serializers.ModelSerializer):
             "self_contenttype",
             "start_date_written",
             "start_date",
-            "short"
+            "short",
+            "genre",
+            "related_work_id"
         )
-        depth=1
+        depth=0
+    def get_f1(self, obj):
+        if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
+            related_f1 = obj.triple_set_from_obj.filter(prop__name="is expressed in")
+            if len(related_f1) == 1:
+                return related_f1[0].subj
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
+            return obj
+        elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
+            return obj
+        return None
+    
+    def get_related_work_id(self, obj):
+        f1 = self.get_f1(obj)
+        if f1 is not None:
+            return f1.id
+        else:
+            return obj.id
+        
     def get_short(self, obj):
-        if obj.self_contenttype == ContentType.objects.get_for_model(F3_Manifestation_Product_Type):
+        if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
             return getattr(obj, obj.self_contenttype.model).short
-        elif obj.self_contenttype == ContentType.objects.get_for_model(Honour):
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
             return getattr(obj, obj.self_contenttype.model).short
         elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
             return getattr(obj, ContentType.objects.get_for_model(F1_Work).model).short
         else:
             return ""
-    
+    def get_genre(self, obj):
+        if hasattr(obj, "genre"):
+            return obj.genre
+        else:
+            related_f1 = obj.triple_set_from_obj.filter(prop__name="is expressed in")
+            if len(related_f1) == 1:
+                return related_f1[0].subj.genre
+            else:
+                return None
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         return remove_null_empty_from_dict(ret)
