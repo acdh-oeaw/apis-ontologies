@@ -184,6 +184,13 @@ class SearchSerializer(serializers.ModelSerializer):
             "related_work_id"
         )
         depth=0
+
+    def get_subclass_of_obj(self, obj, model):
+        if hasattr(obj, model):
+            return getattr(obj, model)
+        elif hasattr(obj, str.lower(model)):
+            return getattr(obj, str.lower(model))
+        
     def get_f1(self, obj):
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
             related_f1 = obj.triple_set_from_obj.filter(prop__name="is expressed in")
@@ -200,26 +207,29 @@ class SearchSerializer(serializers.ModelSerializer):
         if f1 is not None:
             return f1.id
         else:
-            return obj.id
+            return obj.id    
         
     def get_short(self, obj):
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
-            return getattr(obj, obj.self_contenttype.model).short
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
-            return getattr(obj, obj.self_contenttype.model).short
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
         elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
-            return getattr(obj, ContentType.objects.get_for_model(F1_Work).model).short
+            return self.get_subclass_of_obj(obj, ContentType.objects.get_for_model(F1_Work).model).short
         else:
             return ""
     def get_genre(self, obj):
         if hasattr(obj, "genre"):
             return obj.genre
-        else:
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
             related_f1 = obj.triple_set_from_obj.filter(prop__name="is expressed in")
             if len(related_f1) == 1:
                 return related_f1[0].subj.genre
-            else:
-                return None
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).genre
+        elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
+            return self.get_subclass_of_obj(obj, ContentType.objects.get_for_model(F1_Work).model).genre
+        return None
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         return remove_null_empty_from_dict(ret)
