@@ -184,7 +184,10 @@ class SearchSerializer(serializers.ModelSerializer):
             return getattr(obj, obj.self_contenttype.model).short
         elif obj.self_contenttype == ContentType.objects.get_for_model(Honour):
             return getattr(obj, obj.self_contenttype.model).short
-        return obj.f1_work.short
+        elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
+            return getattr(obj, ContentType.objects.get_for_model(F1_Work).model).short
+        else:
+            return ""
     
     def to_representation(self, instance):
         ret = super().to_representation(instance)
