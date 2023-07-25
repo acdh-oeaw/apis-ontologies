@@ -168,7 +168,7 @@ class SearchSerializer(serializers.ModelSerializer):
     # triple_set_from_subj = SimpleTripleSerializerFromSubj(many=True, read_only=True)
     short = serializers.SerializerMethodField()
     genre = serializers.SerializerMethodField()
-    related_work_id = serializers.SerializerMethodField()
+    related_work = serializers.SerializerMethodField()
     
     class Meta:
         
@@ -181,9 +181,9 @@ class SearchSerializer(serializers.ModelSerializer):
             "start_date",
             "short",
             "genre",
-            "related_work_id"
+            "related_work"
         )
-        depth=0
+        depth=1
 
     def get_subclass_of_obj(self, obj, model):
         if hasattr(obj, model):
@@ -210,12 +210,15 @@ class SearchSerializer(serializers.ModelSerializer):
             return obj
         return None
     
-    def get_related_work_id(self, obj):
+    def get_related_work(self, obj):
         f1 = self.get_f1(obj)
-        if f1 is not None:
-            return f1.id
+        if f1 is not None and f1.id != obj.id:
+            serializer = serializers_cache.get(
+                f1.__class__.__name__, create_serializer(f1.__class__)
+            )
+            return serializer(f1).data
         else:
-            return obj.id    
+            return None   
         
     def get_short(self, obj):
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
