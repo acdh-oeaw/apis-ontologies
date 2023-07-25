@@ -169,6 +169,8 @@ class SearchSerializer(serializers.ModelSerializer):
     short = serializers.SerializerMethodField()
     genre = serializers.SerializerMethodField()
     related_work = serializers.SerializerMethodField()
+    navigate_to_id = serializers.SerializerMethodField()
+    self_contenttype = serializers.SerializerMethodField()
     
     class Meta:
         
@@ -181,9 +183,13 @@ class SearchSerializer(serializers.ModelSerializer):
             "start_date",
             "short",
             "genre",
-            "related_work"
+            "related_work",
+            "navigate_to_id"
         )
         depth=1
+
+    def get_self_contenttype(self, obj):
+        return obj.self_contenttype.id
 
     def get_subclass_of_obj(self, obj, model):
         if hasattr(obj, model):
@@ -231,6 +237,19 @@ class SearchSerializer(serializers.ModelSerializer):
             return self.get_subclass_of_obj(obj, ContentType.objects.get_for_model(F1_Work).model).short
         else:
             return ""
+        
+    def get_navigate_to_id(self, obj):
+        if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).bibl_id
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).performance_id
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).honour_id
+        elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
+            return self.get_subclass_of_obj(obj, ContentType.objects.get_for_model(F1_Work).model).idno
+        else:
+            return None
+        
     def get_genre(self, obj):
         if hasattr(obj, "genre"):
             return obj.genre
