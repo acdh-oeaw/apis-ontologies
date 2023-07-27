@@ -8,7 +8,6 @@ from apis_core.apis_entities.models import TempEntityClass
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Xml_File(TempEntityClass):
-    
     file_path = models.CharField(max_length=1024, blank=True, null=True)
     file_content = models.TextField(blank=True)
 
@@ -19,15 +18,16 @@ class Xml_Content_Dump(TempEntityClass):
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class E1_Crm_Entity(TempEntityClass):
-    
-    pass
+    entity_id = models.CharField(max_length=1024, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class E40_Legal_Body(E1_Crm_Entity):
-    
     # for institutions and publishers
     institution_id = models.CharField(max_length=1024, blank=True, null=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.institution_id
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -53,12 +53,18 @@ class F1_Work(E1_Crm_Entity):
     )
     
     short = models.CharField(max_length=1024, blank=True, null=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.idno
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Honour(E1_Crm_Entity):
     honour_id = models.CharField(max_length=1024, blank=True, null=True)
     index_in_chapter = models.IntegerField(blank=True, null=True)
     short = models.CharField(max_length=1024, blank=True, null=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.honour_id
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F3_Manifestation_Product_Type(E1_Crm_Entity):
@@ -77,11 +83,17 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
     untertitel = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
     scope_style = models.CharField(max_length=1024, blank=True, null=True)
     koha_id = models.CharField(max_length=1024, blank=True, null=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.bibl_id
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F9_Place(E1_Crm_Entity):
     place_id = models.CharField(max_length=1024, blank=True, null=True)
     country = models.CharField(max_length=1024, blank=True, null=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.place_id
     
 
 
@@ -140,6 +152,10 @@ class F10_Person(E1_Crm_Entity):
     GENDER_CHOICES = (("female", "female"), ("male", "male"), ("third gender", "third gender"))
     gender = models.CharField(max_length=15, choices=GENDER_CHOICES, blank=True)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.pers_id
+
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F17_Aggregation_Work(F1_Work):
@@ -165,6 +181,9 @@ class F26_Recording(E1_Crm_Entity):
     airing_date = models.CharField(max_length=1024, blank=True, null=True)
     broadcast_id = models.CharField(max_length=1024, blank=True, null=True)
     recording_type = models.CharField(max_length=1024, blank=True, null=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.broadcast_id
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -175,17 +194,22 @@ class F31_Performance(E1_Crm_Entity):
     short = models.CharField(max_length=1024, blank=True, null=True)
     # TODO: consider changing this to a e55 relation
     category = models.CharField(max_length=1024, blank=True, null=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.performance_id
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Chapter(TempEntityClass):
-    
     chapter_number = models.CharField(max_length=1024, blank=True, null=True)
     chapter_type = models.CharField(max_length=1024, blank=True, null=True)
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Keyword(TempEntityClass):
     keyword_id = models.CharField(max_length=1024, blank=True, null=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.keyword_id
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class XMLNote(TempEntityClass):

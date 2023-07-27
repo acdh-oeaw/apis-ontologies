@@ -4,7 +4,7 @@ from apis_core.apis_relations.models import TempTriple, Triple
 from rest_framework import serializers
 from rest_framework.fields import empty
 from django.contrib.contenttypes.models import ContentType
-from apis_ontology.models import E1_Crm_Entity, F3_Manifestation_Product_Type, F1_Work, Honour
+from apis_ontology.models import E1_Crm_Entity, F31_Performance, F3_Manifestation_Product_Type, F1_Work, Honour
 
 serializers_cache = {}
 serializers_cache_patched = {}
@@ -167,24 +167,92 @@ class SearchSerializer(serializers.ModelSerializer):
     # triple_set_from_obj = TripleSerializerFromObj(many=True, read_only=True)
     # triple_set_from_subj = SimpleTripleSerializerFromSubj(many=True, read_only=True)
     short = serializers.SerializerMethodField()
+    genre = serializers.SerializerMethodField()
+    related_work = serializers.SerializerMethodField()
+    self_contenttype = serializers.SerializerMethodField()
+    
     class Meta:
         
         model = E1_Crm_Entity
         fields = (
             "name",
             "id",
+            "entity_id",
             "self_contenttype",
             "start_date_written",
             "start_date",
-            "short"
+            "short",
+            "genre",
+            "related_work",
         )
         depth=1
+
+    def get_self_contenttype(self, obj):
+        return obj.self_contenttype.id
+
+    def get_subclass_of_obj(self, obj, model):
+        if hasattr(obj, model):
+            return getattr(obj, model)
+        elif hasattr(obj, str.lower(model)):
+            return getattr(obj, str.lower(model))
+        
+    def get_f1(self, obj):
+        if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
+            related_f1 = obj.triple_set_from_obj.filter(prop__name="is expressed in")
+            if len(related_f1) == 1:
+                return related_f1[0].subj
+            else:
+                related_f1 = obj.triple_set_from_obj.filter(prop__name="is original for translation")
+                if len(related_f1) == 1:
+                    return related_f1[0].subj
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
+            related_f1 = obj.triple_set_from_obj.filter(prop__name="has been performed in")
+            if len(related_f1) == 1:
+                return related_f1[0].subj
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
+            return obj
+        elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
+            return obj
+        return None
+    
+    def get_related_work(self, obj):
+        f1 = self.get_f1(obj)
+        if f1 is not None and f1.id != obj.id:
+            serializer = serializers_cache.get(
+                f1.__class__.__name__, create_serializer(f1.__class__)
+            )
+            return serializer(f1).data
+        else:
+            return None   
+        
     def get_short(self, obj):
-        if obj.self_contenttype == ContentType.objects.get_for_model(F3_Manifestation_Product_Type):
-            return getattr(obj, obj.self_contenttype.model).short
-        elif obj.self_contenttype == ContentType.objects.get_for_model(Honour):
-            return getattr(obj, obj.self_contenttype.model).short
-        return obj.f1_work.short
+        if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
+        elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
+            return self.get_subclass_of_obj(obj, ContentType.objects.get_for_model(F1_Work).model).short
+        else:
+            return ""
+        
+    def get_genre(self, obj):
+        if hasattr(obj, "genre"):
+            return obj.genre
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
+            f1 = self.get_f1(obj)
+            if f1 is not None:
+                return f1.genre
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
+            f1 = self.get_f1(obj)
+            if f1 is not None:
+                return f1.genre
+        elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
+            return "Würdigungen"
+        elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
+            return self.get_subclass_of_obj(obj, ContentType.objects.get_for_model(F1_Work).model).genre
+        return None
     
     def to_representation(self, instance):
         ret = super().to_representation(instance)

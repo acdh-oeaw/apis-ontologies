@@ -14,5 +14,5 @@ class F3ManifestationProductType(viewsets.ReadOnlyModelViewSet):
 
 class Search(viewsets.ReadOnlyModelViewSet):
     filter_class = SearchFilter
-    queryset = E1_Crm_Entity.objects.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False) | Q(f3_manifestation_product_type__isnull=False)).select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
+    queryset = E1_Crm_Entity.objects.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False) | Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False)).select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
     serializer_class = SearchSerializer
