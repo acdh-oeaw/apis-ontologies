@@ -4685,6 +4685,10 @@ def run(*args, **options):
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/entities"))
             work_xml_idx = next(i for i,file in enumerate(xml_file_list) if '/work_index.xml' in file)
             xml_file_list.append(xml_file_list.pop(work_xml_idx))
+            first_files = ["/institution_index.xml", "/places_index.xml", "/venues_index.xml", "/person_index.xml"]
+            for filename in first_files:
+                xml_idx = next(i for i,file in enumerate(xml_file_list) if filename in file)
+                xml_file_list.insert(0, xml_file_list.pop(xml_idx))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/001_Werke"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/002_ÜbersetzteWerke"))
             xml_file_list.extend(get_flat_file_list("./manuelle-korrektur/korrigiert/bd1/003_Interviews"))
