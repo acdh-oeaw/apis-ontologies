@@ -608,11 +608,13 @@ def construct_properties():
         name_reverse="is image of",
     )
     has_image.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
-    has_image.obj_class.add(ContentType.objects.get(model=E38_Image.__name__))
+    has_image.subj_class.add(ContentType.objects.get(model=Honour.__name__))
+    has_image.obj_class.add(ContentType.objects.get_for_model(model=E38_Image))
 
     has_image = Property.objects.create(
         name="has image for translation",
         name_reverse="is translation image of",
     )
     has_image.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
-    has_image.obj_class.add(ContentType.objects.get(model=E38_Image.__name__))
+    has_image.subj_class.add(ContentType.objects.get(model=Honour.__name__))
+    has_image.obj_class.add(ContentType.objects.get_for_model(model=E38_Image))
