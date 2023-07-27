@@ -16,7 +16,7 @@ class Instance(TempEntityClass):
         ("Set 4", "Set 4"),
     ]
     set_num = models.CharField(
-        max_length=5, choices=SETS, null=True, black=True, verbose_name="Set"
+        max_length=5, choices=SETS, null=True, blank=True, verbose_name="Set"
     )
     volume = models.CharField(max_length=255, blank=True, null=True)
     sb_text_number = models.CharField(
