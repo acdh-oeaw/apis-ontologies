@@ -2343,7 +2343,6 @@ class TreesManager:
 
             return sub_main(path_node)
 
-
         def parse_note(path_node):
 
             def parse_attr(path_node: PathNode):
@@ -2429,6 +2428,78 @@ class TreesManager:
 
             return sub_main(path_node)
 
+        def parse_e38_image(path_node):
+
+            def parse_attr(path_node: PathNode):
+
+                xml_elem = path_node.xml_elem
+
+                attr_dict = {
+                    "name": None,
+                    "image_id": None,
+                    "description": None,
+                    "alt_text": None,
+                    "filename": None,
+                }
+
+                if (
+                    xml_elem.tag.endswith("figure")
+                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
+                    and xml_elem.attrib.get("type") is not None
+                    and xml_elem.attrib.get("type") == "illustration"
+                ):
+                    attr_dict["name"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+                    attr_dict["image_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+                    
+                    for xml_elem_child in xml_elem:
+                        if (xml_elem_child.tag.endswith("figDesc") and xml_elem.attrib.get("type") is not None):
+                            if xml_elem.attrib.get("type") == "alt":
+                                attr_dict["alt_text"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
+                            elif xml_elem.attrib.get("type") == "main":
+                                attr_dict["description"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
+                        if xml_elem_child.tag.endswith("graphic") and xml_elem.attrib.get("url") is not None:
+                            attr_dict["filename"] = xml_elem.attrib.get("url")
+                
+                elif (
+                    xml_elem.tag.endswith("ptr")
+                    and xml_elem.attrib.get("type", "") == "image"
+                    and xml_elem.attrib.get("target") is not None
+                ):
+                    attr_dict["name"] = xml_elem.attrib.get("target").replace("images:", "")
+                    attr_dict["image_id"] = xml_elem.attrib.get("target").replace("images:", "")
+                    
+                       
+                if len([v for v in attr_dict.values() if v is not None]) > 0:
+
+                    return attr_dict
+
+                else:
+
+                    return None
+
+            def sub_main(path_node):
+
+                enities_list = []
+
+                attr_dict = parse_attr(path_node)
+
+                if attr_dict is not None:
+
+                    db_result = None
+
+                    if attr_dict["image_id"] is not None:
+
+                        db_result = E38_Image.objects.get_or_create(image_id=attr_dict["image_id"])
+
+                    else:
+
+                        print("Entity found without a uniquely identifying attribute")
+
+                    enities_list.append(handle_after_creation(db_result, attr_dict))
+
+                return enities_list
+
+            return sub_main(path_node)
 
         def main_parse_for_entities(path_node):
 
@@ -2462,6 +2533,8 @@ class TreesManager:
             path_node.entities_list.extend(parse_keyword(path_node))
 
             path_node.entities_list.extend(parse_note(path_node))
+
+            path_node.entities_list.extend(parse_e38_image(path_node))
 
 
             # cls.parse_f17_aggregation_work(path_node.xml_elem)
@@ -3949,6 +4022,99 @@ class TreesManager:
             triple_from_f26_to_e40(entity_broadcast, path_node)
             triples_from_f26_to_note(entity_broadcast, path_node)
 
+        def parse_triples_from_e38_image(entity_image, path_node: PathNode):
+
+            path_node_tei = get_uppermost_parent(path_node)
+            property_name = "has image"
+            if "002_ÜbersetzteWerke" in TreesManager.helper_dict["file_path"]:
+                property_name = "has image for translation"
+
+            def triple_from_e38_image_to_f1(entity_image, path_node: PathNode):
+
+                for path_node_text in path_node_tei.path_node_children_list:
+
+                    if path_node_text.xml_elem.tag.endswith("text"):
+
+                        for path_node_body in path_node_text.path_node_children_list:
+
+                            if path_node_body.xml_elem.tag.endswith("body"):
+
+                                for path_node_div in path_node_body.path_node_children_list:
+
+                                    if path_node_div.xml_elem.tag.endswith("div"):
+
+                                        for path_node_bibl in path_node_div.path_node_children_list:
+
+                                            for entity_work in path_node_bibl.entities_list:
+
+                                                if has_class_as_parent(entity_work.__class__, F1_Work) or has_class_as_parent(entity_work.__class__, Honour):
+
+                                                    create_triple(
+                                                        entity_subj=entity_work,
+                                                        entity_obj=entity_image,
+                                                        prop=Property.objects.get(name=property_name),
+                                                    )
+
+                                                break
+
+                                        if path_node_div.xml_elem.attrib.get("type") == "honour":    
+                                            for path_node_div_div in path_node_div.path_node_children_list: 
+                                                for path_node_bibl in path_node_div_div.path_node_children_list:
+
+                                                    for entity_work in path_node_bibl.entities_list:
+
+                                                        if has_class_as_parent(entity_work.__class__, F1_Work) or has_class_as_parent(entity_work.__class__, Honour):
+
+                                                            create_triple(
+                                                                entity_subj=entity_work,
+                                                                entity_obj=entity_image,
+                                                                prop=Property.objects.get(name=property_name),
+                                                            )
+
+                                                        break
+
+                                        for path_node_div_div in path_node_div.path_node_children_list:
+
+                                            if path_node_div_div.xml_elem.tag.endswith("div") and path_node_div_div.xml_elem.attrib.get("type") == "head_section":
+
+                                                for path_node_bibl in path_node_div_div.path_node_children_list:
+
+                                                    for entity_work in path_node_bibl.entities_list:
+
+                                                        if has_class_as_parent(entity_work.__class__, F1_Work) or has_class_as_parent(entity_work.__class__, Honour):
+
+                                                            create_triple(
+                                                                entity_subj=entity_work,
+                                                                entity_obj=entity_image,
+                                                                prop=Property.objects.get(name=property_name),
+                                                            )
+
+                                                    if path_node_bibl.xml_elem.tag.endswith("head"):
+                                                        for path_node_bibl in path_node_bibl.path_node_children_list:
+
+                                                            for entity_work in path_node_bibl.entities_list:
+
+                                                                if has_class_as_parent(entity_work.__class__, F1_Work) or has_class_as_parent(entity_work.__class__, Honour):
+
+                                                                    create_triple(
+                                                                        entity_subj=entity_work,
+                                                                        entity_obj=entity_image,
+                                                                        prop=Property.objects.get(name=property_name),
+                                                                    )
+
+                                                break
+
+                                        break
+
+                                break
+
+                                break
+
+                        break
+
+
+            triple_from_e38_image_to_f1(entity_image, path_node)
+
 
         def parse_triples_from_chapter(entity_chapter, path_node: PathNode):
 
@@ -4330,6 +4496,10 @@ class TreesManager:
 
                     parse_triples_from_honour(entity, path_node)
 
+                elif entity.__class__ is E38_Image:
+
+                    parse_triples_from_e38_image(entity, path_node)
+
         main_parse_for_triples(path_node)
 
 
@@ -4482,6 +4652,7 @@ def run(*args, **options):
                         current_type = "work"
 
                     trees_manager.helper_dict["current_type"] = current_type
+                    trees_manager.helper_dict["file_path"] = xml_file_path
 
                     path_node_root = crawl_xml_tree_for_entities(path_node_root, trees_manager)
                     crawl_xml_tree_for_triples(path_node_root, trees_manager)

@@ -218,6 +218,15 @@ class XMLNote(TempEntityClass):
     rendition = models.CharField(max_length=1024, blank=True, null=True)
     type = models.CharField(max_length=1024, blank=True, null=True)
 
+@reversion.register(follow=["tempentityclass_ptr"])
+class E38_Image(E1_Crm_Entity):
+    image_id = models.CharField(max_length=1024, blank=True, null=True)
+    description = models.CharField(max_length=1024, blank=True, null=True)
+    alt_text = models.CharField(max_length=1024, blank=True, null=True)
+    filename = models.CharField(max_length=1024, blank=True, null=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entity_id = self.image_id
 
 def construct_properties():
     
@@ -593,3 +602,17 @@ def construct_properties():
     )
     data_read_from_dump.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     data_read_from_dump.obj_class.add(ContentType.objects.get(model=Xml_Content_Dump.__name__))
+
+    has_image = Property.objects.create(
+        name="has image",
+        name_reverse="is image of",
+    )
+    has_image.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    has_image.obj_class.add(ContentType.objects.get(model=E38_Image.__name__))
+
+    has_image = Property.objects.create(
+        name="has image for translation",
+        name_reverse="is translation image of",
+    )
+    has_image.subj_class.add(ContentType.objects.get(model=F1_Work.__name__))
+    has_image.obj_class.add(ContentType.objects.get(model=E38_Image.__name__))
