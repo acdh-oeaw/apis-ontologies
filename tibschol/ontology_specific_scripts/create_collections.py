@@ -9,6 +9,8 @@ def create_collections():
     Collection.objects.get_or_create(name="Imported")
     Collection.objects.get_or_create(name="Unreviewed")
     Collection.objects.get_or_create(name="Reviewed")
+    Collection.objects.get_or_create(name="Comment review")
+    Collection.objects.get_or_create(name="Error import")
 
 
 def run(*args, **kwargs):
