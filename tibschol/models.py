@@ -106,3 +106,4 @@ class Place(TempEntityClass):
         max_digits=22, decimal_places=16, blank=True, null=True
     )
     external_link = models.CharField(max_length=255, blank=True, null=True)
+    comments = models.TextField(blank=True, null=True)
