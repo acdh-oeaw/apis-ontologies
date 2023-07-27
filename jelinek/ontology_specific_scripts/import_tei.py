@@ -79,6 +79,8 @@ def remove_outer_xml_tags(var_str):
     last = regex.sub("", last).strip()
     regex = re.compile(r"</ns0:ref>$")
     last = regex.sub("", last).strip()
+    regex = re.compile(r"</ns0:figDesc>$")
+    last = regex.sub("", last).strip()
     return last
 
 def get_uppermost_parent(path_node):
@@ -2452,13 +2454,13 @@ class TreesManager:
                     attr_dict["image_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
                     
                     for xml_elem_child in xml_elem:
-                        if (xml_elem_child.tag.endswith("figDesc") and xml_elem.attrib.get("type") is not None):
-                            if xml_elem.attrib.get("type") == "alt":
+                        if (xml_elem_child.tag.endswith("figDesc") and xml_elem_child.attrib.get("type") is not None):
+                            if xml_elem_child.attrib.get("type") == "alt":
                                 attr_dict["alt_text"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
-                            elif xml_elem.attrib.get("type") == "main":
+                            elif xml_elem_child.attrib.get("type") == "main":
                                 attr_dict["description"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
-                        if xml_elem_child.tag.endswith("graphic") and xml_elem.attrib.get("url") is not None:
-                            attr_dict["filename"] = xml_elem.attrib.get("url")
+                        if xml_elem_child.tag.endswith("graphic") and xml_elem_child.attrib.get("url") is not None:
+                            attr_dict["filename"] = xml_elem_child.attrib.get("url")
                 
                 elif (
                     xml_elem.tag.endswith("ptr")
