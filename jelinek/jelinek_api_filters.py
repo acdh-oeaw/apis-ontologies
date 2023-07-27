@@ -2,6 +2,7 @@ import django_filters
 from .models import E40_Legal_Body, E55_Type, F10_Person, F3_Manifestation_Product_Type, F9_Place, Keyword, E1_Crm_Entity, Xml_Content_Dump
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.search import SearchQuery, SearchVector
 
 class F3ManifestationProductTypeFilter(django_filters.FilterSet):
     class Meta:
@@ -43,7 +44,7 @@ def filter_entity(expr_to_entity, class_to_check=None, role=None, lookup_expr="i
         return queryset.filter(disjunction).distinct("id")
     return build_filter_method
 
-def filter_by_entity_id(expr_to_entity, role=None):
+def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_for_name=None):
     criteria_to_join = []
     for expr in expr_to_entity:
         role_criterion = Q()
@@ -61,22 +62,37 @@ def filter_by_entity_id(expr_to_entity, role=None):
         disjunction = Q()
         for entry in criteria_to_join:
             disjunction = disjunction | (id_criterion & entry["role_criterion"])
+        if check_dump:
+            if check_dump_for_name is not None:
+                disjunction = disjunction | search_in_xml_content_dump(["|".join(value), check_dump_for_name])
+            else:
+                disjunction = disjunction | search_in_xml_content_dump("|".join(value))
         print(disjunction)
         return queryset.filter(disjunction).distinct("id")
     return build_filter_method
 
 def search_in_xml_content_dump(value):
-    matching_dumps = [e.id for e in Xml_Content_Dump.objects.filter(file_content__search=value)]
+    search_string = ""
+    if isinstance(value, list):
+        search_string = " | ".join(["({})".format(entry.replace(" ", "&")) for entry in value])
+    else:
+        search_string = "({})".format(value.replace(" ", "&"))
+    query = SearchQuery(search_string, search_type="raw")
+    vector = SearchVector("file_content")
+    matching_dumps = [e.id for e in Xml_Content_Dump.objects.annotate(search=vector).filter(search=query)]
     return Q(triple_set_from_subj__obj__in=matching_dumps)
+
+def empty_filter(queryset, name, value):
+    return queryset
 
       
 class SearchFilter(django_filters.FilterSet):
     class TextInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
         pass
     person = django_filters.CharFilter(method=filter_entity(["triple_set_from_obj__subj"], class_to_check=F10_Person, lookup_expr="contains", check_dump=True))
-    person_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"]))
+    person_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], check_dump=True))
     institution = django_filters.CharFilter(method=filter_entity(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], class_to_check=E40_Legal_Body, lookup_expr="contains", check_dump=True))
-    institution_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"]))
+    institution_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], check_dump=True))
     title = django_filters.CharFilter(field_name="f1_work__name", lookup_expr="contains")
     work_id = django_filters.CharFilter(field_name="f1_work__entity_id", lookup_expr="contains")
     honour = django_filters.CharFilter(field_name="honour__name", lookup_expr="contains")
@@ -96,8 +112,18 @@ class SearchFilter(django_filters.FilterSet):
     def qs(self):
         if "personRole" in self.data:
             self.filters['person'] = django_filters.CharFilter(method=filter_entity(["triple_set_from_obj__subj"], class_to_check=F10_Person, lookup_expr="contains", role=self.data["personRole"]))
+            self.filters['person_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], role=self.data["personRole"]))
+        if "person_id" in self.data:
+            self.filters['person'] = django_filters.CharFilter(method=empty_filter)
+        if "person" in self.data:
+            self.filters['person_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], check_dump=True, check_dump_for_name=self.data["person"]))
         if "institutionRole" in self.data:
             self.filters['institution'] = django_filters.CharFilter(method=filter_entity(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], class_to_check=E40_Legal_Body, lookup_expr="contains", role=self.data["institutionRole"]))
+            self.filters['institution_id'] =  self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], role=self.data["institutionRole"]))
+        if "institution_id" in self.data:
+            self.filters['institution'] = django_filters.CharFilter(method=empty_filter)
+        if "institution" in self.data:
+            self.filters['institution_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], check_dump=True, check_dump_for_name=self.data["institution"]))
         parent = super(SearchFilter, self).qs
         return parent
                 
