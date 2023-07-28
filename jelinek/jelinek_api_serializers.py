@@ -130,23 +130,11 @@ class SimpleTripleSerializerFromSubj(TripleSerializer):
             obj.obj.__class__.__name__, create_serializer(obj.obj.__class__)
         )
         return serializer(obj.obj).data
-        
-        
-class F1WorkSerializer(serializers.ModelSerializer):
+
+class IncludeImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     image_for_translation = serializers.SerializerMethodField()
-    class Meta:
-        model = F1_Work
-        exclude = [
-            "source",
-            "status",
-            "references",
-            "notes",
-            "review",
-            "text",
-            "collection"
-        ]
-        depth = 1
+    
     def get_image(self, obj):
         qs = [t.obj for t in obj.triple_set_from_subj.filter(prop__name="has image")]
         if len(qs) > 0:
@@ -168,7 +156,34 @@ class F1WorkSerializer(serializers.ModelSerializer):
         
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        return remove_null_empty_from_dict(ret)
+        return remove_null_empty_from_dict(ret)      
+        
+class F1WorkSerializer(IncludeImageSerializer):
+    class Meta:
+        model = F1_Work
+        exclude = [
+            "source",
+            "status",
+            "references",
+            "notes",
+            "review",
+            "text",
+            "collection"
+        ]
+        depth = 1
+class HonourSerializer(IncludeImageSerializer):
+    class Meta:
+        model = Honour
+        exclude = [
+            "source",
+            "status",
+            "references",
+            "notes",
+            "review",
+            "text",
+            "collection"
+        ]
+        depth = 1
 
 class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
     """
