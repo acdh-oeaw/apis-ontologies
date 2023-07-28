@@ -1,5 +1,5 @@
 import django_filters
-from .models import Chapter, E40_Legal_Body, E55_Type, F10_Person, F1_Work, F3_Manifestation_Product_Type, F9_Place, Keyword, E1_Crm_Entity, Xml_Content_Dump
+from .models import Chapter, E40_Legal_Body, E55_Type, F10_Person, F1_Work, F3_Manifestation_Product_Type, F9_Place, Honour, Keyword, E1_Crm_Entity, Xml_Content_Dump
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.search import SearchQuery, SearchVector
@@ -19,6 +19,12 @@ class F1WorkFilter(django_filters.FilterSet):
         model = F1_Work
         fields = {'id': ['exact', 'in'],
                   'idno': ['exact', 'in']
+                  }
+class HonourFilter(django_filters.FilterSet):
+    class Meta:
+        model = Honour
+        fields = {'id': ['exact', 'in'],
+                  'honour_id': ['exact', 'in']
                   }
         
 class ChapterFilter(django_filters.FilterSet):
