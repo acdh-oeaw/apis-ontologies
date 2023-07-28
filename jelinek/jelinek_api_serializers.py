@@ -4,7 +4,7 @@ from apis_core.apis_relations.models import TempTriple, Triple
 from rest_framework import serializers
 from rest_framework.fields import empty
 from django.contrib.contenttypes.models import ContentType
-from apis_ontology.models import Chapter, E1_Crm_Entity, F31_Performance, F3_Manifestation_Product_Type, F1_Work, Honour
+from apis_ontology.models import Chapter, E1_Crm_Entity, F17_Aggregation_Work, F20_Performance_Work, F21_Recording_Work, F31_Performance, F3_Manifestation_Product_Type, F1_Work, Honour
 
 serializers_cache = {}
 serializers_cache_patched = {}
@@ -99,7 +99,7 @@ class TripleSerializerFromObj(TripleSerializer):
 
     def add_related_entity(self, obj):
         serializer = None
-        if obj.subj.__class__ in [F1_Work, Honour]:
+        if obj.subj.__class__ in [F1_Work, Honour, F17_Aggregation_Work, F20_Performance_Work, F21_Recording_Work]:
             serializer = F1WorkSerializer
         else:
             serializer = serializers_cache.get(
