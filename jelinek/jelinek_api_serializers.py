@@ -165,6 +165,10 @@ class F1WorkSerializer(serializers.ModelSerializer):
             return serializer(qs[0]).data
         else:
             return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return remove_null_empty_from_dict(ret)
 
 class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
     """
