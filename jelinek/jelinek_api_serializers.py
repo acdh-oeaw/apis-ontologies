@@ -4,7 +4,7 @@ from apis_core.apis_relations.models import TempTriple, Triple
 from rest_framework import serializers
 from rest_framework.fields import empty
 from django.contrib.contenttypes.models import ContentType
-from apis_ontology.models import E1_Crm_Entity, F31_Performance, F3_Manifestation_Product_Type, F1_Work, Honour
+from apis_ontology.models import Chapter, E1_Crm_Entity, F31_Performance, F3_Manifestation_Product_Type, F1_Work, Honour
 
 serializers_cache = {}
 serializers_cache_patched = {}
@@ -98,9 +98,13 @@ class TripleSerializerFromObj(TripleSerializer):
     related_entity = serializers.SerializerMethodField(method_name="add_related_entity")
 
     def add_related_entity(self, obj):
-        serializer = serializers_cache.get(
-            obj.subj.__class__.__name__, create_serializer(obj.subj.__class__)
-        )
+        serializer = None
+        if obj.subj.__class__ in [F1_Work, Honour]:
+            serializer = F1WorkSerializer
+        else:
+            serializer = serializers_cache.get(
+                obj.subj.__class__.__name__, create_serializer(obj.subj.__class__)
+            )
         return serializer(obj.subj).data
 
 
@@ -126,7 +130,45 @@ class SimpleTripleSerializerFromSubj(TripleSerializer):
             obj.obj.__class__.__name__, create_serializer(obj.obj.__class__)
         )
         return serializer(obj.obj).data
-
+        
+        
+class F1WorkSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    image_for_translation = serializers.SerializerMethodField()
+    class Meta:
+        model = F1_Work
+        exclude = [
+            "source",
+            "status",
+            "references",
+            "notes",
+            "review",
+            "text",
+            "collection"
+        ]
+        depth = 1
+    def get_image(self, obj):
+        qs = [t.obj for t in obj.triple_set_from_subj.filter(prop__name="has image")]
+        if len(qs) > 0:
+            serializer = serializers_cache.get(
+                qs[0].__class__.__name__, create_serializer(qs[0].__class__)
+            )
+            return serializer(qs[0]).data
+        else:
+            return None
+    def get_image_for_translation(self, obj):
+        qs = [t.obj for t in obj.triple_set_from_subj.filter(prop__name="has image for translation")]
+        if len(qs) > 0:
+            serializer = serializers_cache.get(
+                qs[0].__class__.__name__, create_serializer(qs[0].__class__)
+            )
+            return serializer(qs[0]).data
+        else:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return remove_null_empty_from_dict(ret)
 
 class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
     """
@@ -144,8 +186,6 @@ class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
         exclude = [
             "source",
             "status",
-            "ref_target",
-            "ref_accessed",
             "references",
             "notes",
             "review",
@@ -159,6 +199,30 @@ class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
 
     # def add_triple_set_from(self, obj):
     #     return obj.get_triple_set()
+
+class WorkForChapterSerializer(serializers.ModelSerializer):
+    """
+    Custom serializer to load work for chapter
+    """
+    triple_set_from_obj = serializers.SerializerMethodField()
+    class Meta:
+        model = Chapter
+        fields = [
+            "id", 
+            "name", 
+            "triple_set_from_obj"
+        ]
+        depth = 2
+
+    def get_triple_set_from_obj(self, obj):
+        qs = obj.triple_set_from_obj.filter(prop__name="is in chapter")
+        serializer = TripleSerializerFromObj(instance=qs, many=True, read_only=True)
+        return serializer.data
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return remove_null_empty_from_dict(ret)
+    
 
 class SearchSerializer(serializers.ModelSerializer):
     """
