@@ -11,6 +11,8 @@ def create_collections():
     Collection.objects.get_or_create(name="Reviewed")
     Collection.objects.get_or_create(name="Comment review")
     Collection.objects.get_or_create(name="Error import")
+    Collection.objects.get_or_create(name="Extant")
+    Collection.objects.get_or_create(name="Non-extant")
 
 
 def run(*args, **kwargs):
