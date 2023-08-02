@@ -84,6 +84,7 @@ def patch_serializer(model):
 
 class TripleSerializer(serializers.ModelSerializer):
     property = serializers.CharField(source="prop.name")
+    index_in_chapter = serializers.SerializerMethodField(method_name="get_index_in_chapter")
 
     class Meta:
         model = Triple
@@ -92,6 +93,20 @@ class TripleSerializer(serializers.ModelSerializer):
             "obj",
             "prop",
         ]
+
+    def get_index_in_chapter(self, obj):
+        if hasattr(obj.temptriple, "inchaptertriple"):
+            if obj.temptriple.inchaptertriple.index_in_chapter is not None:
+                return obj.temptriple.inchaptertriple.index_in_chapter
+            else:
+                if hasattr(obj.subj, "f1_work"):
+                    return obj.subj.f1_work.index_in_chapter
+                elif hasattr(obj.subj, "honour"):
+                    return obj.subj.honour.index_in_chapter
+                else:
+                    return None
+        else:
+            return None
 
 
 class TripleSerializerFromObj(TripleSerializer):

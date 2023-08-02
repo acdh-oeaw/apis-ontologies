@@ -2,7 +2,7 @@ import reversion
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 # from apis_core.apis_entities.models import AbstractEntity
-from apis_core.apis_entities.models import TempEntityClass
+from apis_core.apis_entities.models import TempEntityClass, TempTriple
 
 
 
@@ -227,6 +227,10 @@ class E38_Image(E1_Crm_Entity):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity_id = self.image_id
+
+@reversion.register(follow=["temptriple_ptr"])
+class InChapterTriple(TempTriple):
+    index_in_chapter = models.IntegerField(blank=True, null=True)
 
 def construct_properties():
     
