@@ -2611,11 +2611,19 @@ class TreesManager:
 
         def create_triple(entity_subj, entity_obj, prop):
 
-            db_result = TempTriple.objects.get_or_create(
-                subj=entity_subj,
-                obj=entity_obj,
-                prop=prop
-            )
+            db_result = None
+            if prop.name == "is in chapter":
+                db_result = InChapterTriple.objects.get_or_create(
+                    subj=entity_subj,
+                    obj=entity_obj,
+                    prop=prop
+                )
+            else:
+                db_result = TempTriple.objects.get_or_create(
+                    subj=entity_subj,
+                    obj=entity_obj,
+                    prop=prop
+                )
 
             if db_result[1] is True:
 
