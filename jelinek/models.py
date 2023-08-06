@@ -383,7 +383,7 @@ def construct_properties():
     )
     is_director_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_director_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
-    is_director_of.obj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
+    is_director_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_director_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
     is_director_of.save()
     
@@ -393,7 +393,7 @@ def construct_properties():
     )
     is_contributor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_contributor_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
-    is_contributor_of.obj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
+    is_contributor_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_contributor_of.save()
     
     is_composer_of = Property.objects.create(
@@ -412,7 +412,7 @@ def construct_properties():
     is_voice_actor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
-    is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
+    is_voice_actor_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_voice_actor_of.save()
     
     is_actor_of = Property.objects.create(
@@ -422,7 +422,7 @@ def construct_properties():
     is_actor_of.subj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_actor_of.obj_class.add(ContentType.objects.get(model=F31_Performance.__name__))
     is_actor_of.obj_class.add(ContentType.objects.get(model=F3_Manifestation_Product_Type.__name__))
-    is_actor_of.obj_class.add(ContentType.objects.get(model=F21_Recording_Work.__name__))
+    is_actor_of.obj_class.add(ContentType.objects.get(model=F1_Work.__name__))
     is_actor_of.save()
     
     is_musician_of = Property.objects.create(

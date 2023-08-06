@@ -1866,7 +1866,7 @@ class TreesManager:
 
                     if attr_dict["idno"] is not None:
 
-                        db_result = F21_Recording_Work.objects.get_or_create(
+                        db_result = F1_Work.objects.get_or_create(
                             idno=attr_dict["idno"]
                         )
 
@@ -1874,7 +1874,7 @@ class TreesManager:
                     elif attr_dict["name"] is not None:
 
                         # db_result = F21_Recording_Work.objects.get_or_create(name=attr_dict["name"])
-                        db_hit = F21_Recording_Work.objects.filter(name=attr_dict["name"])
+                        db_hit = F1_Work.objects.filter(name=attr_dict["name"])
                         if len(db_hit) > 1:
 
                             # TODO : Check how often this is the case
@@ -1888,7 +1888,7 @@ class TreesManager:
                         elif len(db_hit) == 0:
 
                             db_result = [
-                                F21_Recording_Work.objects.create(name=attr_dict["name"]),
+                                F1_Work.objects.create(name=attr_dict["name"]),
                                 True
                             ]
 
@@ -2926,9 +2926,41 @@ class TreesManager:
                                     #         entity_obj=entity_work,
                                     #         prop=Property.objects.get(name="is director of")
                                     #     )
-                                    
-                                
 
+                for neighbor_path_node in path_node.path_node_parent.path_node_children_list:
+                    for child_path_node in neighbor_path_node.path_node_children_list:
+                        for child_child_path_node in child_path_node.path_node_children_list:
+                            for entity_other in child_child_path_node.entities_list:
+                                if entity_other.__class__ == F10_Person:
+                                    for child_child_child_path_node in child_child_path_node.path_node_children_list:
+                                        if (
+                                                child_child_child_path_node.xml_elem.tag.endswith("persName")
+                                        ):
+
+                                            if (child_child_child_path_node.xml_elem.attrib.get("role") == "contributor"):
+
+                                                create_triple(
+                                                    entity_subj=entity_other,
+                                                    entity_obj=entity_work,
+                                                    prop=Property.objects.get(name="is contributor of")
+                                                )
+
+                                            elif (child_child_child_path_node.xml_elem.attrib.get("role") == "actor"):
+
+                                                create_triple(
+                                                    entity_subj=entity_other,
+                                                    entity_obj=entity_work,
+                                                    prop=Property.objects.get(name="is actor of")
+                                                )
+
+                                            elif (child_child_child_path_node.xml_elem.attrib.get("role") == "director"):
+
+                                                create_triple(
+                                                    entity_subj=entity_other,
+                                                    entity_obj=entity_work,
+                                                    prop=Property.objects.get(name="is director of")
+                                                )                   
+                                
             def triple_from_f1_to_f31(entity_work, path_node):
                 parent = path_node.path_node_parent
                 if parent.xml_elem.tag.endswith("head"):
@@ -3619,7 +3651,7 @@ class TreesManager:
 
                     for entity_other in path_node.path_node_parent.entities_list:
 
-                        if entity_other.__class__ is F21_Recording_Work:
+                        if entity_other.__class__ is F1_Work:
                             for child_path_node in path_node.path_node_children_list:
                                 if (
                                     child_path_node.xml_elem.tag.endswith("persName")
@@ -3965,7 +3997,7 @@ class TreesManager:
 
                             for entity_other in path_node_child.entities_list:
 
-                                if entity_other.__class__ is F21_Recording_Work:
+                                if entity_other.__class__ is F1_Work:
 
                                     create_triple(
                                         entity_obj=entity_broadcast,
