@@ -585,6 +585,7 @@ def construct_properties():
     is_about.obj_class.add(ContentType.objects.get(model=F10_Person.__name__))
     is_about.obj_class.add(ContentType.objects.get(model=E40_Legal_Body.__name__))
     is_about.obj_class.add(ContentType.objects.get(model=Honour.__name__))
+    is_about.obj_class.add(ContentType.objects.get(model=Chapter.__name__))
     
     is_about = Property.objects.create(
         name="took place in",
