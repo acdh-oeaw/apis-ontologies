@@ -15,6 +15,7 @@ from os.path import isfile, isdir, join
 from .generate_short_entry import run as generate_short
 from .generate_genre import run as generate_genre
 from .generate_xml_dumps import run as generate_xml_dumps
+from .import_index_in_chapter import run as import_index_in_chapter
 import os
 
 
@@ -4741,6 +4742,7 @@ def run(*args, **options):
         generate_genre()
         generate_xml_dumps()
         generate_short()
+        import_index_in_chapter()
         
 
     main_run()
