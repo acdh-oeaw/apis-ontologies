@@ -40,7 +40,7 @@ def add_names_for_seklit(work):
 def generate_genre():
 
     def main():
-        jelinek = F10_Person.objects.get(name="Elfriede Jelinek", pers_id="pers00000")
+        jelinek = F10_Person.objects.get(pers_id="pers00000")
         for work in  F1_Work.objects.all():
         # for work in  F1_Work.objects.filter(name="Sind schreibende Frauen Fremde in dieser Welt? Die Begegnung."):
             xml_files = [t.obj for t in Triple.objects.filter(prop__name="was defined primarily in", subj=work)]
