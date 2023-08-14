@@ -46,12 +46,12 @@ class Search(viewsets.ReadOnlyModelViewSet):
             # get their related manifestations
             f3_instances = E1_Crm_Entity.objects.filter(Q(f3_manifestation_product_type__isnull=False) & Q(triple_set_from_obj__subj__in=work_instances) & Q(triple_set_from_obj__prop__name__in=["is expressed in", "is original for translation", "is reported in"])).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
             # join the querysets and remove work instances
-            queryset = queryset.filter(Q(f1_work__isnull=False) & Q(honour__isnull=False)).union(f3_instances)
+            queryset = queryset.filter(Q(f1_work__isnull=True) & Q(honour__isnull=True)).union(f3_instances)
         # same for f31_performances
         elif return_type == "f31":
             work_instances = queryset.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False))
             f31_instances = E1_Crm_Entity.objects.filter(Q(f31_performance__isnull=False) & Q(triple_set_from_obj__subj__in=work_instances) & Q(triple_set_from_obj__prop__name__in=["has been performed in"])).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
-            queryset = queryset.filter(Q(f1_work__isnull=False) & Q(honour__isnull=False)).union(f31_instances)
+            queryset = queryset.filter(Q(f1_work__isnull=True) & Q(honour__isnull=True)).union(f31_instances)
         # if no return type is specified, return f3, f31 and f26
         elif return_type is None:
             work_instances = queryset.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False))
@@ -60,7 +60,7 @@ class Search(viewsets.ReadOnlyModelViewSet):
                   & Q(triple_set_from_obj__subj__in=work_instances) 
                   & Q(triple_set_from_obj__prop__name__in=["has been performed in", "is expressed in", "is original for translation", "is reported in", "R13 is realised in"])
                   ).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
-            queryset = queryset.filter(Q(f1_work__isnull=False) & Q(honour__isnull=False)).union(mixed)
+            queryset = queryset.filter(Q(f1_work__isnull=True) & Q(honour__isnull=True)).union(mixed)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
