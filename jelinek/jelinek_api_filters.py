@@ -130,26 +130,26 @@ class SearchFilter(django_filters.FilterSet):
 
     @property
     def qs(self):
+        if "person_id" in self.data:
+            self.filters['person'] = django_filters.CharFilter(method=empty_filter)
+        if "person" in self.data:
+            self.filters['person_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], check_dump=True, check_dump_for_name=self.data["person"]))
         if "personRole" in self.data:
             if "about" in self.data["personRole"]:
                 self.filters['person_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
             else:
                 self.filters['person'] = django_filters.CharFilter(method=filter_entity(["triple_set_from_obj__subj"], class_to_check=F10_Person, lookup_expr="contains", role=self.data["personRole"]))
                 self.filters['person_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], role=self.data["personRole"]))
-        if "person_id" in self.data:
-            self.filters['person'] = django_filters.CharFilter(method=empty_filter)
-        if "person" in self.data:
-            self.filters['person_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], check_dump=True, check_dump_for_name=self.data["person"]))
+        if "institution_id" in self.data:
+            self.filters['institution'] = django_filters.CharFilter(method=empty_filter)
+        if "institution" in self.data:
+            self.filters['institution_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], check_dump=True, check_dump_for_name=self.data["institution"]))
         if "institutionRole" in self.data:
             if "about" in self.data["institutionRole"]:
                 self.filters['institution_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
             else:
                 self.filters['institution'] = django_filters.CharFilter(method=filter_entity(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], class_to_check=E40_Legal_Body, lookup_expr="contains", role=self.data["institutionRole"]))
                 self.filters['institution_id'] =  self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], role=self.data["institutionRole"]))
-        if "institution_id" in self.data:
-            self.filters['institution'] = django_filters.CharFilter(method=empty_filter)
-        if "institution" in self.data:
-            self.filters['institution_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], check_dump=True, check_dump_for_name=self.data["institution"]))
         if "workRole" in self.data and "about" in self.data["workRole"]:
             self.filters['work_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
         if "honourRole" in self.data and "about" in self.data["honourRole"]:
