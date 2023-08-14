@@ -256,7 +256,7 @@ class WorkForChapterSerializer(serializers.ModelSerializer):
 
 class SearchSerializer(serializers.ModelSerializer):
     """
-    Custom search endpoint
+    Custom search serializer
     """
     # triple_set_from_obj = TripleSerializerFromObj(many=True, read_only=True)
     # triple_set_from_subj = SimpleTripleSerializerFromSubj(many=True, read_only=True)
@@ -294,23 +294,23 @@ class SearchSerializer(serializers.ModelSerializer):
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
             related_f1 = obj.triple_set_from_obj.filter(prop__name="is expressed in")
             if len(related_f1) == 1:
-                return related_f1[0].subj
+                return related_f1[0].subj, False
             else:
                 related_f1 = obj.triple_set_from_obj.filter(prop__name="is original for translation")
                 if len(related_f1) == 1:
-                    return related_f1[0].subj
+                    return related_f1[0].subj, True
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
             related_f1 = obj.triple_set_from_obj.filter(prop__name="has been performed in")
             if len(related_f1) == 1:
-                return related_f1[0].subj
+                return related_f1[0].subj, False
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
-            return obj
+            return obj, False
         elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
-            return obj
-        return None
+            return obj, False
+        return None, False
     
     def get_related_work(self, obj):
-        f1 = self.get_f1(obj)
+        f1 = self.get_f1(obj)[0]
         if f1 is not None and f1.id != obj.id:
             serializer = serializers_cache.get(
                 f1.__class__.__name__, create_serializer(f1.__class__)
@@ -335,11 +335,13 @@ class SearchSerializer(serializers.ModelSerializer):
         if hasattr(obj, "genre"):
             return obj.genre
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
-            f1 = self.get_f1(obj)
+            f1, is_translation = self.get_f1(obj)
+            if is_translation:
+                return "Übersetzte Werke"
             if f1 is not None:
                 return f1.genre
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
-            f1 = self.get_f1(obj)
+            f1 = self.get_f1(obj)[0]
             if f1 is not None:
                 return f1.genre
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
