@@ -299,6 +299,11 @@ class SearchSerializer(serializers.ModelSerializer):
                 related_f1 = obj.triple_set_from_obj.filter(prop__name="is original for translation")
                 if len(related_f1) == 1:
                     return related_f1[0].subj, True
+                else:
+                    related_f1 = obj.triple_set_from_obj.filter(prop__name="is reported in")
+                    if len(related_f1) == 1:
+                        return related_f1[0].subj, False
+                    
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
             related_f1 = obj.triple_set_from_obj.filter(prop__name="has been performed in")
             if len(related_f1) == 1:
