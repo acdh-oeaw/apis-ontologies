@@ -342,7 +342,10 @@ class SearchSerializer(serializers.ModelSerializer):
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
             f1, is_translation = self.get_f1(obj)
             if is_translation:
-                return "Übersetzte Werke"
+                if f1.genre in ["Lyrik", "Romane", "Kurzprosa", "Theatertexte", "Texte für Hörspiele", "Drehbücher und Texte für Filme", "Libretti"]:
+                    return "Übersetzte Werke"
+                else:
+                    return f1.genre
             if f1 is not None:
                 return f1.genre
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
