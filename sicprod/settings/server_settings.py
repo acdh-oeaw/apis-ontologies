@@ -77,7 +77,7 @@ INSTALLED_APPS += ["apis_bibsonomy"]
 
 APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
-from apis_ontology.filters import name_alternative_name_filter
+from apis_ontology.filters import name_first_name_alternative_name_filter, name_alternative_name_filter
 #INSTALLED_APPS.append("apis_highlighter")
 APIS_ENTITIES = {
     "Salary": {
@@ -86,7 +86,10 @@ APIS_ENTITIES = {
     },
     "Function": {
         "relations_per_page": 100,
-        "search": ["name", "alternative_label"]
+        "search": ["name", "alternative_label"],
+        "list_filters": {
+            "name": {"method": name_alternative_name_filter, "label": "Name or alternative name"},
+        },
     },
     "Court": {
         "relations_per_page": 100,
@@ -122,7 +125,7 @@ APIS_ENTITIES = {
         ],
         "additional_cols": ["id", "gender"],
         "list_filters": {
-            "name": {"method": name_alternative_name_filter, "label": "Name or first name or alternative name"},
+            "name": {"method": name_first_name_alternative_name_filter, "label": "Name or first name or alternative name"},
         },
     },
     "Institution": {
