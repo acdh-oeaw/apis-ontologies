@@ -35,14 +35,25 @@ class Search(viewsets.ReadOnlyModelViewSet):
         else:
            return E1_Crm_Entity.objects.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False) | Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False) | Q(f26_recording__isnull=False)).select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({
+            "work_instances": self.work_instances,
+            "f1_only": self.f1_only
+        })
+        return context
+    
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
-
+        work_instances = []
+        f1_only = False
         # switch between desired return types
         return_type = self.request.query_params.get('return_type', None)
         if return_type == "f3":
             # retrieve all work instanes (f1 or honour)
             work_instances = queryset.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False))
+            if work_instances.count() == queryset.count():
+                f1_only = True
             # get their related manifestations
             f3_instances = E1_Crm_Entity.objects.filter(Q(f3_manifestation_product_type__isnull=False) & Q(triple_set_from_obj__subj__in=work_instances) & Q(triple_set_from_obj__prop__name__in=["is expressed in", "is original for translation", "is reported in"])).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
             # join the querysets and remove work instances
@@ -50,18 +61,23 @@ class Search(viewsets.ReadOnlyModelViewSet):
         # same for f31_performances
         elif return_type == "f31":
             work_instances = queryset.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False))
+            if work_instances.count() == queryset.count():
+                f1_only = True
             f31_instances = E1_Crm_Entity.objects.filter(Q(f31_performance__isnull=False) & Q(triple_set_from_obj__subj__in=work_instances) & Q(triple_set_from_obj__prop__name__in=["has been performed in"])).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
             queryset = queryset.filter(Q(f1_work__isnull=True) & Q(honour__isnull=True)).union(f31_instances)
         # if no return type is specified, return f3, f31 and f26
         elif return_type is None:
             work_instances = queryset.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False))
+            if work_instances.count() == queryset.count():
+                f1_only = True
             mixed = E1_Crm_Entity.objects.filter(
                 (Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False) | Q(f26_recording__isnull=False))
                   & Q(triple_set_from_obj__subj__in=work_instances) 
                   & Q(triple_set_from_obj__prop__name__in=["has been performed in", "is expressed in", "is original for translation", "is reported in", "R13 is realised in"])
                   ).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
             queryset = queryset.filter(Q(f1_work__isnull=True) & Q(honour__isnull=True)).union(mixed)
-
+        self.work_instances = work_instances
+        self.f1_only = f1_only
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

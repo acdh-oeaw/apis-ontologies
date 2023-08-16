@@ -4,6 +4,7 @@ from apis_core.apis_relations.models import TempTriple, Triple
 from rest_framework import serializers
 from rest_framework.fields import empty
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from apis_ontology.models import Chapter, E1_Crm_Entity, F17_Aggregation_Work, F20_Performance_Work, F21_Recording_Work, F31_Performance, F3_Manifestation_Product_Type, F1_Work, Honour
 
 serializers_cache = {}
@@ -291,36 +292,39 @@ class SearchSerializer(serializers.ModelSerializer):
             return getattr(obj, str.lower(model))
         
     def get_f1(self, obj):
+        work_instances_match = Q()
+        if self.context.get("f1_only", False) and self.context.get("work_instances", None) is not None and self.context.get("work_instances", None).count() > 0:
+            work_instances_match = Q(subj__in=self.context.get("work_instances", None)) 
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
-            related_f1 = obj.triple_set_from_obj.filter(prop__name="is expressed in")
-            if len(related_f1) == 1:
-                return related_f1[0].subj, False
+            related_f1 = obj.triple_set_from_obj.filter(Q(prop__name="is expressed in") & work_instances_match)
+            if len(related_f1) >= 1:
+                return [s.subj for s in related_f1], False
             else:
-                related_f1 = obj.triple_set_from_obj.filter(prop__name="is original for translation")
-                if len(related_f1) == 1:
-                    return related_f1[0].subj, True
+                related_f1 = obj.triple_set_from_obj.filter(Q(prop__name="is original for translation") & work_instances_match)
+                if len(related_f1) >= 1:
+                    return [s.subj for s in related_f1], True
                 else:
-                    related_f1 = obj.triple_set_from_obj.filter(prop__name="is reported in")
-                    if len(related_f1) == 1:
-                        return related_f1[0].subj, False
+                    related_f1 = obj.triple_set_from_obj.filter(Q(prop__name="is reported in") & work_instances_match)
+                    if len(related_f1) >= 1:
+                        return [s.subj for s in related_f1], False
                     
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
-            related_f1 = obj.triple_set_from_obj.filter(prop__name="has been performed in")
-            if len(related_f1) == 1:
-                return related_f1[0].subj, False
+            related_f1 = obj.triple_set_from_obj.filter(Q(prop__name="has been performed in") & work_instances_match)
+            if len(related_f1) >= 1:
+                return [s.subj for s in related_f1], False
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
-            return obj, False
+            return [obj], False
         elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
-            return obj, False
+            return [obj], False
         return None, False
     
     def get_related_work(self, obj):
         f1 = self.get_f1(obj)[0]
-        if f1 is not None and f1.id != obj.id:
+        if f1 is not None and f1[0].id != obj.id:
             serializer = serializers_cache.get(
-                f1.__class__.__name__, create_serializer(f1.__class__)
+                f1[0].__class__.__name__, create_serializer(f1[0].__class__)
             )
-            return serializer(f1).data
+            return serializer(f1, many=True).data
         else:
             return None   
         
@@ -340,18 +344,29 @@ class SearchSerializer(serializers.ModelSerializer):
         if hasattr(obj, "genre"):
             return obj.genre
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
-            f1, is_translation = self.get_f1(obj)
+            f1_list, is_translation = self.get_f1(obj)
+            if f1_list is not None:
+                unified_genre = ", ".join(list(set([f1.genre for f1 in f1_list if hasattr(f1, "genre") and f1.genre is not None])))
+            else:
+                unified_genre = None
             if is_translation:
-                if f1.genre in ["Lyrik", "Romane", "Kurzprosa", "Theatertexte", "Texte für Hörspiele", "Drehbücher und Texte für Filme", "Libretti"]:
+                if len([f1 for f1 in f1_list if f1.genre in ["Lyrik", "Romane", "Kurzprosa", "Theatertexte", "Texte für Hörspiele", "Drehbücher und Texte für Filme", "Libretti"]]) > 0:
                     return "Übersetzte Werke"
                 else:
-                    return f1.genre
-            if f1 is not None:
-                return f1.genre
+                    return unified_genre
+            if f1_list is not None and len(f1_list) > 0:
+                if str.lower(f1_list[0].self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
+                    return "Würdigungen"
+                else:
+                    return unified_genre
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
-            f1 = self.get_f1(obj)[0]
-            if f1 is not None:
-                return f1.genre
+            f1_list = self.get_f1(obj)[0]
+            if f1_list is not None:
+                unified_genre = ", ".join(list(set([f1.genre for f1 in f1_list if hasattr(f1, "genre") and f1.genre is not None])))
+            else:
+                unified_genre = None
+            if f1_list is not None:
+                return unified_genre
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
             return "Würdigungen"
         elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
