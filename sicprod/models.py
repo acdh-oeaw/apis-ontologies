@@ -475,6 +475,15 @@ def construct_properties():
     institution_orders_salary.obj_class.clear()
     institution_orders_salary.obj_class.add(ContentType.objects.get(model=Salary.__name__))
 
+    institution_has_tie_to_institution = Property.objects.get_or_create(
+        name="steht in Verbindung mit",
+        name_reverse="steht in Verbindung mit",
+    )[0]
+    institution_has_tie_to_institution.subj_class.clear()
+    institution_has_tie_to_institution.subj_class.add(ContentType.objects.get(model=Institution.__name__))
+    institution_has_tie_to_institution.obj_class.clear()
+    institution_has_tie_to_institution.obj_class.add(ContentType.objects.get(model=Institution.__name__))
+
     event_took_place_at = Property.objects.get_or_create(
         name="fand statt in",
         name_reverse="inkludierte",
