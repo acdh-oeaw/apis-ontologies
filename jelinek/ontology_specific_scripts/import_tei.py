@@ -2695,7 +2695,25 @@ class TreesManager:
                                                     else:
                                                         create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
                         
-
+                elif (
+                        path_node.path_node_parent is not None
+                        and "0006_Sekundärliterat" in TreesManager.helper_dict["file_path"]
+                        and entity_work.idno.startswith("seklit")
+                    ):
+                        parent = get_uppermost_parent(path_node)
+                        teiHeader = parent.path_node_children_list[0]
+                        textClass = teiHeader.path_node_children_list[1].path_node_children_list[0]
+                        for keywords in textClass.path_node_children_list:
+                            if keywords.xml_elem.attrib.get("ana") == "about":
+                                for term in keywords.path_node_children_list:
+                                    for rs in term.path_node_children_list:
+                                        for entity_other in rs.entities_list:
+                                            if entity_other != entity_work and entity_other.__class__ in [F1_Work, F10_Person, E40_Legal_Body, Honour, Chapter]:
+                                                if entity_other is None or entity_work is None:
+                                                    print("One of the two entities is none, this shouldn't happen")
+                                                else:
+                                                    create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                        
 
                 elif (  path_node.path_node_parent is not None
                         and path_node.path_node_parent.xml_elem.tag.endswith("div")
@@ -4161,6 +4179,15 @@ class TreesManager:
 
         def parse_triples_from_chapter(entity_chapter, path_node: PathNode):
 
+            def find_all_inner_f1_entities(path_node):
+                path_node_entities = []
+                for entity in path_node.entities_list:
+                    if has_class_as_parent(entity.__class__, F1_Work):
+                        path_node_entities.append(entity)
+                for child in path_node.path_node_children_list:
+                    path_node_entities += find_all_inner_f1_entities(child)
+                return path_node_entities
+
             path_node_tei = climb_up(path_node, 5)
 
             def triple_from_chapter_to_f1(entity_chapter, path_node: PathNode):
@@ -4192,61 +4219,14 @@ class TreesManager:
                                                 if not entity_chapter.chapter_number.startswith("6"):
                                                     break
 
-                                            if entity_chapter.chapter_number.startswith(("6", "7")):
+                                        if entity_chapter.chapter_number.startswith(("6", "7")):
 
-                                                for path_node_item in path_node_div_child.path_node_children_list:
-
-                                                        for entity_work in path_node_item.entities_list:
-
-                                                            if has_class_as_parent(entity_work.__class__, F1_Work):
-
-                                                                create_triple(
-                                                                    entity_subj=entity_work,
-                                                                    entity_obj=entity_chapter,
-                                                                    prop=Property.objects.get(name="is in chapter"),
-                                                                )
-
-                                                        if path_node_div_child.xml_elem.attrib.get("type") == "head_section" and entity_chapter.chapter_number.startswith("7"):
-
-                                                            for path_node_item_child in path_node_item.path_node_children_list:
-
-                                                                    for entity_work in path_node_item_child.entities_list:
-
-                                                                        if has_class_as_parent(entity_work.__class__, F1_Work):
-
-                                                                            create_triple(
-                                                                                entity_subj=entity_work,
-                                                                                entity_obj=entity_chapter,
-                                                                                prop=Property.objects.get(name="is in chapter"),
-                                                                            )
-
-                                            if path_node_div_child.xml_elem.attrib.get("type") == "seklitSubsection":
-
-                                                for path_node_list in path_node_div_child.path_node_children_list:
-                                                    for path_node_bibl in path_node_list.path_node_children_list:
-
-                                                        for entity_work in path_node_bibl.entities_list:
-
-                                                            if has_class_as_parent(entity_work.__class__, F1_Work):
-
-                                                                create_triple(
-                                                                    entity_subj=entity_work,
-                                                                    entity_obj=entity_chapter,
-                                                                    prop=Property.objects.get(name="is in chapter"),
-                                                                )
-
-                                            if path_node_div_child.xml_elem.attrib.get("type") == "stagingSeklit":
-                                                for path_node_seklit in path_node_div_child.path_node_children_list:
-                                                    if path_node_seklit.xml_elem.attrib.get("type") == "seklitSubsection":
-                                                        for path_node_bibl in path_node_seklit.path_node_children_list:
-                                                            for entity_work in path_node_bibl.entities_list:
-                                                                if has_class_as_parent(entity_work.__class__, F1_Work):
-
-                                                                    create_triple(
-                                                                        entity_subj=entity_work,
-                                                                        entity_obj=entity_chapter,
-                                                                        prop=Property.objects.get(name="is in chapter"),
-                                                                    )
+                                            for f1 in find_all_inner_f1_entities(path_node_div):
+                                                create_triple(
+                                                                entity_subj=f1,
+                                                                entity_obj=entity_chapter,
+                                                                prop=Property.objects.get(name="is in chapter"),
+                                                            )
 
                                         break
 
