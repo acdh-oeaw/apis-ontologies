@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from apis_ontology.models import *
 from apis_core.apis_relations.models import Triple, TempTriple, Property
+from lxml import etree
 
 def create_triple(entity_subj, entity_obj, prop):
     try:
@@ -37,13 +38,30 @@ def add_names_for_seklit(work):
         print("Set work {} name to {}".format(work.idno, work.name))
     return work
 
-def generate_genre():
+def identify_seklit_subsection(work, file):
+    seklit_ana = ["VIDEO", "AUDIO-CD UND CD-ROM", "ONLINE", "TEXTE ZUR AUFFÜHRUNG", "SEKUNDÄRLITERATUR", "TEXTE ÜBER DIE PRODUKTION", "TEXTE ÜBER WERK", "GESPRÄCH ZUR AUFFÜHRUNG"]
+    berichterstattung_ana = ["REZENSIONEN", "BERICHTE", "BUCHREZENSIONEN", "VORBERICHTE", "CHRONOLOGIE EINES SKANDALS", "WEITERE REAKTIONEN", 
+                             "Zur ORF-Kultursendung K1 - KULTUR LIVE", "WERKREZENSIONEN", "KOMMENTAR", "WEITERE INTERVIEWS", "ANKÜNDIGUNGEN", 
+                             "Szenische Realisierung bei überGrenzen 97, Podewil, Berlin, 3.10.1997 (zusammen mit Aufenthalt)", "Szenische Realisierung im WUK Wien, 20.2.1985",
+                             "REZENSIONEN ZUR PRÄSENTATION BEI DEN FILMFESTSPIELEN IN CANNES 2001", "BERICHTE"]
+    root = etree.fromstring(file.file_content)
+    xpath = f"//*[@type='seklitSubsection' and .//*[@target='seklit:{work.idno}']]/@ana"
+    ana = root.xpath(xpath)
+    if ana and len(ana) > 0:
+        if ana[0] in seklit_ana:
+            work.genre =  "Sekundärliteratur"
+        if ana[0] in berichterstattung_ana:
+            work.genre =  "Berichterstattung"
+        work.genre =  "Sekundärliteratur"
+    return
 
+def generate_genre():
     def main():
         jelinek = F10_Person.objects.get(pers_id="pers00000")
-        for work in  F1_Work.objects.all():
+        for work in F1_Work.objects.all():
+        # for work in F1_Work.objects.filter(idno__contains="seklit"):
         # for work in  F1_Work.objects.filter(name="Sind schreibende Frauen Fremde in dieser Welt? Die Begegnung."):
-            xml_files = [t.obj for t in Triple.objects.filter(prop__name="was defined primarily in", subj=work)]
+            xml_files = [t.obj for t in Triple.objects.filter(prop__name="was defined primarily in", subj=work) if "index.xml" not in t.obj.name]
             if len(xml_files) > 0:
                 for xml_file in xml_files:
                     if "001_Werke/012_Übersetzungen/001_Lyrik" in xml_file.file_path:
@@ -84,17 +102,17 @@ def generate_genre():
                     elif "0004_Bearbeitungenvo" in xml_file.file_path:
                         work.genre = "Bearbeitungen von anderen"
                     elif "0006_Sekundärliterat" in xml_file.file_path:
-                        work.genre = "Sekundärliteratur"
+                        identify_seklit_subsection(work, xml_file)
                         work = add_names_for_seklit(work)
                     elif "0005_Würdigungen" in xml_file.file_path:
                         work.genre = "Würdigungen"
                     elif "0007_SendungenundFilmporträts" in xml_file.file_path:
                         work.genre = "Sendungen und Filmporträts"
             else:
-                xml_files = [t.obj for t in Triple.objects.filter(prop__name="data read from file", subj=work)]
+                xml_files = [t.obj for t in Triple.objects.filter(prop__name="data read from file", subj=work) if "index.xml" not in t.obj.name]
                 for xml_file in xml_files:
                     if "0006_Sekundärliterat" in xml_file.file_path:
-                        work.genre = "Sekundärliteratur"
+                        identify_seklit_subsection(work, xml_file)
                         work = add_names_for_seklit(work)
                     elif "0005_Würdigungen" in xml_file.file_path:
                         work.genre = "Würdigungen"
