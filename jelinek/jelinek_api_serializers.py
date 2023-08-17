@@ -296,7 +296,7 @@ class SearchSerializer(serializers.ModelSerializer):
         if self.context.get("f1_only", False) and self.context.get("work_instances", None) is not None and self.context.get("work_instances", None).count() > 0:
             work_instances_match = Q(subj__in=self.context.get("work_instances", None)) 
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
-            related_f1 = obj.triple_set_from_obj.filter(Q(prop__name="is expressed in") & work_instances_match)
+            related_f1 = obj.triple_set_from_obj.filter(Q(prop__name__in=["is expressed in", "is reported in"]) & work_instances_match)
             if len(related_f1) >= 1:
                 return [s.subj for s in related_f1], False
             else:
@@ -304,9 +304,16 @@ class SearchSerializer(serializers.ModelSerializer):
                 if len(related_f1) >= 1:
                     return [s.subj for s in related_f1], True
                 else:
-                    related_f1 = obj.triple_set_from_obj.filter(Q(prop__name="is reported in") & work_instances_match)
-                    if len(related_f1) >= 1:
-                        return [s.subj for s in related_f1], False
+                    related_f3 = [t.subj for t in obj.triple_set_from_obj.filter(Q(prop__name="has host"))]
+                    if len(related_f3) >= 1:
+                        related_f1 = [t for f3 in related_f3 for t in f3.triple_set_from_obj.filter(Q(prop__name__in=["is expressed in", "is reported in"]) & work_instances_match)]
+                        if len(related_f1) >= 1:
+                            return [s.subj for s in related_f1], False
+                        else:
+                            # related_f1 = obj.triple_set_from_obj.filter(Q(prop__name="is original for translation") & work_instances_match)
+                            related_f1 =[t for f3 in related_f3 for t in f3.triple_set_from_obj.filter(Q(prop__name="is original for translation") & work_instances_match)]
+                            if len(related_f1) >= 1:
+                                return [s.subj for s in related_f1], True
                     
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
             related_f1 = obj.triple_set_from_obj.filter(Q(prop__name="has been performed in") & work_instances_match)
