@@ -49,11 +49,12 @@ def identify_seklit_subsection(work, file):
     ana = root.xpath(xpath)
     if ana and len(ana) > 0:
         if ana[0] in seklit_ana:
-            work.genre =  "Sekundärliteratur"
-        if ana[0] in berichterstattung_ana:
-            work.genre =  "Berichterstattung"
-        work.genre =  "Sekundärliteratur"
-    return
+            work.genre = "Sekundärliteratur"
+        elif ana[0] in berichterstattung_ana:
+            work.genre = "Berichterstattung"
+        else:
+            work.genre = "Sekundärliteratur"
+    return work
 
 def generate_genre():
     def main():
@@ -102,7 +103,7 @@ def generate_genre():
                     elif "0004_Bearbeitungenvo" in xml_file.file_path:
                         work.genre = "Bearbeitungen von anderen"
                     elif "0006_Sekundärliterat" in xml_file.file_path:
-                        identify_seklit_subsection(work, xml_file)
+                        work = identify_seklit_subsection(work, xml_file)
                         work = add_names_for_seklit(work)
                     elif "0005_Würdigungen" in xml_file.file_path:
                         work.genre = "Würdigungen"
@@ -112,7 +113,7 @@ def generate_genre():
                 xml_files = [t.obj for t in Triple.objects.filter(prop__name="data read from file", subj=work) if "index.xml" not in t.obj.name]
                 for xml_file in xml_files:
                     if "0006_Sekundärliterat" in xml_file.file_path:
-                        identify_seklit_subsection(work, xml_file)
+                        work = identify_seklit_subsection(work, xml_file)
                         work = add_names_for_seklit(work)
                     elif "0005_Würdigungen" in xml_file.file_path:
                         work.genre = "Würdigungen"
