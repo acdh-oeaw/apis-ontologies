@@ -266,6 +266,7 @@ class SearchSerializer(serializers.ModelSerializer):
     related_work = serializers.SerializerMethodField()
     self_contenttype = serializers.SerializerMethodField()
     koha_id = serializers.SerializerMethodField()
+    text_language = serializers.SerializerMethodField()
     
     class Meta:
         
@@ -280,6 +281,7 @@ class SearchSerializer(serializers.ModelSerializer):
             "short",
             "genre",
             "koha_id",
+            "text_language",
             "related_work",
         )
         depth=1
@@ -352,6 +354,12 @@ class SearchSerializer(serializers.ModelSerializer):
     def get_koha_id(self, obj):
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
             return self.get_subclass_of_obj(obj, obj.self_contenttype.model).koha_id
+        else:
+            return None
+        
+    def get_text_language(self, obj):
+        if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).text_language
         else:
             return None
         
