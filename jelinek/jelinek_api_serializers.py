@@ -265,6 +265,7 @@ class SearchSerializer(serializers.ModelSerializer):
     genre = serializers.SerializerMethodField()
     related_work = serializers.SerializerMethodField()
     self_contenttype = serializers.SerializerMethodField()
+    koha_id = serializers.SerializerMethodField()
     
     class Meta:
         
@@ -278,6 +279,7 @@ class SearchSerializer(serializers.ModelSerializer):
             "start_date",
             "short",
             "genre",
+            "koha_id",
             "related_work",
         )
         depth=1
@@ -346,6 +348,12 @@ class SearchSerializer(serializers.ModelSerializer):
             return self.get_subclass_of_obj(obj, ContentType.objects.get_for_model(F1_Work).model).short
         else:
             return ""
+        
+    def get_koha_id(self, obj):
+        if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
+            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).koha_id
+        else:
+            return None
         
     def get_genre(self, obj):
         if hasattr(obj, "genre"):
