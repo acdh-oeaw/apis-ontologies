@@ -412,6 +412,15 @@ def construct_properties():
     function_is_subordinary_of.obj_class.clear()
     function_is_subordinary_of.obj_class.add(ContentType.objects.get(model=Function.__name__))
 
+    function_has_tie_to_function = Property.objects.get_or_create(
+        name="ist verbunden mit",
+        name_reverse="ist verbunden mit",
+    )[0]
+    function_has_tie_to_function.subj_class.clear()
+    function_has_tie_to_function.subj_class.add(ContentType.objects.get(model=Function.__name__))
+    function_has_tie_to_function.obj_class.clear()
+    function_has_tie_to_function.obj_class.add(ContentType.objects.get(model=Function.__name__))
+
     function_was_located_in = Property.objects.get_or_create(
         name="ausgeübt in",
         name_reverse="war Ausübungsort von",
