@@ -2252,6 +2252,17 @@ class TreesManager:
                         attr_dict["chapter_number"] = xml_elem.attrib.get("n").replace("-",".")
                     attr_dict["chapter_type"] = xml_elem.attrib.get("type")
                     attr_dict["name"] = remove_whitespace(xml_elem.text)
+                
+                elif (
+                    path_node.path_node_parent is not None
+                    and path_node.path_node_parent.path_node_parent is not None
+                    and path_node.path_node_parent.path_node_parent.xml_elem.tag.endswith("keywords")
+                    and path_node.path_node_parent.path_node_parent.xml_elem.attrib.get("ana") == "about"
+                    and xml_elem.tag.endswith("rs")
+                    and xml_elem.attrib.get("type", "") == "chapter"
+                ):
+                    attr_dict["chapter_number"] = xml_elem.attrib.get("ref").replace("-",".")
+                    attr_dict["name"] = remove_whitespace(xml_elem.text)
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
