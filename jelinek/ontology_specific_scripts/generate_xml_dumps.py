@@ -20,6 +20,9 @@ def generate_xml_dumps():
         primary_f1 = [t.subj for t in Triple.objects.filter(obj=xml, prop__name="was defined primarily in") if has_class_as_parent(t.subj.__class__, F1_Work)]
         if (len(primary_f1) > 0):
             root = etree.fromstring(xml.file_content)
+            for list in root.xpath("//*[name()='listBibl']"):
+                 list.getparent().remove(list)
+            print(root.xpath("//*[name()='listBibl']/.."))
             body = root.xpath("//*[name()='body']")
             if len(body) > 0:
                 extracted_xml_content = "".join([t for t in body[0].itertext()])
