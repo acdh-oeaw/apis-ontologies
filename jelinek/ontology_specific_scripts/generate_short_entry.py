@@ -30,6 +30,10 @@ def generate_manifestation_short(manifestation):
     if len(authors) > 0:
         short = short + " / ".join(["{}".format(format_name(author)) for author in authors]) + ": "
     short = short + "{}. ".format(manifestation.name)
+
+    if len(translators) > 0:
+        short = short + " (Ü: " + ", ".join(["{}".format(author.name) for author in translators]) + ")"
+
     if len(hosts) > 0:
         short = short + "In: "
         host_relations = [rel for rel in Triple.objects.filter(subj=hosts[0])]
@@ -67,8 +71,6 @@ def generate_manifestation_short(manifestation):
         short = short + " (= {})".format(manifestation.series)
     if manifestation.page is not None:
         short = short + ", S. {}".format(manifestation.page)
-    if len(translators) > 0:
-        short = short + " (Ü: " + ", ".join(["{}".format(author.name) for author in translators]) + ")"
 
     manifestation.short = short
     return manifestation
