@@ -2724,6 +2724,26 @@ class TreesManager:
                                                     print("One of the two entities is none, this shouldn't happen")
                                                 else:
                                                     create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                elif (
+                            "0007_SendungenundFilmporträts" in TreesManager.helper_dict["file_path"]
+                            and path_node.path_node_parent is not None
+                            and path_node.path_node_parent.path_node_parent is not None
+                            and path_node.path_node_parent.path_node_parent.xml_elem.tag.endswith("div")
+                            and path_node.path_node_parent.path_node_parent.xml_elem.attrib.get("type") == "head_section"
+                    ):
+                        parent = get_uppermost_parent(path_node)
+                        teiHeader = parent.path_node_children_list[0]
+                        textClass = teiHeader.path_node_children_list[1].path_node_children_list[0]
+                        for keywords in textClass.path_node_children_list:
+                            if keywords.xml_elem.attrib.get("ana") == "about":
+                                for term in keywords.path_node_children_list:
+                                    for rs in term.path_node_children_list:
+                                        for entity_other in rs.entities_list:
+                                            if entity_other != entity_work and entity_other.__class__ in [F1_Work, F10_Person, E40_Legal_Body, Honour, Chapter]:
+                                                if entity_other is None or entity_work is None:
+                                                    print("One of the two entities is none, this shouldn't happen")
+                                                else:
+                                                    create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
                         
 
                 elif (  path_node.path_node_parent is not None
