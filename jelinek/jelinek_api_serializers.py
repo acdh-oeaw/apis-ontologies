@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import datetime
 from operator import itemgetter
 from apis_core.apis_relations.models import TempTriple, Triple
 from rest_framework import serializers
@@ -253,7 +254,22 @@ class WorkForChapterSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         return remove_null_empty_from_dict(ret)
-    
+
+class RelatedWorkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = F1_Work
+        fields = [
+            "id",
+            "name",
+            "genre"
+        ]   
+class RelatedHonourSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Honour
+        fields = [
+            "id",
+            "name"
+        ]   
 
 class SearchSerializer(serializers.ModelSerializer):
     """
@@ -300,13 +316,21 @@ class SearchSerializer(serializers.ModelSerializer):
         if self.context.get("f1_only", False) and self.context.get("work_instances", None) is not None and self.context.get("work_instances", None).count() > 0:
             work_instances_match = Q(subj__in=self.context.get("work_instances", None)) 
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
-            related_f1 = obj.triple_set_from_obj.filter(Q(prop__name__in=["is expressed in", "is reported in"]) & work_instances_match)
+            triples = self.context.get("related_work_triple_instances", obj.triple_set_from_obj)
+            related_f1 = triples.filter(Q(obj=obj) & work_instances_match)
             if len(related_f1) >= 1:
-                return [s.subj for s in related_f1], False
-            else:
-                related_f1 = obj.triple_set_from_obj.filter(Q(prop__name="is original for translation") & work_instances_match)
-                if len(related_f1) >= 1:
+                if any(r.prop.name in ["is expressed in", "is reported in"] for r in related_f1):
+                    return [s.subj for s in related_f1], False
+                elif any(r.prop.name in ["is original for translation"] for r in related_f1):
                     return [s.subj for s in related_f1], True
+            else:
+                f3_to_host_work = self.context.get("f3_to_host_work", {})
+                related_f1 = f3_to_host_work.get(obj.id, [])
+                if len(related_f1) >= 1:
+                    if any(r.prop.name in ["is expressed in", "is reported in"] for r in related_f1):
+                        return [s.subj for s in related_f1], False
+                    elif any(r.prop.name in ["is original for translation"] for r in related_f1):
+                        return [s.subj for s in related_f1], True
                 else:
                     related_f3 = [t.subj for t in obj.triple_set_from_obj.filter(Q(prop__name="has host"))]
                     if len(related_f3) >= 1:
@@ -332,24 +356,25 @@ class SearchSerializer(serializers.ModelSerializer):
     def get_related_work(self, obj):
         f1 = self.get_f1(obj)[0]
         if f1 is not None and f1[0].id != obj.id:
-            serializer = serializers_cache.get(
-                f1[0].__class__.__name__, create_serializer(f1[0].__class__)
-            )
+            if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
+                serializer = RelatedHonourSerializer
+            else:
+                serializer = RelatedWorkSerializer
             return serializer(f1, many=True).data
         else:
             return None   
         
     def get_short(self, obj):
+        res = ""
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
-            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
+            res= self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F31_Performance).model):
-            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
+            res= self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
         elif str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(Honour).model):
-            return self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
+            res= self.get_subclass_of_obj(obj, obj.self_contenttype.model).short
         elif hasattr(obj, ContentType.objects.get_for_model(F1_Work).model):
-            return self.get_subclass_of_obj(obj, ContentType.objects.get_for_model(F1_Work).model).short
-        else:
-            return ""
+            res= self.get_subclass_of_obj(obj, ContentType.objects.get_for_model(F1_Work).model).short
+        return res
         
     def get_koha_id(self, obj):
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
