@@ -49,40 +49,66 @@ class Search(viewsets.ReadOnlyModelViewSet):
     
     def list(self, request):
         # print("Start list function")
-        # currentTime = datetime.now()
+        currentTime = datetime.now()
         queryset = self.filter_queryset(self.get_queryset())
         # print("Finish filter queryset after {}".format((datetime.now()-currentTime).total_seconds()))
-        # currentTime = datetime.now()
+        currentTime = datetime.now()
         work_instances = []
         f3_to_host_work = {}
         related_work_triple_instances = Triple.objects.none()
         f1_only = False
         # switch between desired return types
         return_type = self.request.query_params.get('return_type', None)
+        inbetween_time_start = datetime.now()
         if return_type == "f3":
-            # retrieve all work instanes (f1 or honour)
-            work_instances = queryset.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False))
+            prop_names = ["is expressed in", "is original for translation", "is reported in"]
+
+            # retrieve all work instances (f1 or honour)
+            work_instance_ids = queryset.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False)).values_list('id', flat=True)
+
+            # Check if all instances are work instances
+            f1_only = queryset.count() == len(work_instance_ids)
+
             # get their related manifestations
-            related_f3_instances = E1_Crm_Entity.objects.filter(Q(f3_manifestation_product_type__isnull=False) & Q(triple_set_from_obj__subj__in=work_instances) & Q(triple_set_from_obj__prop__name__in=["is expressed in", "is original for translation", "is reported in"])).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
+            related_f3_instances = E1_Crm_Entity.objects.filter(Q(f3_manifestation_product_type__isnull=False) & Q(triple_set_from_obj__subj__in=work_instances) & Q(triple_set_from_obj__prop__name__in=prop_names)).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
             related_work_triple_instances = Triple.objects.filter(Q(subj__in=work_instances)&Q(obj__in=related_f3_instances))
-            if work_instances.count() == queryset.count():
+            related_work_triple_ids = related_work_triple_instances.values_list("id", flat=True)
+            # print("Finish related_work_triple_instances after {}".format((datetime.now()-currentTime).total_seconds()))
+            currentTime = datetime.now()
+            if work_instance_ids.count() == queryset.count():
                 f1_only = True
             else:
                  # retrieve all manifestation instances such that we can load their related work instances
                 manifestation_instances = queryset.filter(Q(f3_manifestation_product_type__isnull=False))
+                
                 # get their related manifestations
-                related_work_triple_instances = related_work_triple_instances.union(Triple.objects.filter(Q(obj__in=manifestation_instances) & Q(prop__name__in=["is expressed in", "is original for translation", "is reported in"])).distinct())
-                related_work_triple_instances = Triple.objects.filter(id__in=[related_work_triple_instances.values("id")])
-                missing_manifestation_instances = manifestation_instances.exclude(id__in=[t.obj.id for t in related_work_triple_instances])
-                if missing_manifestation_instances.count() > 0:
-                    host_instances = [t for t in Triple.objects.filter(obj__in=missing_manifestation_instances, prop__name="has host")]
-                    related_host_work_triple_instances = Triple.objects.filter(Q(obj__in=[t.subj for t in host_instances]) & Q(prop__name__in=["is expressed in", "is original for translation", "is reported in"]))
+                #more_related_work_triple_ids = Triple.objects.filter(Q(obj__in=manifestation_instances) & Q(prop__name__in=prop_names)).distinct().values_list("id", flat=True)
+
+                related_work_triple_instances = Triple.objects.filter((Q(obj__in=manifestation_instances) & Q(prop__name__in=prop_names)) | Q(id__in=related_work_triple_ids))
+               
+                # print("Finish related_work_triple_instances after {}".format((datetime.now()-currentTime).total_seconds()))
+                missing_manifestation_ids = set(manifestation_instances.values_list('id', flat=True)) - set(related_work_triple_instances.values_list('obj__id', flat=True))
+
+                # print("Finish missing_manifestation_instances after {}".format((datetime.now()-currentTime).total_seconds()))
+                currentTime = datetime.now()
+
+                if missing_manifestation_ids:
+                    host_instances = Triple.objects.filter(obj__id__in=missing_manifestation_ids, prop__name="has host")
+                    host_subjects = host_instances.values_list('subj', flat=True)
+                    related_host_work_triple_instances = Triple.objects.filter(
+                        Q(obj__in=host_subjects) & 
+                        Q(prop__name__in=["is expressed in", "is original for translation", "is reported in"])
+                    )
+                    # print("Finish related_host_work_triple_instances after {}".format((datetime.now()-currentTime).total_seconds()))
+                    currentTime = datetime.now()
                     # dictionary to map manifestations to their host triples
-                    f3_to_host_work = {instance.id: [] for instance in missing_manifestation_instances}
+                    f3_to_host_work = {instance_id: [] for instance_id in missing_manifestation_ids}
+                    
                     for host_instance in host_instances:
                         related_triples = related_host_work_triple_instances.filter(obj=host_instance.subj)
-                        for related_triple in related_triples:
-                            f3_to_host_work[host_instance.obj.id].append(related_triple)
+                        f3_to_host_work[host_instance.obj.id].extend(related_triples)
+                    # print("Finish f3_to_host_work after {}".format((datetime.now()-currentTime).total_seconds()))
+                    currentTime = datetime.now()
             # join the querysets and remove work instances
             queryset = queryset.filter(Q(f1_work__isnull=True) & Q(honour__isnull=True)).union(related_f3_instances)
         # same for f31_performances
@@ -107,7 +133,9 @@ class Search(viewsets.ReadOnlyModelViewSet):
         self.f1_only = f1_only
         self.related_work_triple_instances = related_work_triple_instances
         self.f3_to_host_work = f3_to_host_work
-        # print("Finish inbetween requests after {}".format((datetime.now()-currentTime).total_seconds()))
+        # print("Finish inbetween requests after {}".format((datetime.now()-inbetween_time_start).total_seconds()))
+        # print(queryset.count())
+        # print(related_work_triple_instances.count())
         currentTime = datetime.now()
         page = self.paginate_queryset(queryset)
         if page is not None:

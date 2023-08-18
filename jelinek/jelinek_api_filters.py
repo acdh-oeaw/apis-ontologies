@@ -1,5 +1,5 @@
 import django_filters
-from .models import Chapter, E40_Legal_Body, E55_Type, F10_Person, F1_Work, F3_Manifestation_Product_Type, F9_Place, Honour, Keyword, E1_Crm_Entity, Xml_Content_Dump
+from .models import Chapter, E40_Legal_Body, E55_Type, F10_Person, F1_Work, F3_Manifestation_Product_Type, F9_Place, Honour, Keyword, E1_Crm_Entity, XMLNote, Xml_Content_Dump
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.search import SearchQuery, SearchVector
@@ -103,8 +103,11 @@ def search_in_xml_content_dump(value):
         search_string = "({})".format(value.replace(" ", "&"))
     query = SearchQuery(search_string, search_type="raw")
     vector = SearchVector("file_content")
+    note_vector = SearchVector("content")
     matching_dumps = [e.id for e in Xml_Content_Dump.objects.annotate(search=vector).filter(search=query)]
-    return Q(triple_set_from_subj__obj__in=matching_dumps)
+    matching_notes = [e.id for e in XMLNote.objects.annotate(search=note_vector).filter(search=query)]
+    matching_ids = matching_dumps + matching_notes
+    return Q(triple_set_from_subj__obj__in=matching_ids)
 
 def empty_filter(queryset, name, value):
     return queryset
