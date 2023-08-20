@@ -4326,14 +4326,16 @@ class TreesManager:
 
                 if chapter_number_parent != "":
 
-                    entity_chapter_parent = Chapter.objects.get(chapter_number=chapter_number_parent)
-
-                    create_triple(
-                        entity_subj=entity_chapter,
-                        entity_obj=entity_chapter_parent,
-                        prop=Property.objects.get(name="is sub chapter of")
-                    )
-
+                    
+                    try:
+                        entity_chapter_parent = Chapter.objects.get(chapter_number=chapter_number_parent)
+                        create_triple(
+                            entity_subj=entity_chapter,
+                            entity_obj=entity_chapter_parent,
+                            prop=Property.objects.get(name="is sub chapter of")
+                        )
+                    except Chapter.DoesNotExist:
+                        pass
 
             triple_from_chapter_to_f1(entity_chapter, path_node)
             triple_from_chapter_to_honour(entity_chapter, path_node)
