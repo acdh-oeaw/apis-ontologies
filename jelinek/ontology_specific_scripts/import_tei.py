@@ -4250,10 +4250,21 @@ class TreesManager:
                                                 if not entity_chapter.chapter_number.startswith("6"):
                                                     break
 
-                                        if entity_chapter.chapter_number.startswith(("6", "7")):
+                                        if entity_chapter.chapter_number.startswith("6"):
                                             for path_node_div_child in path_node_div.path_node_children_list:
 
                                                 if path_node_div_child.xml_elem.attrib.get("type", "") in ["seklitSubsection", "stagingSeklit"]:
+
+                                                    for f1 in find_all_inner_f1_entities(path_node_div_child):
+                                                        create_triple(
+                                                                        entity_subj=f1,
+                                                                        entity_obj=entity_chapter,
+                                                                        prop=Property.objects.get(name="is in chapter"),
+                                                                    )
+                                        if entity_chapter.chapter_number.startswith("7"):
+                                            for path_node_div_child in path_node_div.path_node_children_list:
+
+                                                if path_node_div_child.xml_elem.attrib.get("type", "") in ["head_section"]:
 
                                                     for f1 in find_all_inner_f1_entities(path_node_div_child):
                                                         create_triple(
