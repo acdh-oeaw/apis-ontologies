@@ -75,11 +75,13 @@ class Search(viewsets.ReadOnlyModelViewSet):
 
             if return_type == "f3":
                 # get their related manifestations
-                related_work_triple_instances = [triple for work in work_instances for triple in work.triple_set_from_subj.all() if triple.prop.name in prop_names]
+                # related_work_triple_instances = [triple for work in work_instances for triple in work.triple_set_from_subj.all() if triple.prop.name in prop_names]
+                related_f3_instances = E1_Crm_Entity.objects.filter(triple_set_from_obj__subj__in=work_instances, triple_set_from_obj__prop__name__in=prop_names).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
             if return_type== "f31":
-                related_work_triple_instances = [triple for work in work_instances for triple in work.triple_set_from_subj.all() if triple.prop.name == "hae been performed in"]
+                #related_work_triple_instances = [triple for work in work_instances for triple in work.triple_set_from_subj.all() if triple.prop.name == "has been performed in"]
+                related_f3_instances = E1_Crm_Entity.objects.filter(triple_set_from_obj__subj__in=work_instances, triple_set_from_obj__prop__name="has been performed in").distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
            
-            related_f3_instances = E1_Crm_Entity.objects.filter(id__in=[t.obj.id for t in related_work_triple_instances]).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
+            #related_f3_instances = E1_Crm_Entity.objects.filter(id__in=[t.obj.id for t in related_work_triple_instances]).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
             # print("Finish related_work_triple_instances after {}".format((datetime.now()-currentTime).total_seconds()))
             currentTime = datetime.now()
             queryset = queryset.exclude(id__in=[w.id for w in work_instances]).union(related_f3_instances)
@@ -92,41 +94,39 @@ class Search(viewsets.ReadOnlyModelViewSet):
         inbetween_time_start = datetime.now()
         if return_type == "f3":
         
-            if not f1_only:
-                for w in set(page) - set(related_f3_instances):
-                    if hasattr(w, "f3_manifestation_product_type"):
-                        manifestation_instances.append(w)
-                manifestation_triples = [triple for work in manifestation_instances for triple in work.triple_set_from_obj.all() if triple.prop.name in prop_names]
-                related_work_triple_instances += manifestation_triples
-               
-                # print("Finish related_work_triple_instances after {}".format((datetime.now()-currentTime).total_seconds()))
-                missing_manifestation_ids = set(m.id for m in manifestation_instances) - set(t.obj.id for t in related_work_triple_instances)
+            #if not f1_only:
+            manifestation_instances = page
+            manifestation_triples = [triple for work in manifestation_instances for triple in work.triple_set_from_obj.all() if triple.prop.name in prop_names]
+            related_work_triple_instances += manifestation_triples
+            
+            # print("Finish related_work_triple_instances after {}".format((datetime.now()-currentTime).total_seconds()))
+            missing_manifestation_ids = set(m.id for m in manifestation_instances) - set(t.obj.id for t in related_work_triple_instances)
 
-                # print("Finish missing_manifestation_instances after {}".format((datetime.now()-currentTime).total_seconds()))
+            # print("Finish missing_manifestation_instances after {}".format((datetime.now()-currentTime).total_seconds()))
+            currentTime = datetime.now()
+
+            if missing_manifestation_ids:
+                host_instances = [triple for manifestation in manifestation_instances if manifestation.id in missing_manifestation_ids for triple in manifestation.triple_set_from_obj.all() if triple.prop.name == "has host"]
+                related_host_work_triple_instances = [triple for host_triple in host_instances for triple in host_triple.subj.triple_set_from_obj.all() if triple.prop.name in prop_names]
+                # print("Finish related_host_work_triple_instances after {}".format((datetime.now()-currentTime).total_seconds()))
                 currentTime = datetime.now()
-
-                if missing_manifestation_ids:
-                    host_instances = [triple for manifestation in manifestation_instances if manifestation.id in missing_manifestation_ids for triple in manifestation.triple_set_from_obj.all() if triple.prop.name == "has host"]
-                    related_host_work_triple_instances = [triple for host_triple in host_instances for triple in host_triple.subj.triple_set_from_obj.all() if triple.prop.name in prop_names]
-                    # print("Finish related_host_work_triple_instances after {}".format((datetime.now()-currentTime).total_seconds()))
-                    currentTime = datetime.now()
-                    # dictionary to map manifestations to their host triples
-                    f3_to_host_work = {instance_id: [] for instance_id in missing_manifestation_ids}
-                    
-                    for host_instance in host_instances:
-                        related_triples = [triple for triple in related_host_work_triple_instances if triple.obj==host_instance.subj]
-                        f3_to_host_work[host_instance.obj.id].extend(related_triples)
-                    # print("Finish f3_to_host_work after {}".format((datetime.now()-currentTime).total_seconds()))
-                    currentTime = datetime.now()
+                # dictionary to map manifestations to their host triples
+                f3_to_host_work = {instance_id: [] for instance_id in missing_manifestation_ids}
+                
+                for host_instance in host_instances:
+                    related_triples = [triple for triple in related_host_work_triple_instances if triple.obj==host_instance.subj]
+                    f3_to_host_work[host_instance.obj.id].extend(related_triples)
+                # print("Finish f3_to_host_work after {}".format((datetime.now()-currentTime).total_seconds()))
+                currentTime = datetime.now()
 
         # # same for f31_performances
         elif return_type == "f31":
-            if not f1_only:
-                for w in set(page) - set(related_f3_instances):
-                    if hasattr(w, "f31_performance"):
-                        manifestation_instances.append(w)
-                manifestation_triples = [triple for work in manifestation_instances for triple in work.triple_set_from_obj.all() if triple.prop.name == "has been performed in"]
-                related_work_triple_instances += manifestation_triples
+            #if not f1_only:
+            for w in set(page) - set(related_f3_instances):
+                if hasattr(w, "f31_performance"):
+                    manifestation_instances.append(w)
+            manifestation_triples = [triple for work in manifestation_instances for triple in work.triple_set_from_obj.all() if triple.prop.name == "has been performed in"]
+            related_work_triple_instances += manifestation_triples
         #     work_instances = queryset.filter(Q(f1_work__isnull=False) | Q(honour__isnull=False))
         #     if work_instances.count() == queryset.count():
         #         f1_only = True

@@ -328,7 +328,7 @@ class SearchSerializer(serializers.ModelSerializer):
         if hasattr(obj, "related_work"):
             return [s.subj for s in obj.related_work], False
         if self.context.get("f1_only", False) and self.context.get("work_instances", None) is not None and len(self.context.get("work_instances", [])) > 0:
-            work_instances_match = lambda subj: subj in self.context.get("work_instances", None)
+            work_instances_match = lambda subj: any(subj for work in self.context.get("work_instances", None) if work.id == subj.id)
         if str.lower(obj.self_contenttype.model) == str.lower(ContentType.objects.get_for_model(F3_Manifestation_Product_Type).model):
             triples = self.context.get("related_work_triple_instances", obj.triple_set_from_obj.all())
             related_f1 = [t for t in triples if t.obj.id==obj.id and work_instances_match(t.subj)]
