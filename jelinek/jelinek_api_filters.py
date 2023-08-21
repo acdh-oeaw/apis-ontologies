@@ -125,7 +125,7 @@ class SearchFilter(django_filters.FilterSet):
     # honour = django_filters.CharFilter(field_name="honour__name", lookup_expr="contains")
     honour_id = TextInFilter(field_name="honour__entity_id", lookup_expr="in")
     genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
-    chapter_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is in chapter", check_dump=True, is_chapter=True))
+    chapter_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is in chapter", check_dump=False, is_chapter=True))
     keyword = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=Keyword, lookup_expr="in"))
     keyword_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
     textLang = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
@@ -163,7 +163,7 @@ class SearchFilter(django_filters.FilterSet):
         if "honourRole" in self.data and "about" in self.data["honourRole"]:
             self.filters['honour_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
         if "chapterRole" in self.data and "about" in self.data["chapterRole"]:
-            self.filters['chapter_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about", is_chapter=True))
+            self.filters['chapter_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about", is_chapter=True, check_dump=False))
         parent = super(SearchFilter, self).qs
         return parent
                 
