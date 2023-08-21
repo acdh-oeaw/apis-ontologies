@@ -143,6 +143,9 @@ class Search(viewsets.ReadOnlyModelViewSet):
                   & Q(triple_set_from_obj__prop__name__in=["has been performed in", "is expressed in", "is original for translation", "is reported in", "R13 is realised in"])
                   ).distinct().select_related("f1_work").prefetch_related('triple_set_from_obj', 'triple_set_from_subj', "f1_work")
             queryset = queryset.filter(Q(f1_work__isnull=True) & Q(honour__isnull=True)).union(mixed)
+        else:
+            manifestation_triples = [triple for work in page for triple in work.triple_set_from_obj.filter(prop__name__in=["has been performed in", "is expressed in", "is original for translation", "is reported in", "R13 is realised in"])]
+            related_work_triple_instances += manifestation_triples
         self.work_instances = work_instances
         self.f1_only = f1_only
         self.related_work_triple_instances = related_work_triple_instances
