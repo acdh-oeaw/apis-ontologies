@@ -68,7 +68,7 @@ def filter_entity(expr_to_entity, class_to_check=None, role=None, lookup_expr="i
         return queryset.filter(disjunction).distinct("id")
     return build_filter_method
 
-def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_for_name=None, is_chapter=False):
+def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_for_name=None, is_chapter=False, is_country=False):
     criteria_to_join = []
     for expr in expr_to_entity:
         role_criterion = Q()
@@ -83,6 +83,8 @@ def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_
         # get internal id of entity with the given entity_id
         if is_chapter:
             entities = [c.id for c in Chapter.objects.filter(chapter_number__in=value)]
+        elif is_country:
+            entities = [c.id for c in F9_Place.objects.filter(country__in=value)]
         else:
             entities = [e.id for e in E1_Crm_Entity.objects.filter(entity_id__in=value)]
         id_criterion_lookup = "__".join([expr, "id__in"])
@@ -113,6 +115,7 @@ def search_in_xml_content_dump(value):
     matching_ids = matching_dumps + matching_notes
     return Q(triple_set_from_subj__obj__in=matching_ids)
 
+
 def empty_filter(queryset, name, value):
     return queryset
 
@@ -134,6 +137,7 @@ class SearchFilter(django_filters.FilterSet):
     keyword_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
     textLang = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
     place = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=F9_Place, lookup_expr="in"))
+    country = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], is_country=True))
     place_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
     mediatype = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
     startDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="gte")
