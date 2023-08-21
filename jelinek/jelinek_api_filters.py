@@ -37,10 +37,14 @@ class ChapterFilter(django_filters.FilterSet):
 def filter_entity(expr_to_entity, class_to_check=None, role=None, lookup_expr="in", property_to_check="name", check_dump=False):
     criteria_to_join = []
     for expr in expr_to_entity:
-        class_criterion_lookup = "__".join([expr, "self_contenttype__model", "iexact"])
+        class_criterion_lookup = "__".join([expr, "self_contenttype__model", "iexact"]).lstrip("__")
         class_criterion = Q()
         if class_to_check is not None:
-            class_criterion = Q(**{class_criterion_lookup: ContentType.objects.get_for_model(class_to_check).model})
+            if isinstance(class_to_check, list):
+                class_criterion_lookup = "__".join([expr, "self_contenttype__model", "in"]).lstrip("__")
+                class_criterion = Q(**{class_criterion_lookup: [ContentType.objects.get_for_model(c).model for c in class_to_check]})
+            else:
+                class_criterion = Q(**{class_criterion_lookup: ContentType.objects.get_for_model(class_to_check).model})
         property_lookup = '__'.join([expr, property_to_check, lookup_expr])
         if len(expr) == 0:
             property_lookup = '__'.join([property_to_check, lookup_expr])
@@ -134,7 +138,7 @@ class SearchFilter(django_filters.FilterSet):
     mediatype = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
     startDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="gte")
     endDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="lte")
-    searchTerm = django_filters.CharFilter(method=filter_entity(["", "triple_set_from_obj__subj", "triple_set_from_subj__obj"], lookup_expr="contains", check_dump=True))
+    searchTerm = django_filters.CharFilter(method=filter_entity(["", "triple_set_from_obj__subj", "triple_set_from_subj__obj"], lookup_expr="contains", check_dump=True, class_to_check=[F10_Person, E40_Legal_Body, F1_Work]))
 
     @property
     def qs(self):
