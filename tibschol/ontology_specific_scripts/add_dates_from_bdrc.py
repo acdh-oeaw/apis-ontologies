@@ -196,42 +196,43 @@ def run(*args, **kwargs):
 
     for buda_id, dates in tqdm(LIFESPANS.items()):
         try:
-            p = Person.objects.get(external_link__endswith=buda_id)
-            if p.start_date:
-                logger.warn(
-                    "start_date (%s) already present for %s (BUDA ID: %s). Given\n%s",
-                    p.start_date,
-                    p.id,
-                    buda_id,
-                    dates,
-                )
-            else:
-                if "start_date" in dates:
-                    p.start_date_written = dates["start_date"]
-                if "start_start_date" in dates or "start_end_date" in dates:
-                    p.start_date_written = get_written_date(
-                        dates.get("start_start_date", ""),
-                        dates.get("start_end_date", ""),
+            matches = Person.objects.filter(external_link__endswith=buda_id)
+            for p in matches:
+                if p.start_date:
+                    logger.warn(
+                        "start_date (%s) already present for %s (BUDA ID: %s). Given\n%s",
+                        p.start_date,
+                        p.id,
+                        buda_id,
+                        dates,
                     )
-            if p.end_date:
-                logger.warn(
-                    "end_date (%s) already present for %s (BUDA ID: %s). Given\n%s",
-                    p.end_date,
-                    p.id,
-                    buda_id,
-                    dates,
-                )
-            else:
-                if "end_date" in dates:
-                    p.end_date_written = dates["end_date"]
-                if "end_start_date" in dates or "end_end_date" in dates:
-                    p.end_date_written = get_written_date(
-                        dates.get("end_start_date", ""),
-                        dates.get("end_end_date", ""),
+                else:
+                    if "start_date" in dates:
+                        p.start_date_written = dates["start_date"]
+                    if "start_start_date" in dates or "start_end_date" in dates:
+                        p.start_date_written = get_written_date(
+                            dates.get("start_start_date", ""),
+                            dates.get("start_end_date", ""),
+                        )
+                if p.end_date:
+                    logger.warn(
+                        "end_date (%s) already present for %s (BUDA ID: %s). Given\n%s",
+                        p.end_date,
+                        p.id,
+                        buda_id,
+                        dates,
                     )
+                else:
+                    if "end_date" in dates:
+                        p.end_date_written = dates["end_date"]
+                    if "end_start_date" in dates or "end_end_date" in dates:
+                        p.end_date_written = get_written_date(
+                            dates.get("end_start_date", ""),
+                            dates.get("end_end_date", ""),
+                        )
 
-            logger.info("Updated %s with %s", p.id, dates)
-            p.save()
+                logger.info("Updated %s with %s", p.id, dates)
+                p.save()
 
         except Person.DoesNotExist:
             logger.warn("Cannot find %s", buda_id)
