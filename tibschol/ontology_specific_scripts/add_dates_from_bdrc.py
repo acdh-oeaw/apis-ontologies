@@ -235,3 +235,6 @@ def run(*args, **kwargs):
 
         except Person.DoesNotExist:
             logger.warn("Cannot find %s", buda_id)
+        except Exception as e:
+            print("Error for person with BUDA ID %s", buda_id)
+            pass
