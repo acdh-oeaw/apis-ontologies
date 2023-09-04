@@ -70,6 +70,9 @@ class Instance(TempEntityClass):
         logger.warn(f"Unknown {self.set_num}. Cannot build citation.")
         return f"Unknown {self.set_num}. Cannot build citation."
 
+    tibschol_ref = models.CharField(max_length=25, blank=True, null=True)
+    alternative_names = models.TextField(blank=True, null=True)
+
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Person(TempEntityClass):
@@ -81,6 +84,7 @@ class Person(TempEntityClass):
     gender = models.CharField(max_length=6, choices=GENDERS, default="male")
     comments = models.TextField(blank=True, null=True)
     external_link = models.CharField(max_length=255, blank=True, null=True)
+    alternative_names = models.TextField(blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -94,6 +98,7 @@ class Work(TempEntityClass):
     )  # should be a controlled vocabulary field
     comments = models.TextField(blank=True, null=True)
     external_link = models.CharField(max_length=255, blank=True, null=True)
+    alternative_names = models.TextField(blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -107,3 +112,4 @@ class Place(TempEntityClass):
     )
     external_link = models.CharField(max_length=255, blank=True, null=True)
     comments = models.TextField(blank=True, null=True)
+    alternative_names = models.TextField(blank=True, null=True)
