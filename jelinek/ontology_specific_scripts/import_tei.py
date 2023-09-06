@@ -1328,8 +1328,6 @@ class TreesManager:
                 if (
                     xml_elem.tag.endswith("rs")
                     and xml_elem.attrib.get("type") == "person"
-                    and xml_elem.attrib.get("ref") is not None
-                    and xml_elem.attrib.get("ref").startswith("persons:")
                 ):
 
                     for xml_elem_child in xml_elem:
@@ -1338,7 +1336,11 @@ class TreesManager:
 
                             attr_dict["name"], attr_dict["forename"], attr_dict["surname"] = parse_persName(xml_elem_child)
 
-                    attr_dict["pers_id"] = xml_elem.attrib.get("ref").replace("persons:", "")
+                    if (
+                        xml_elem.attrib.get("ref") is not None
+                        and xml_elem.attrib.get("ref").startswith("persons:")
+                    ):
+                        attr_dict["pers_id"] = xml_elem.attrib.get("ref").replace("persons:", "")
 
                 elif (
                     xml_elem.tag.endswith("persName")
