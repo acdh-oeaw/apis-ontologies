@@ -241,11 +241,7 @@ class TreesManager:
                         or xml_elem.tag.endswith("institution")
                         or (
                             xml_elem.tag.endswith("rs")
-                            and (xml_elem.attrib.get("type") == "institution"
-                            or xml_elem.attrib.get("type") == "theater"
-                            or xml_elem.attrib.get("type") == "festival"
-                            or xml_elem.attrib.get("type") == "place"
-                            or xml_elem.attrib.get("type") == "broadcaster")
+                            and (xml_elem.attrib.get("type") in ["institution","theater","festival","place","broadcaster","ensemble"])
                         )
                         #or xml_elem.tag.endswith("orgName")
                     )
