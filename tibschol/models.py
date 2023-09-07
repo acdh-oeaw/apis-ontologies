@@ -71,7 +71,6 @@ class Instance(TempEntityClass):
         return f"Unknown {self.set_num}. Cannot build citation."
 
     tibschol_ref = models.CharField(max_length=25, blank=True, null=True)
-    sde_dge_ref = models.CharField(max_length=25, blank=True, null=True)
     alternative_names = models.TextField(blank=True, null=True)
 
 
@@ -100,6 +99,7 @@ class Work(TempEntityClass):
     comments = models.TextField(blank=True, null=True)
     external_link = models.TextField(blank=True, null=True)
     alternative_names = models.TextField(blank=True, null=True)
+    sde_dge_ref = models.CharField(max_length=25, blank=True, null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
