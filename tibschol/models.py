@@ -51,7 +51,9 @@ class Instance(TempEntityClass):
         max_length=255, blank=True, null=True, verbose_name="Provenance"
     )
     comments = models.TextField(blank=True, null=True)
-    external_link = models.TextField(blank=True, null=True)
+    external_link = models.TextField(
+        blank=True, null=True, verbose_name="External links"
+    )
 
     @property
     def citation(self):
@@ -70,8 +72,12 @@ class Instance(TempEntityClass):
         logger.warn(f"Unknown {self.set_num}. Cannot build citation.")
         return f"Unknown {self.set_num}. Cannot build citation."
 
-    tibschol_ref = models.CharField(max_length=25, blank=True, null=True)
-    alternative_names = models.TextField(blank=True, null=True)
+    tibschol_ref = models.CharField(
+        max_length=25, blank=True, null=True, verbose_name="Tibschol reference"
+    )
+    alternative_names = models.TextField(
+        blank=True, null=True, verbose_name="Alternative names"
+    )
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -83,8 +89,12 @@ class Person(TempEntityClass):
     ]
     gender = models.CharField(max_length=6, choices=GENDERS, default="male")
     comments = models.TextField(blank=True, null=True)
-    external_link = models.TextField(blank=True, null=True)
-    alternative_names = models.TextField(blank=True, null=True)
+    external_link = models.TextField(
+        blank=True, null=True, verbose_name="External links"
+    )
+    alternative_names = models.TextField(
+        blank=True, null=True, verbose_name="Alternative names"
+    )
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -97,9 +107,15 @@ class Work(TempEntityClass):
         verbose_name="subject",
     )  # should be a controlled vocabulary field
     comments = models.TextField(blank=True, null=True)
-    external_link = models.TextField(blank=True, null=True)
-    alternative_names = models.TextField(blank=True, null=True)
-    sde_dge_ref = models.CharField(max_length=25, blank=True, null=True)
+    external_link = models.TextField(
+        blank=True, null=True, verbose_name="External links"
+    )
+    alternative_names = models.TextField(
+        blank=True, null=True, verbose_name="Alternative names"
+    )
+    sde_dge_ref = models.CharField(
+        max_length=25, blank=True, null=True, verbose_name="Derge reference"
+    )
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -111,6 +127,10 @@ class Place(TempEntityClass):
     latitude = models.DecimalField(
         max_digits=22, decimal_places=16, blank=True, null=True
     )
-    external_link = models.TextField(blank=True, null=True)
+    external_link = models.TextField(
+        blank=True, null=True, verbose_name="External links"
+    )
     comments = models.TextField(blank=True, null=True)
-    alternative_names = models.TextField(blank=True, null=True)
+    alternative_names = models.TextField(
+        blank=True, null=True, verbose_name="Alternative names"
+    )
