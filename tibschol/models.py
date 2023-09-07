@@ -51,7 +51,7 @@ class Instance(TempEntityClass):
         max_length=255, blank=True, null=True, verbose_name="Provenance"
     )
     comments = models.TextField(blank=True, null=True)
-    external_link = models.CharField(max_length=255, blank=True, null=True)
+    external_link = models.TextField(blank=True, null=True)
 
     @property
     def citation(self):
@@ -83,7 +83,7 @@ class Person(TempEntityClass):
     ]
     gender = models.CharField(max_length=6, choices=GENDERS, default="male")
     comments = models.TextField(blank=True, null=True)
-    external_link = models.CharField(max_length=255, blank=True, null=True)
+    external_link = models.TextField(blank=True, null=True)
     alternative_names = models.TextField(blank=True, null=True)
 
 
@@ -97,7 +97,7 @@ class Work(TempEntityClass):
         verbose_name="subject",
     )  # should be a controlled vocabulary field
     comments = models.TextField(blank=True, null=True)
-    external_link = models.CharField(max_length=255, blank=True, null=True)
+    external_link = models.TextField(blank=True, null=True)
     alternative_names = models.TextField(blank=True, null=True)
 
 
@@ -110,6 +110,6 @@ class Place(TempEntityClass):
     latitude = models.DecimalField(
         max_digits=22, decimal_places=16, blank=True, null=True
     )
-    external_link = models.CharField(max_length=255, blank=True, null=True)
+    external_link = models.TextField(blank=True, null=True)
     comments = models.TextField(blank=True, null=True)
     alternative_names = models.TextField(blank=True, null=True)
