@@ -71,15 +71,22 @@ def create_serializer(model):
 
 def patch_serializer(model):
     serializer = serializers_cache.get(model.__name__, create_serializer(model))
-    dict_class = {
 
-        "triple_set_from_obj": TripleSerializerFromObj(many=True, read_only=True),
-        "triple_set_from_subj": TripleSerializerFromSubj(many=True, read_only=True),
+    dict_class = {
+        "triple_set_from_obj": TripleSerializerFromObj(source="filtered_triples_from_obj", many=True, read_only=True),
+        "triple_set_from_subj": TripleSerializerFromSubj(source="filtered_triples_from_subj", many=True, read_only=True),
+        "has_children": serializers.SerializerMethodField(method_name="add_has_children"),
+        
     }
+
+    def add_has_children(self, obj):
+       c = obj.triple_set_from_obj.filter(prop__name="has host").count()
+       return c
 
     serializer_class = type(
         f"{model.__name__}SerializerPatched", (serializer,), dict_class
     )
+    serializer_class.add_has_children = add_has_children
     serializers_cache_patched[model.__name__] = serializer_class
     return serializer_class
 
@@ -208,7 +215,8 @@ class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
     """
 
     triple_set_from_obj = TripleSerializerFromObj(many=True, read_only=True)
-    triple_set_from_subj = TripleSerializerFromSubj(many=True, read_only=True)
+    triple_set_from_subj = TripleSerializerFromSubj(source="filtered_triples_from_subj", many=True, read_only=True)
+    has_children = serializers.SerializerMethodField(method_name="add_has_children")
     # triple_set_from_obj = serializers.SerializerMethodField(
     #     method_name="add_triple_set_from"
     # )
@@ -228,7 +236,9 @@ class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         return remove_null_empty_from_dict(ret)
     
-
+    def add_has_children(self, obj):
+       c = obj.triple_set_from_obj.filter(prop__name="has host").count()
+       return c
     # def add_triple_set_from(self, obj):
     #     return obj.get_triple_set()
 

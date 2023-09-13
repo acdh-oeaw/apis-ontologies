@@ -86,6 +86,10 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity_id = self.bibl_id
+    def filtered_triples_from_obj(self):
+        return self.triple_set_from_obj.exclude(prop__name="has host")
+    def filtered_triples_from_subj(self):
+        return self.triple_set_from_subj.exclude(prop__name__in=["data read from file"])
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class F9_Place(E1_Crm_Entity):
