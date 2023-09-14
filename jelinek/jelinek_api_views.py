@@ -1,10 +1,10 @@
 from rest_framework.response import Response
 from rest_framework import viewsets
 from .models import E1_Crm_Entity, F1_Work, F3_Manifestation_Product_Type, Chapter, Honour
-from .jelinek_api_serializers import F1WorkSerializer, HonourSerializer, SearchSerializer, F3ManifestationProductTypeSerializer, WorkForChapterSerializer
-from .jelinek_api_filters import ChapterFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter
+from .jelinek_api_serializers import E1CrmEntitySerializer, F1WorkSerializer, HonourSerializer, SearchSerializer, F3ManifestationProductTypeSerializer, WorkForChapterSerializer
+from .jelinek_api_filters import ChapterFilter, EntitiesWithoutRelationsFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter
 from apis_core.apis_relations.models import Triple
-from django.db.models import Q
+from django.db.models import Q, Count, Sum, Case, When, IntegerField
 from datetime import datetime
 
 class F3ManifestationProductType(viewsets.ReadOnlyModelViewSet):
@@ -170,3 +170,8 @@ class WorkForChapter(viewsets.ReadOnlyModelViewSet):
     filter_class = ChapterFilter
     queryset = Chapter.objects.all().prefetch_related('triple_set_from_subj')
     serializer_class = WorkForChapterSerializer
+
+class EntitiesWithoutRelations(viewsets.ReadOnlyModelViewSet):
+    queryset = E1_Crm_Entity.objects.annotate(relation_count=Count("triple_set_from_obj")+Count("triple_set_from_subj", filter=Q(triple_set_from_subj__prop__name__regex=r'[^data read from file]'))).filter(relation_count=0)
+    serializer_class = E1CrmEntitySerializer
+    filter_class=EntitiesWithoutRelationsFilter

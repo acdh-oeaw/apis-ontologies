@@ -174,4 +174,10 @@ class SearchFilter(django_filters.FilterSet):
             self.filters['chapter_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about", is_chapter=True, check_dump=False))
         parent = super(SearchFilter, self).qs
         return parent
-                
+
+class EntitiesWithoutRelationsFilter(django_filters.FilterSet):
+    class Meta:
+        model = E1_Crm_Entity
+        fields = {'id': ['exact', 'in'],
+                  'self_contenttype': ['exact', 'in']
+                  }   
