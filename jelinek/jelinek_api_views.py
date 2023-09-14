@@ -1,11 +1,17 @@
 from rest_framework.response import Response
 from rest_framework import viewsets
-from .models import E1_Crm_Entity, F1_Work, F3_Manifestation_Product_Type, Chapter, Honour
-from .jelinek_api_serializers import F1WorkSerializer, HonourSerializer, SearchSerializer, F3ManifestationProductTypeSerializer, WorkForChapterSerializer
-from .jelinek_api_filters import ChapterFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter
+from .models import E1_Crm_Entity, E40_Legal_Body, F10_Person, F1_Work, F3_Manifestation_Product_Type, Chapter, Honour, XMLNote, Xml_Content_Dump
+from .jelinek_api_serializers import F1WorkSerializer, HonourSerializer, SearchSerializer, F3ManifestationProductTypeSerializer, SearchSerializer2, WorkForChapterSerializer
+from .jelinek_api_filters import ChapterFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter, SearchFilter2
 from apis_core.apis_relations.models import Triple
 from django.db.models import Q
 from datetime import datetime
+from django.db.models import Q, OuterRef
+from django.db.models.functions import JSONObject
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.expressions import ArraySubquery
+from apis_core.apis_relations.models import Triple, Property
+
 
 class F3ManifestationProductType(viewsets.ReadOnlyModelViewSet):
     serializer_class = F3ManifestationProductTypeSerializer
@@ -162,7 +168,7 @@ class Search(viewsets.ReadOnlyModelViewSet):
             return r
 
         serializer = self.get_serializer(queryset, many=True)
-        # print("Finish serialization after {}".format((datetime.now()-currentTime).total_seconds()))
+        #print("Finish serialization after {}".format((datetime.now()-currentTime).total_seconds()))
         return Response(serializer.data)
 
 
@@ -170,3 +176,30 @@ class WorkForChapter(viewsets.ReadOnlyModelViewSet):
     filter_class = ChapterFilter
     queryset = Chapter.objects.all().prefetch_related('triple_set_from_subj')
     serializer_class = WorkForChapterSerializer
+
+
+class SearchV2(viewsets.ReadOnlyModelViewSet):
+    filter_class = SearchFilter2
+    serializer_class = SearchSerializer2
+    pagination_class = None
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=False)
+        return Response(serializer.data)
+    
+    def get_queryset(self):
+        person_subquery = F10_Person.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(name='name', pk='pk'))
+        person_subquery2 = F10_Person.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values(json=JSONObject(name='name', pk='pk'))
+        property_subquery = Property.objects.filter(triple_set_from_prop__subj_id=OuterRef("pk")).values_list('name', flat=True)
+        property_subquery2 = Property.objects.filter(triple_set_from_prop__obj_id=OuterRef("pk")).values_list('name', flat=True)
+        work_subquery = F1_Work.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(pk="pk", name="name", genre="genre"))
+        qs = E1_Crm_Entity.objects_inheritance.select_subclasses("f1_work", "f3_manifestation_product_type", "honour", "f31_performance").annotate(
+            related_persons_subj=ArraySubquery(person_subquery),
+            related_persons_obj=ArraySubquery(person_subquery2),
+            kw_properties=ArraySubquery(property_subquery), 
+            kw_properties2=ArraySubquery(property_subquery2),
+            related_work= ArraySubquery(work_subquery),
+            )
+        return qs
+    

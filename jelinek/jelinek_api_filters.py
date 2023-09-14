@@ -174,4 +174,20 @@ class SearchFilter(django_filters.FilterSet):
             self.filters['chapter_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about", is_chapter=True, check_dump=False))
         parent = super(SearchFilter, self).qs
         return parent
-                
+
+
+class SearchFilter2(django_filters.FilterSet):
+    searchterm = django_filters.CharFilter(method='filter_entity_2')
+
+    class Meta:
+        model = E1_Crm_Entity
+        fields = ["name"]
+
+    def filter_entity_2(self, queryset, name, value):
+        return queryset.filter(
+            Q(vector_column_e1=value)|
+            Q(vector_related_f10=value)|
+            Q(vector_related_E40=value)|
+            Q(vector_related_xml_content_dump=value)|
+            Q(vector_related_xml_note=value)
+            )

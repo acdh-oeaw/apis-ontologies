@@ -449,4 +449,50 @@ class SearchSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         return remove_null_empty_from_dict(ret)
+    
+class SearchSerializerWork(serializers.Serializer):
+    id = serializers.IntegerField(source="pk")
+    label = serializers.CharField(source="name")
+    genre = serializers.CharField()
+
+class SearchSerializerResult(serializers.Serializer):
+    name = serializers.CharField()
+    id = serializers.IntegerField()
+    entity_id = serializers.CharField(required=False)
+    self_contenttype_id = serializers.IntegerField(required=False)
+    start_date_written = serializers.CharField(required=False)
+    start_date = serializers.DateField(required=False)
+    short = serializers.CharField(required=False)
+    koha_id = serializers.CharField(required=False)
+    text_language = serializers.CharField(required=False)
+    related_work = SearchSerializerWork(many=True, required=False)
+
+class SearchSerializerFacetsDetail(serializers.Serializer):   
+    name = serializers.CharField()
+    count = serializers.IntegerField()
+
+class SearchSerializerFacets(serializers.Serializer):
+    person = SearchSerializerFacetsDetail(many=True)
+    institution = SearchSerializerFacetsDetail(many=True)
+    genre = SearchSerializerFacetsDetail(many=True)
+    keywords = SearchSerializerFacetsDetail(many=True)
         
+    
+class SearchSerializer2(serializers.Serializer):
+    count = serializers.IntegerField()
+    facets = SearchSerializerFacets()
+    results = SearchSerializerResult(many=True)
+
+    def __init__(self, instance=None, data=..., **kwargs):
+        res = {"count": instance.count(), "facets": {"person": {}, "institution": {}, "genre": {}, "keywords": {}}, "results": instance}
+        for inst in instance:
+            if hasattr(inst, "related_persons_subj"):
+                for pers in inst.related_persons_subj + inst.related_persons_obj:
+                    if pers["name"] not in res["facets"]["person"]:
+                        res["facets"]["person"][pers["name"]] = 0
+                    res["facets"]["person"][pers["name"]] += 1
+        pers_final = []
+        for k, v in res["facets"]["person"].items():
+            pers_final.append({"name": k, "count": v})
+        res["facets"]["person"] = pers_final
+        super().__init__(instance=res, **kwargs)

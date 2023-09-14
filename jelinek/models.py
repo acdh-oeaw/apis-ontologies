@@ -1,6 +1,7 @@
 import reversion
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.contrib.postgres.search import SearchVectorField
 # from apis_core.apis_entities.models import AbstractEntity
 from apis_core.apis_entities.models import TempEntityClass, TempTriple
 
@@ -19,6 +20,11 @@ class Xml_Content_Dump(TempEntityClass):
 @reversion.register(follow=["tempentityclass_ptr"])
 class E1_Crm_Entity(TempEntityClass):
     entity_id = models.CharField(max_length=1024, blank=True, null=True)
+    vector_column_e1 = SearchVectorField(null=True)
+    vector_related_f10 = SearchVectorField(null=True)
+    vector_related_E40 = SearchVectorField(null=True)
+    vector_related_xml_content_dump = SearchVectorField(null=True)
+    vector_related_xml_note = SearchVectorField(null=True)
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
@@ -53,6 +59,7 @@ class F1_Work(E1_Crm_Entity):
     )
     
     short = models.CharField(max_length=1024, blank=True, null=True)
+    vector_column_f1 = SearchVectorField(null=True)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity_id = self.idno
@@ -83,6 +90,7 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
     untertitel = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Untertitel")
     scope_style = models.CharField(max_length=1024, blank=True, null=True)
     koha_id = models.CharField(max_length=1024, blank=True, null=True)
+    vector_column_f3 = SearchVectorField(null=True)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity_id = self.bibl_id
@@ -95,6 +103,7 @@ class F3_Manifestation_Product_Type(E1_Crm_Entity):
 class F9_Place(E1_Crm_Entity):
     place_id = models.CharField(max_length=1024, blank=True, null=True)
     country = models.CharField(max_length=1024, blank=True, null=True)
+    vector_column_f9 = SearchVectorField(null=True)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity_id = self.place_id
@@ -155,6 +164,7 @@ class F10_Person(E1_Crm_Entity):
     
     GENDER_CHOICES = (("female", "female"), ("male", "male"), ("third gender", "third gender"))
     gender = models.CharField(max_length=15, choices=GENDER_CHOICES, blank=True)
+    vector_column_f10 = SearchVectorField(null=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -198,6 +208,7 @@ class F31_Performance(E1_Crm_Entity):
     short = models.CharField(max_length=1024, blank=True, null=True)
     # TODO: consider changing this to a e55 relation
     category = models.CharField(max_length=1024, blank=True, null=True)
+    vector_column_f31 = SearchVectorField(null=True)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity_id = self.performance_id
@@ -211,6 +222,7 @@ class Chapter(TempEntityClass):
 @reversion.register(follow=["tempentityclass_ptr"])
 class Keyword(TempEntityClass):
     keyword_id = models.CharField(max_length=1024, blank=True, null=True)
+    vector_column_keyword = SearchVectorField(null=True)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity_id = self.keyword_id
@@ -221,6 +233,7 @@ class XMLNote(TempEntityClass):
     context = models.CharField(max_length=1024, blank=True, null=True)
     rendition = models.CharField(max_length=1024, blank=True, null=True)
     type = models.CharField(max_length=1024, blank=True, null=True)
+    vector_column_xmlnote = SearchVectorField(null=True)
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class E38_Image(E1_Crm_Entity):
