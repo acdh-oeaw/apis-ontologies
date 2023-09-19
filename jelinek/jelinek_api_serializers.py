@@ -451,7 +451,7 @@ class SearchSerializer(serializers.ModelSerializer):
         return remove_null_empty_from_dict(ret)
         
 
-class E1CrmEntitySerializer(serializers.ModelSerializer):
+class LonelyE1CrmEntitySerializer(serializers.ModelSerializer):
     details_url = serializers.SerializerMethodField()
     class Meta:
         model = E1_Crm_Entity
@@ -460,8 +460,8 @@ class E1CrmEntitySerializer(serializers.ModelSerializer):
             "name",
             "self_contenttype",
             "entity_id",
-            "details_url"
+            "details_url",
         ]
-        depth= 1
+        depth=1
     def get_details_url(self, obj):
-        return "https://apis-jelinek.acdh-dev.oeaw.ac.at/apis/api/ontology/e1_crm_entity/{}".format(obj.id)
+        return "https://apis-jelinek.acdh-dev.oeaw.ac.at/apis/entities/entity/e1_crm_entity/{}/detail/".format(obj.id)
