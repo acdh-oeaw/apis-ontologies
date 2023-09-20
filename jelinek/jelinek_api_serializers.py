@@ -475,8 +475,14 @@ class SearchSerializerFacets(serializers.Serializer):
     person = SearchSerializerFacetsDetail(many=True)
     personRoles = SearchSerializerFacetsDetail(many=True)
     institution = SearchSerializerFacetsDetail(many=True)
+    institutionRoles = SearchSerializerFacetsDetail(many=True)
     genre = SearchSerializerFacetsDetail(many=True)
     keywords = SearchSerializerFacetsDetail(many=True)
+    place = SearchSerializerFacetsDetail(many=True)
+    country = SearchSerializerFacetsDetail(many=True)
+    mediatype = SearchSerializerFacetsDetail(many=True)
+    date = SearchSerializerFacetsDetail(many=True)
+    language = SearchSerializerFacetsDetail(many=True)
         
     
 class SearchSerializer2(serializers.Serializer):
@@ -485,10 +491,36 @@ class SearchSerializer2(serializers.Serializer):
     results = SearchSerializerResult(many=True)
 
     def __init__(self, instance=None, data=..., **kwargs):
-        res = {"count": instance.count(), "facets": {"person": {}, "personRoles": {}, "institution": {}, "genre": {}, "keywords": {}}, "results": instance}
+        res = {
+            "count": instance.count(), 
+            "facets": {
+                "person": {}, 
+                "personRoles": {}, 
+                "institution": {}, 
+                "institutionRoles": {}, 
+                "genre": {}, 
+                "keywords": {}, 
+                "place": {}, 
+                "country": {},
+                "mediatype": {},
+                "date": {},
+                "language": {}
+            }, 
+            "results": instance}
         subqueries_to_facet_mapping = {
             "related_persons": "person",
-            "related_person_roles": "personRoles"
+            "related_person_roles": "personRoles",
+            "related_institutions": "institution",
+            "related_institution_roles": "institutionRoles",
+            "related_keywords": "keywords",
+            "related_places": "place",
+            "related_countries": "country",
+            "related_mediatypes": "mediatype"
+        }
+        props_to_facet_mapping = {
+            "genre": "genre",
+            "start_date": "date",
+            "text_language": "language"
         }
         for inst in instance:
             for field in subqueries_to_facet_mapping:
@@ -497,11 +529,23 @@ class SearchSerializer2(serializers.Serializer):
                         if val not in res["facets"][subqueries_to_facet_mapping[field]]:
                             res["facets"][subqueries_to_facet_mapping[field]][val] = 0
                         res["facets"][subqueries_to_facet_mapping[field]][val] += 1
-                        
+            for field in props_to_facet_mapping:
+                if hasattr(inst, field) and getattr(inst, field) is not None:
+                    val = getattr(inst, field)
+                    if val not in res["facets"][props_to_facet_mapping[field]]:
+                        res["facets"][props_to_facet_mapping[field]][val] = 0
+                    res["facets"][props_to_facet_mapping[field]][val] += 1
+
         for field in subqueries_to_facet_mapping:   
             final = []
             for k, v in res["facets"][subqueries_to_facet_mapping[field]].items():
                 final.append({"name": k, "count": v})
             res["facets"][subqueries_to_facet_mapping[field]] = final
+
+        for field in props_to_facet_mapping:   
+            final = []
+            for k, v in res["facets"][props_to_facet_mapping[field]].items():
+                final.append({"name": k, "count": v})
+            res["facets"][props_to_facet_mapping[field]] = final
         
         super().__init__(instance=res, **kwargs)
