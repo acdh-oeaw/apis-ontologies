@@ -19,7 +19,7 @@ def remove_null_empty_from_dict(d):
                 new_d[k] = v
             elif isinstance(v, dict):
                 new_d[k] = remove_null_empty_from_dict(v)
-            elif isinstance(v, list):
+            elif isinstance(v, list) and len(v) > 0:
                 new_d[k] = remove_null_empty_from_dict(v)
     elif isinstance(d, list):
         new_d = []
@@ -452,7 +452,7 @@ class SearchSerializer(serializers.ModelSerializer):
     
 class SearchSerializerWork(serializers.Serializer):
     id = serializers.IntegerField(source="pk")
-    label = serializers.CharField(source="name")
+    name = serializers.CharField()
     genre = serializers.CharField()
 
 class SearchSerializerResult(serializers.Serializer):
@@ -464,8 +464,13 @@ class SearchSerializerResult(serializers.Serializer):
     start_date = serializers.DateField(required=False)
     short = serializers.CharField(required=False)
     koha_id = serializers.CharField(required=False)
+    genre = serializers.CharField(required=False)
     text_language = serializers.CharField(required=False)
     related_work = SearchSerializerWork(many=True, required=False)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return remove_null_empty_from_dict(ret)
 
 class SearchSerializerFacetsDetail(serializers.Serializer):   
     name = serializers.CharField()
