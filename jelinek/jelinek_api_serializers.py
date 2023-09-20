@@ -473,6 +473,7 @@ class SearchSerializerFacetsDetail(serializers.Serializer):
 
 class SearchSerializerFacets(serializers.Serializer):
     person = SearchSerializerFacetsDetail(many=True)
+    personRoles = SearchSerializerFacetsDetail(many=True)
     institution = SearchSerializerFacetsDetail(many=True)
     genre = SearchSerializerFacetsDetail(many=True)
     keywords = SearchSerializerFacetsDetail(many=True)
@@ -484,15 +485,23 @@ class SearchSerializer2(serializers.Serializer):
     results = SearchSerializerResult(many=True)
 
     def __init__(self, instance=None, data=..., **kwargs):
-        res = {"count": instance.count(), "facets": {"person": {}, "institution": {}, "genre": {}, "keywords": {}}, "results": instance}
+        res = {"count": instance.count(), "facets": {"person": {}, "personRoles": {}, "institution": {}, "genre": {}, "keywords": {}}, "results": instance}
+        subqueries_to_facet_mapping = {
+            "related_persons": "person",
+            "related_person_roles": "personRoles"
+        }
         for inst in instance:
-            if hasattr(inst, "related_persons_subj"):
-                for pers in inst.related_persons_subj + inst.related_persons_obj:
-                    if pers["name"] not in res["facets"]["person"]:
-                        res["facets"]["person"][pers["name"]] = 0
-                    res["facets"]["person"][pers["name"]] += 1
-        pers_final = []
-        for k, v in res["facets"]["person"].items():
-            pers_final.append({"name": k, "count": v})
-        res["facets"]["person"] = pers_final
+            for field in subqueries_to_facet_mapping:
+                if hasattr(inst, field):
+                    for val in getattr(inst, field):
+                        if val not in res["facets"][subqueries_to_facet_mapping[field]]:
+                            res["facets"][subqueries_to_facet_mapping[field]][val] = 0
+                        res["facets"][subqueries_to_facet_mapping[field]][val] += 1
+                        
+        for field in subqueries_to_facet_mapping:   
+            final = []
+            for k, v in res["facets"][subqueries_to_facet_mapping[field]].items():
+                final.append({"name": k, "count": v})
+            res["facets"][subqueries_to_facet_mapping[field]] = final
+        
         super().__init__(instance=res, **kwargs)

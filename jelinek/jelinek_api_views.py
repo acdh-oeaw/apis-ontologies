@@ -189,16 +189,12 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
     
     def get_queryset(self):
-        person_subquery = F10_Person.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(name='name', pk='pk'))
-        person_subquery2 = F10_Person.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values(json=JSONObject(name='name', pk='pk'))
-        property_subquery = Property.objects.filter(triple_set_from_prop__subj_id=OuterRef("pk")).values_list('name', flat=True)
-        property_subquery2 = Property.objects.filter(triple_set_from_prop__obj_id=OuterRef("pk")).values_list('name', flat=True)
+        person_subquery = F10_Person.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values_list('name', flat=True)
+        person_property_subquery = Property.objects.filter(triple_set_from_prop__obj_id=OuterRef("pk")).values_list('name', flat=True)
         work_subquery = F1_Work.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(pk="pk", name="name", genre="genre"))
-        qs = E1_Crm_Entity.objects_inheritance.select_subclasses("f1_work", "f3_manifestation_product_type", "honour", "f31_performance").annotate(
-            related_persons_subj=ArraySubquery(person_subquery),
-            related_persons_obj=ArraySubquery(person_subquery2),
-            kw_properties=ArraySubquery(property_subquery), 
-            kw_properties2=ArraySubquery(property_subquery2),
+        qs = E1_Crm_Entity.objects_inheritance.select_subclasses("f1_work", "f3_manifestation_product_type", "honour", "f31_performance").filter(Q(f1_work__isnull=False) | Q(honour__isnull=False) | Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False)).annotate(
+            related_persons=ArraySubquery(person_subquery),
+            related_person_roles=ArraySubquery(person_property_subquery), 
             related_work= ArraySubquery(work_subquery),
             )
         return qs
