@@ -30,15 +30,23 @@ def populate_indexes():
             ent.vector_column_e1 = SearchVector(Value(txt_e1), config='german')
         for triple in ent.triple_set_from_subj.filter(obj__self_contenttype_id=contenttype_f10):
             txt_pers += triple.obj.name + " "
+            if triple.obj.entity_id is not None:
+                txt_pers += triple.obj.entity_id + " "
         for triple in ent.triple_set_from_obj.filter(subj__self_contenttype_id=contenttype_f10):
             txt_pers += triple.subj.name + " "
+            if triple.subj.entity_id is not None:
+                txt_pers += triple.subj.entity_id + " "
         if len(txt_pers) > 0:
             check = True
             ent.vector_related_f10 = SearchVector(Value(txt_pers))
         for triple in ent.triple_set_from_subj.filter(obj__self_contenttype_id=contenttype_e40):
             txt_e40 += triple.obj.name + " "
+            if triple.obj.entity_id is not None:
+                txt_e40 += triple.obj.entity_id + " "
         for triple in ent.triple_set_from_obj.filter(subj__self_contenttype_id=contenttype_e40):
             txt_e40 += triple.subj.name + " "
+            if triple.subj.entity_id is not None:
+                txt_e40 += triple.subj.entity_id + " "
         if len(txt_e40) > 0:
             check = True
             ent.vector_related_E40 = SearchVector(Value(txt_e40))

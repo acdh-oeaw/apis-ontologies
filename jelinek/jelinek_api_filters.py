@@ -63,7 +63,7 @@ def filter_entity(expr_to_entity, class_to_check=None, role=None, lookup_expr="i
             entry["property_criterion"] = Q(**{entry["property_lookup"]: value})
             disjunction = disjunction | (entry["property_criterion"] & entry["class_criterion"] & entry["role_criterion"])
         if check_dump:
-            disjunction = disjunction | search_in_xml_content_dump(value)
+            disjunction = disjunction | search_in_xml_content_dump(value, classes_to_check=[class_to_check])
         print(disjunction)
         return queryset.filter(disjunction).distinct("id")
     return build_filter_method
@@ -101,7 +101,7 @@ def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_
         return queryset.filter(disjunction).distinct("id")
     return build_filter_method
 
-def search_in_xml_content_dump(value):
+def search_in_xml_content_dump(value, classes_to_check=[]):
     search_string = ""
     if isinstance(value, list):
         search_string = " | ".join(["({})".format(entry.replace(" ", "&")) for entry in value])
@@ -175,19 +175,48 @@ class SearchFilter(django_filters.FilterSet):
         parent = super(SearchFilter, self).qs
         return parent
 
+def search_in_vectors(cols_to_check=["dump", "note", "e1"]):
+        def build_filter_method(queryset, name, value):
+            if isinstance(value, list):
+                value = SearchQuery(" | ".join(["({})".format(entry.replace(" ", "&")) for entry in value]), search_type="raw")
+            disjunction = Q()
+            if "dump" in cols_to_check:
+                disjunction = disjunction | Q(vector_related_xml_content_dump=value)
+            if "note" in cols_to_check:
+                disjunction = disjunction | Q(vector_related_xml_note=value)
+            if "e1" in cols_to_check:
+                disjunction = disjunction | Q(vector_column_e1=value)
+            if "f10" in cols_to_check:
+                disjunction = disjunction | Q(vector_related_f10=value)
+            if "e40" in cols_to_check:
+                disjunction = disjunction | Q(vector_related_E40=value)
+            return queryset.filter(disjunction).distinct("id")
+        return build_filter_method
 
 class SearchFilter2(django_filters.FilterSet):
-    searchterm = django_filters.CharFilter(method='filter_entity_2')
+    class TextInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
+        pass
 
-    class Meta:
-        model = E1_Crm_Entity
-        fields = ["name"]
+    searchterm = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note", "e1", "e40"]))
+    person = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"]))
+    person_id = TextInFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"]))
+    institution = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
+    institution_id = TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
+    title = django_filters.CharFilter(field_name="f1_work__name", lookup_expr="contains")
+    work_id = TextInFilter(field_name="f1_work__entity_id", lookup_expr="in")
+    honour_id = TextInFilter(field_name="honour__entity_id", lookup_expr="in")
+    genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
+    textLang = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
+    startDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="gte")
+    endDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="lte")
 
-    def filter_entity_2(self, queryset, name, value):
-        return queryset.filter(
-            Q(vector_column_e1=value)|
-            Q(vector_related_f10=value)|
-            Q(vector_related_E40=value)|
-            Q(vector_related_xml_content_dump=value)|
-            Q(vector_related_xml_note=value)
-            )
+    chapter_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is in chapter", check_dump=False, is_chapter=True))
+    keyword = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=Keyword, lookup_expr="in"))
+    keyword_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
+    
+    place = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=F9_Place, lookup_expr="in"))
+    country = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], is_country=True))
+    place_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
+
+    mediatype = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
+
