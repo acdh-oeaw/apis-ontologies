@@ -21,17 +21,17 @@ class Xml_Content_Dump(TempEntityClass):
 @reversion.register(follow=["tempentityclass_ptr"])
 class E1_Crm_Entity(TempEntityClass):
     entity_id = models.CharField(max_length=1024, blank=True, null=True)
-    vector_column_e1 = SearchVectorField(null=True)
-    vector_related_f10 = SearchVectorField(null=True)
-    vector_related_E40 = SearchVectorField(null=True)
-    vector_related_xml_content_dump = SearchVectorField(null=True)
-    vector_related_xml_note = SearchVectorField(null=True)
+    vector_column_e1_set = SearchVectorField(null=True)
+    vector_related_f10_set = SearchVectorField(null=True)
+    vector_related_E40_set = SearchVectorField(null=True)
+    vector_related_xml_content_dump_set = SearchVectorField(null=True)
+    vector_related_xml_note_set = SearchVectorField(null=True)
 
     def get_entity_list_filter():
         class AdHocEntityListFilter(django_filters.FilterSet):
             class Meta:
                 model = E1_Crm_Entity
-                exclude = ["vector_column_e1", "vector_related_f10", "vector_related_E40", "vector_related_xml_content_dump", "vector_related_xml_note"]
+                exclude = ["vector_column_e1_set", "vector_related_f10_set", "vector_related_E40_set", "vector_related_xml_content_dump_set", "vector_related_xml_note_set"]
         return AdHocEntityListFilter
 
 

@@ -27,7 +27,7 @@ def populate_indexes():
                     txt_e1 += getattr(ent, attr) + " "
                     check = True
         if len(txt_e1) > 0:
-            ent.vector_column_e1 = SearchVector(Value(txt_e1), config='german')
+            ent.vector_column_e1_set = SearchVector(Value(txt_e1), config='german')
         for triple in ent.triple_set_from_subj.filter(obj__self_contenttype_id=contenttype_f10):
             txt_pers += triple.obj.name + " "
             if triple.obj.entity_id is not None:
@@ -38,7 +38,7 @@ def populate_indexes():
                 txt_pers += triple.subj.entity_id + " "
         if len(txt_pers) > 0:
             check = True
-            ent.vector_related_f10 = SearchVector(Value(txt_pers))
+            ent.vector_related_f10_set = SearchVector(Value(txt_pers))
         for triple in ent.triple_set_from_subj.filter(obj__self_contenttype_id=contenttype_e40):
             txt_e40 += triple.obj.name + " "
             if triple.obj.entity_id is not None:
@@ -49,19 +49,19 @@ def populate_indexes():
                 txt_e40 += triple.subj.entity_id + " "
         if len(txt_e40) > 0:
             check = True
-            ent.vector_related_E40 = SearchVector(Value(txt_e40))
+            ent.vector_related_E40_set = SearchVector(Value(txt_e40))
         for triple in ent.triple_set_from_subj.filter(obj__self_contenttype_id=contenttype_content_dump):
             txt_xml_content += triple.obj.file_content + " "
         if len(txt_xml_content) > 0:
             check = True
-            ent.vector_related_xml_content_dump = SearchVector(Value(txt_xml_content), config='german')
+            ent.vector_related_xml_content_dump_set = SearchVector(Value(txt_xml_content), config='german')
         for triple in ent.triple_set_from_subj.filter(obj__self_contenttype_id=contenttype_note):
             txt_xml_note += triple.obj.content + " "
         for triple in ent.triple_set_from_obj.filter(subj__self_contenttype_id=contenttype_note):
             txt_xml_note += triple.subj.content + " "
         if len(txt_xml_note) > 0:
             check = True
-            ent.vector_related_xml_note = SearchVector(Value(txt_xml_note), config='german')
+            ent.vector_related_xml_note_set = SearchVector(Value(txt_xml_note), config='german')
         if check:
             ent.save()
 

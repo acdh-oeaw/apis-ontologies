@@ -181,15 +181,15 @@ def search_in_vectors(cols_to_check=["dump", "note", "e1"]):
                 value = SearchQuery(" | ".join(["({})".format(entry.replace(" ", "&")) for entry in value]), search_type="raw")
             disjunction = Q()
             if "dump" in cols_to_check:
-                disjunction = disjunction | Q(vector_related_xml_content_dump=value)
+                disjunction = disjunction | Q(vector_related_xml_content_dump_set=value)
             if "note" in cols_to_check:
-                disjunction = disjunction | Q(vector_related_xml_note=value)
+                disjunction = disjunction | Q(vector_related_xml_note_set=value)
             if "e1" in cols_to_check:
-                disjunction = disjunction | Q(vector_column_e1=value)
+                disjunction = disjunction | Q(vector_column_e1_set=value)
             if "f10" in cols_to_check:
-                disjunction = disjunction | Q(vector_related_f10=value)
+                disjunction = disjunction | Q(vector_related_f10_set=value)
             if "e40" in cols_to_check:
-                disjunction = disjunction | Q(vector_related_E40=value)
+                disjunction = disjunction | Q(vector_related_E40_set=value)
             return queryset.filter(disjunction).distinct("id")
         return build_filter_method
 
