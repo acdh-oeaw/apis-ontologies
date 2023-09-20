@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.postgres.search import SearchVectorField
 # from apis_core.apis_entities.models import AbstractEntity
 from apis_core.apis_entities.models import TempEntityClass, TempTriple
+import django_filters
 
 
 
@@ -25,6 +26,14 @@ class E1_Crm_Entity(TempEntityClass):
     vector_related_E40 = SearchVectorField(null=True)
     vector_related_xml_content_dump = SearchVectorField(null=True)
     vector_related_xml_note = SearchVectorField(null=True)
+
+    def get_entity_list_filter():
+        class AdHocEntityListFilter(django_filters.FilterSet):
+            class Meta:
+                model = E1_Crm_Entity
+                exclude = ["vector_column_e1", "vector_related_f10", "vector_related_E40", "vector_related_xml_content_dump", "vector_related_xml_note"]
+        return AdHocEntityListFilter
+
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
