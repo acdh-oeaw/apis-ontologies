@@ -197,7 +197,7 @@ class SearchFilter2(django_filters.FilterSet):
     class TextInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
         pass
 
-    searchterm = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note", "e1", "e40"]))
+    searchTerm = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note", "e1", "e40"]))
     person = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"]))
     person_id = TextInFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"]))
     institution = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
