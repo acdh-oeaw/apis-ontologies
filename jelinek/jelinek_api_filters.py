@@ -175,10 +175,12 @@ class SearchFilter(django_filters.FilterSet):
         parent = super(SearchFilter, self).qs
         return parent
 
-def search_in_vectors(cols_to_check=["dump", "note", "e1"]):
+def search_in_vectors(cols_to_check=["dump", "note", "e1"], names_to_check=None):
         def build_filter_method(queryset, name, value):
             if isinstance(value, list):
                 value = SearchQuery(" | ".join(["({})".format(entry.replace(" ", "&")) for entry in value]), search_type="raw")
+                if names_to_check is not None:
+                    value = value & SearchQuery(" | ".join(["({})".format(entry.replace(" ", "&")) for entry in names_to_check]), search_type="raw")
             disjunction = Q()
             if "dump" in cols_to_check:
                 disjunction = disjunction | Q(vector_related_xml_content_dump_set=value)
@@ -219,4 +221,35 @@ class SearchFilter2(django_filters.FilterSet):
     place_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
 
     mediatype = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
+
+    @property
+    def qs(self):
+        if "person_id" in self.data:
+            self.filters['person'] = django_filters.CharFilter(method=empty_filter)
+        if "person" in self.data:
+            self.filters['person_id'] = self.TextInFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"], names_to_check=[self.data["person"]]))
+        if "personRole" in self.data:
+            if "about" in self.data["personRole"]:
+                self.filters['person_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
+            else:
+                self.filters['person'] = django_filters.CharFilter(method=filter_entity(["triple_set_from_obj__subj"], class_to_check=F10_Person, lookup_expr="contains", role=self.data["personRole"]))
+                self.filters['person_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], role=self.data["personRole"]))
+        if "institution_id" in self.data:
+            self.filters['institution'] = django_filters.CharFilter(method=empty_filter)
+        if "institution" in self.data:
+            self.filters['institution_id'] = self.TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"], names_to_check=[self.data["institution"]]))
+        if "institutionRole" in self.data:
+            if "about" in self.data["institutionRole"]:
+                self.filters['institution_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
+            else:
+                self.filters['institution'] = django_filters.CharFilter(method=filter_entity(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], class_to_check=E40_Legal_Body, lookup_expr="contains", role=self.data["institutionRole"]))
+                self.filters['institution_id'] =  self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], role=self.data["institutionRole"]))
+        if "workRole" in self.data and "about" in self.data["workRole"]:
+            self.filters['work_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
+        if "honourRole" in self.data and "about" in self.data["honourRole"]:
+            self.filters['honour_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
+        if "chapterRole" in self.data and "about" in self.data["chapterRole"]:
+            self.filters['chapter_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about", is_chapter=True, check_dump=False))
+        parent = super(SearchFilter2, self).qs
+        return parent
 
