@@ -1,10 +1,10 @@
 from rest_framework.response import Response
 from rest_framework import viewsets
 from .models import E1_Crm_Entity, E40_Legal_Body, E55_Type, F10_Person, F1_Work, F3_Manifestation_Product_Type, Chapter, F9_Place, Honour, Keyword, XMLNote, Xml_Content_Dump
-from .jelinek_api_serializers import F1WorkSerializer, HonourSerializer, SearchSerializer, F3ManifestationProductTypeSerializer, SearchSerializer2, WorkForChapterSerializer
-from .jelinek_api_filters import ChapterFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter, SearchFilter2
+from .jelinek_api_serializers import F1WorkSerializer, HonourSerializer, LonelyE1CrmEntitySerializer, SearchSerializer, F3ManifestationProductTypeSerializer, SearchSerializer2, WorkForChapterSerializer
+from .jelinek_api_filters import ChapterFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter, SearchFilter2, EntitiesWithoutRelationsFilter
 from apis_core.apis_relations.models import Triple
-from django.db.models import Q
+from django.db.models import Q, Count, Sum, Case, When, IntegerField
 from datetime import datetime
 from django.db.models import Q, OuterRef
 from django.db.models.functions import JSONObject
@@ -214,3 +214,7 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
             )
         return qs
     
+class EntitiesWithoutRelations(viewsets.ReadOnlyModelViewSet):
+    queryset = E1_Crm_Entity.objects.annotate(relation_count=Count("triple_set_from_obj")+Count("triple_set_from_subj", filter=Q(triple_set_from_subj__obj__name__regex=r'^(?!.*_index\.xml$).*$'))).filter(relation_count=0)
+    serializer_class = LonelyE1CrmEntitySerializer
+    filter_class=EntitiesWithoutRelationsFilter

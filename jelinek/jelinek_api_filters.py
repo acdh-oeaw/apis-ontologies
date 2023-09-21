@@ -253,3 +253,9 @@ class SearchFilter2(django_filters.FilterSet):
         parent = super(SearchFilter2, self).qs
         return parent
 
+class EntitiesWithoutRelationsFilter(django_filters.FilterSet):
+    class Meta:
+        model = E1_Crm_Entity
+        fields = {'id': ['exact', 'in'],
+                  'self_contenttype': ['exact', 'in']
+                  }   

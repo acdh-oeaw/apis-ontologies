@@ -554,3 +554,19 @@ class SearchSerializer2(serializers.Serializer):
             res["facets"][props_to_facet_mapping[field]] = final
         
         super().__init__(instance=res, **kwargs)
+        
+
+class LonelyE1CrmEntitySerializer(serializers.ModelSerializer):
+    details_url = serializers.SerializerMethodField()
+    class Meta:
+        model = E1_Crm_Entity
+        fields = [
+            "id",
+            "name",
+            "self_contenttype",
+            "entity_id",
+            "details_url",
+        ]
+        depth=1
+    def get_details_url(self, obj):
+        return "https://apis-jelinek.acdh-dev.oeaw.ac.at/apis/entities/entity/e1_crm_entity/{}/detail/".format(obj.id)
