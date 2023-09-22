@@ -178,9 +178,11 @@ class SearchFilter(django_filters.FilterSet):
 def search_in_vectors(cols_to_check=["dump", "note", "e1"], names_to_check=None):
         def build_filter_method(queryset, name, value):
             if isinstance(value, list):
-                value = SearchQuery(" | ".join(["({})".format(entry.replace(" ", "&")) for entry in value]), search_type="raw")
+                value = SearchQuery(" | ".join(["({})".format(entry.replace(" ", "&")) for entry in value]), search_type="raw", config="german")
                 if names_to_check is not None:
-                    value = value & SearchQuery(" | ".join(["({})".format(entry.replace(" ", "&")) for entry in names_to_check]), search_type="raw")
+                    value = value & SearchQuery(" | ".join(["({})".format(entry.replace(" ", "&")) for entry in names_to_check]), search_type="raw", config="german")
+            else:
+                value = SearchQuery(value, config="german")
             disjunction = Q()
             if "dump" in cols_to_check:
                 disjunction = disjunction | Q(vector_related_xml_content_dump_set=value)
