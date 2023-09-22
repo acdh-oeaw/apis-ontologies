@@ -554,13 +554,13 @@ class SearchSerializer2(serializers.Serializer):
             final = []
             for k, v in res["facets"][subqueries_to_facet_mapping[field]].items():
                 final.append({"search_by": k, "name": id_to_name_mapping.get(k, k), "count": v})
-            res["facets"][subqueries_to_facet_mapping[field]] = final
+            res["facets"][subqueries_to_facet_mapping[field]] = sorted(final, key=lambda k: k["count"], reverse=True)
 
         for field in props_to_facet_mapping:   
             final = []
             for k, v in res["facets"][props_to_facet_mapping[field]].items():
                 final.append({"search_by": k, "name": id_to_name_mapping.get(k, k), "count": v})
-            res["facets"][props_to_facet_mapping[field]] = final
+            res["facets"][props_to_facet_mapping[field]] = sorted(final, key=lambda k: k["count"], reverse=True)
         
         super().__init__(instance=res, **kwargs)
         
