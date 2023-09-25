@@ -22,10 +22,10 @@ def generate_xml_dumps():
             root = etree.fromstring(xml.file_content)
             for list in root.xpath("//*[name()='listBibl']"):
                  list.getparent().remove(list)
-            print(root.xpath("//*[name()='listBibl']/.."))
             body = root.xpath("//*[name()='body']")
             if len(body) > 0:
                 extracted_xml_content = "".join([t for t in body[0].itertext()])
+                extracted_xml_content += " ".join(ref for ref in body[0].xpath("//@ref"))
                 extracted_xml_content = re.sub(r"\n", " ", extracted_xml_content,0,re.MULTILINE)
                 extracted_xml_content = re.sub(r"  +", " ", extracted_xml_content,0,re.MULTILINE)
                 print(extracted_xml_content)

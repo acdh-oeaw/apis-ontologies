@@ -16,6 +16,7 @@ from .generate_short_entry import run as generate_short
 from .generate_genre import run as generate_genre
 from .generate_xml_dumps import run as generate_xml_dumps
 from .import_index_in_chapter import run as import_index_in_chapter
+from .populate_indexes import run as populate_indexes
 import os
 
 
@@ -4769,6 +4770,7 @@ def run(*args, **options):
         generate_xml_dumps()
         generate_short()
         import_index_in_chapter()
+        populate_indexes()
         
 
     main_run()

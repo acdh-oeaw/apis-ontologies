@@ -68,7 +68,7 @@ def filter_entity(expr_to_entity, class_to_check=None, role=None, lookup_expr="i
         return queryset.filter(disjunction).distinct("id")
     return build_filter_method
 
-def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_for_name=None, is_chapter=False, is_country=False):
+def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_for_name=None, is_chapter=False, is_country=False, or_self=False):
     criteria_to_join = []
     for expr in expr_to_entity:
         role_criterion = Q()
@@ -97,6 +97,8 @@ def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_
                 disjunction = disjunction | search_in_xml_content_dump(["|".join(value), check_dump_for_name])
             else:
                 disjunction = disjunction | search_in_xml_content_dump("|".join(value))
+        if or_self:
+            disjunction = disjunction | Q(entity_id__in=value)
         print(disjunction)
         return queryset.filter(disjunction).distinct("id")
     return build_filter_method
@@ -207,7 +209,8 @@ class SearchFilter2(django_filters.FilterSet):
     institution = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
     institution_id = TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
     title = django_filters.CharFilter(field_name="f1_work__name", lookup_expr="contains")
-    work_id = TextInFilter(field_name="f1_work__entity_id", lookup_expr="in")
+    # work_id = TextInFilter(field_name="f1_work__entity_id", lookup_expr="in")
+    work_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], or_self=True))
     honour_id = TextInFilter(field_name="honour__entity_id", lookup_expr="in")
     genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
     textLang = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
