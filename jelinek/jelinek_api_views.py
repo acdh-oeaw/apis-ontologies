@@ -198,9 +198,9 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
         institution_property_subquery = Property.objects.filter(triple_set_from_prop__obj_id=OuterRef("pk"), triple_set_from_prop__subj__self_contenttype_id=institution_contenttype).values_list('name', flat=True)
         keyword_subquery = Keyword.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="keyword_id"))
         place_subquery = F9_Place.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
-        country_subquery = F9_Place.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values(json=JSONObject(name="country", entity_id="entity_id"))
+        country_subquery = F9_Place.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values_list("country", flat=True)
         mediatype_subquery = E55_Type.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values_list('name', flat=True)
-        work_subquery = F1_Work.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk"), triple_set_from_subj__prop__name__in=["is expressed in", "is reported in", "is original for translation"]).values(json=JSONObject(pk="pk", name="name", genre="genre"))
+        work_subquery = F1_Work.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk"), triple_set_from_subj__prop__name__in=["is expressed in", "is reported in", "is original for translation"]).values(json=JSONObject(pk="pk", name="name", genre="genre", entity_id="entity_id"))
         qs = E1_Crm_Entity.objects_inheritance.select_subclasses("f1_work", "f3_manifestation_product_type", "honour", "f31_performance").filter(Q(f1_work__isnull=False) | Q(honour__isnull=False) | Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False)).annotate(
             related_persons=ArraySubquery(person_subquery),
             related_person_roles=ArraySubquery(person_property_subquery), 

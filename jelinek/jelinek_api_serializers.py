@@ -454,6 +454,7 @@ class SearchSerializerWork(serializers.Serializer):
     id = serializers.IntegerField(source="pk")
     name = serializers.CharField()
     genre = serializers.CharField()
+    entity_id = serializers.CharField()
 
 class SearchSerializerResult(serializers.Serializer):
     name = serializers.CharField()
