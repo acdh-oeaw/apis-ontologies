@@ -253,7 +253,7 @@ class TreesManager:
                     #and is_valid_text(xml_elem.text)
                 ):
                     for child in xml_elem:
-                        if child.tag.endswith("orgName") or child.tag.endswith("title"):
+                        if (child.tag.endswith("orgName") or child.tag.endswith("title")) and not child.attrib.get("type") == "alternative":
                             attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(child, encoding="unicode").strip(child.tail)))
                         elif child.tag.endswith("place") and child.attrib.get("type") == "venue":
                             attr_dict["name"] = child.text
@@ -265,11 +265,11 @@ class TreesManager:
 
                     if xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None:
                         attr_dict["institution_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
-                    elif xml_elem.attrib.get("ref") is not None:
+                    elif xml_elem.attrib.get("ref") is not None and not "place:place_" in xml_elem.attrib.get("ref"):
                         attr_dict["institution_id"] = xml_elem.attrib.get("ref").replace("insti:", "").replace("venues:","")
                 elif (
                     xml_elem.tag.endswith("orgName")
-                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is None
+                    and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None
                 ):
                     attr_dict["name"] = remove_whitespace(xml_elem.text)
 
