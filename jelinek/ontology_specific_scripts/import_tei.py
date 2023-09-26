@@ -341,7 +341,7 @@ class TreesManager:
                 if (
                     xml_elem.tag.endswith("bibl")
                     and xml_elem.attrib.get("type") is not None
-                    # and xml_elem.attrib.get("ana") == "frbroo:manifestation"
+                    and xml_elem.attrib.get("type") != "content"
                 ):
                     attr_dict["name_type"] = xml_elem.attrib.get("type")
                     attr_dict["name_subtype"] = xml_elem.attrib.get("subtype")
