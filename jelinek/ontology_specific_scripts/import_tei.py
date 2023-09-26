@@ -4211,6 +4211,8 @@ class TreesManager:
 
             def find_all_inner_f1_entities(path_node):
                 path_node_entities = []
+                if path_node.xml_elem.tag.endswith("rs"):
+                    return path_node_entities
                 for entity in path_node.entities_list:
                     if has_class_as_parent(entity.__class__, F1_Work):
                         path_node_entities.append(entity)
