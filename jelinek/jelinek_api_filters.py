@@ -75,6 +75,9 @@ def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_
         if role is not None:
             role_criterion_lookup = ("__").join([("__").join(expr.split("__")[:-1]), "prop__name__contains"])
             role_criterion = Q(**{role_criterion_lookup: role})
+            if "," in role:
+                role_criterion_lookup = ("__").join([("__").join(expr.split("__")[:-1]), "prop__name__in"])
+                role_criterion = Q(**{role_criterion_lookup: role.split(",")})
         criteria_to_join.append({
                 "role_criterion": role_criterion
         })
@@ -257,6 +260,38 @@ class SearchFilter2(django_filters.FilterSet):
             self.filters['chapter_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about", is_chapter=True, check_dump=False))
         parent = super(SearchFilter2, self).qs
         return parent
+
+def exclude_null_values(queryset, name, value):
+    filter_name = "{}__isnull".format(name)
+    return queryset.exclude(Q(**{filter_name: True}))
+
+class FacetFilter(django_filters.FilterSet):
+    class TextInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
+        pass
+
+    filter_persons = TextInFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"]))
+    filter_institutions = TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
+    filter_genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
+    filter_keywords = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=Keyword, lookup_expr="in"))
+    filter_countries = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], is_country=True))
+    filter_places= TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
+    filter_mediatypes = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
+    filter_mediagroups = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
+    filter_languages = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
+    filter_startDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="gte")
+    filter_endDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="lte")
+    filter_koha = django_filters.CharFilter(field_name="f3_manifestation_product_type__koha_id", method=exclude_null_values)
+
+    @property
+    def qs(self):
+        if "filter_personRoles" in self.data:
+            self.filters['filter_persons'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], role=self.data["filter_personRoles"]))
+        if "filter_institutionRoles" in self.data:
+            self.filters['filter_institutions'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], role=self.data["filter_institutionRoles"]))
+        
+        parent = super(FacetFilter, self).qs
+        return parent
+
 
 class EntitiesWithoutRelationsFilter(django_filters.FilterSet):
     class Meta:

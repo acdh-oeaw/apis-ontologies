@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from .models import E1_Crm_Entity, E40_Legal_Body, E55_Type, F10_Person, F1_Work, F3_Manifestation_Product_Type, Chapter, F9_Place, Honour, Keyword, XMLNote, Xml_Content_Dump
 from .jelinek_api_serializers import F1WorkSerializer, HonourSerializer, LonelyE1CrmEntitySerializer, SearchSerializer, F3ManifestationProductTypeSerializer, SearchSerializer2, WorkForChapterSerializer
-from .jelinek_api_filters import ChapterFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter, SearchFilter2, EntitiesWithoutRelationsFilter
+from .jelinek_api_filters import ChapterFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter, SearchFilter2, EntitiesWithoutRelationsFilter, FacetFilter
 from apis_core.apis_relations.models import Triple
 from django.db.models import Q, Count, Sum, Case, When, IntegerField
 from datetime import datetime
@@ -186,7 +186,11 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=False)
+
+        # apply facet filter 
+        facet_filtered_queryset = FacetFilter(self.request.GET, queryset=queryset).qs
+
+        serializer = self.get_serializer(facet_filtered_queryset, many=False)
         return Response(serializer.data)
     
     def get_queryset(self):
@@ -196,7 +200,7 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
         person_property_subquery = Property.objects.filter(triple_set_from_prop__obj_id=OuterRef("pk"), triple_set_from_prop__subj__self_contenttype_id=person_contenttype).values_list('name', flat=True)
         institution_subquery = E40_Legal_Body.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
         institution_property_subquery = Property.objects.filter(triple_set_from_prop__obj_id=OuterRef("pk"), triple_set_from_prop__subj__self_contenttype_id=institution_contenttype).values_list('name', flat=True)
-        keyword_subquery = Keyword.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="keyword_id"))
+        keyword_subquery = Keyword.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values_list('name', flat=True)
         place_subquery = F9_Place.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
         country_subquery = F9_Place.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values_list("country", flat=True)
         mediatype_subquery = E55_Type.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values_list('name', flat=True)
