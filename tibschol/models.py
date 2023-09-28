@@ -84,9 +84,9 @@ class Instance(TempEntityClass):
     @cached_property
     def work(self):
         try:
-            WORK_REL = Property.objects.get(name="instance of")
-            work = Triple.objects.filter(prop=WORK_REL, subj=self)
-            return work[0].obj
+            WORK_REL = Property.objects.get(name="has as an instance")
+            work = Triple.objects.filter(prop=WORK_REL, obj=self)
+            return work[0].subj
         except Exception as e:
             return
 
