@@ -97,12 +97,7 @@ APIS_ENTITIES = {
                 "label": "Name or reference",
             },
         },
-        "table_fields": [
-            "id",
-            "tibschol_ref",
-            "name",
-            "external_link",
-        ],
+        "table_fields": ["id", "tibschol_ref", "name", "author", "external_link"],
     },
     "Person": {
         "relations_per_page": 100,
@@ -130,7 +125,7 @@ APIS_ENTITIES = {
                 "label": "Name or reference",
             },
         },
-        "table_fields": ["id", "name", "sde_dge_ref"],
+        "table_fields": ["id", "name", "sde_dge_ref", "author"],
     },
     "Place": {
         "relations_per_page": 100,

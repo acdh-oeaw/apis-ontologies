@@ -2,6 +2,8 @@ import reversion
 from apis_core.apis_entities.models import TempEntityClass
 from django.db import models
 import logging
+from apis_core.apis_relations.models import Triple, Property
+from django.utils.functional import cached_property
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +81,24 @@ class Instance(TempEntityClass):
         blank=True, null=True, verbose_name="Alternative names"
     )
 
+    @cached_property
+    def work(self):
+        try:
+            WORK_REL = Property.objects.get(name="instance of")
+            work = Triple.objects.filter(prop=WORK_REL, subj=self)
+            return work[0].obj
+        except Exception as e:
+            return
+
+    @cached_property
+    def author(self):
+        try:
+            print(self.work, self.work.author)
+            return self.work.author
+        except Exception as e:
+            print(e)
+            return
+
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Person(TempEntityClass):
@@ -116,6 +136,17 @@ class Work(TempEntityClass):
     sde_dge_ref = models.CharField(
         max_length=25, blank=True, null=True, verbose_name="Derge reference"
     )
+
+    @cached_property
+    def author(self):
+        try:
+            # TODO: Should this be within property?
+            AUTHOR_REL = Property.objects.get(name="author of")
+            author = Triple.objects.filter(prop=AUTHOR_REL, obj=self)
+            return author[0].subj
+        except Exception as e:
+            print(e)
+            return
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
