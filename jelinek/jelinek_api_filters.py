@@ -230,6 +230,9 @@ class SearchFilter2(django_filters.FilterSet):
 
     mediatype = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
 
+    publisher = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
+    publisher_id = TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
+
     @property
     def qs(self):
         if "person_id" in self.data:
