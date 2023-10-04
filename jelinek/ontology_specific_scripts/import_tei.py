@@ -3970,7 +3970,7 @@ class TreesManager:
                                                 entity_subj=entity_performance,
                                                 entity_obj=entity_other,
                                                 prop=Property.objects.get(name="has been performed at"),
-                                                path_node=path_node_child_child
+                                                path_node=path_node_child
                                             )
 
             def triple_from_f31_to_f1(entity_performance, path_node: PathNode):
