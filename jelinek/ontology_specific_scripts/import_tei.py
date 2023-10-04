@@ -274,6 +274,8 @@ class TreesManager:
                     attr_dict["name"] = remove_whitespace(xml_elem.text)
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
+                    if attr_dict["name"] is not None:
+                        attr_dict["name"] = attr_dict["name"].replace("&amp;", "&")
 
                     return attr_dict
 
