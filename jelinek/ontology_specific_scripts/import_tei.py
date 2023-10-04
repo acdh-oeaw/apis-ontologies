@@ -1095,6 +1095,7 @@ class TreesManager:
                 elif (
                     xml_elem.tag.endswith("bibl")
                     and xml_elem.attrib.get("ana") != "frbroo:work"
+                    and xml_elem.attrib.get("ana") != "frbroo:aggregation_work"
                     and xml_elem.attrib.get("ana") != "frbroo:manifestation"
                 ):
 
