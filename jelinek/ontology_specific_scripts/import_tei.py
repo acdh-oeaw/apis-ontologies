@@ -2403,7 +2403,7 @@ class TreesManager:
 
                     top_level_node = get_uppermost_parent(path_node)
                     # navigate to chapters
-                    def find_all_entities_of_class(subtree, class_name, found_elements=[], stop_after_tag=None):
+                    def find_all_entities_of_class(subtree, class_name, found_elements=[], stop_after_tag=None, stop_after_attr=None):
                         queue = []     #Initialize a queue
                         found_elements += [e for e in subtree.entities_list if e.__class__ == class_name]
                         queue.append(subtree)
@@ -2411,12 +2411,15 @@ class TreesManager:
                         while queue:          # Creating loop to visit each node
                             node = queue.pop(0) 
                             for child in node.path_node_children_list:
+                                if stop_after_attr is not None and child.xml_elem.attrib.get(stop_after_attr[0], "") == stop_after_attr[1]:
+                                    break
                                 found_elements += [e for e in child.entities_list if e.__class__ == class_name]
                                 queue.append(child)
                                 if stop_after_tag is not None and child.xml_elem.tag.endswith(stop_after_tag):
                                     break
+                                
                         return found_elements
-                    chapters = find_all_entities_of_class(top_level_node, Chapter, [])
+                    chapters = find_all_entities_of_class(top_level_node, Chapter, [], stop_after_attr=["ana", "about"])
                     if len(chapters) > 0:
                         leaf_chapters = []
                         for (idx, c) in enumerate(chapters):
