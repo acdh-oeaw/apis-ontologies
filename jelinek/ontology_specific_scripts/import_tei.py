@@ -17,6 +17,7 @@ from .generate_genre import run as generate_genre
 from .generate_xml_dumps import run as generate_xml_dumps
 from .import_index_in_chapter import run as import_index_in_chapter
 from .populate_indexes import run as populate_indexes
+from .assign_default_manifestation import run as assign_default_manifestation
 import os
 
 
@@ -4904,6 +4905,7 @@ def run(*args, **options):
         generate_short()
         import_index_in_chapter()
         populate_indexes()
+        assign_default_manifestation()
         
 
     main_run()
