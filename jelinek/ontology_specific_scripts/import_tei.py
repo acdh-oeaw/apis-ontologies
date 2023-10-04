@@ -645,6 +645,7 @@ class TreesManager:
                     "name": None,
                     "index_in_chapter": None,
                     "start_date_written": None,
+                    "date_hidden": None
                 }
 
                 if (
@@ -671,6 +672,8 @@ class TreesManager:
                         ):
 
                             attr_dict["start_date_written"] = xml_elem_child.text
+                            if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
+                                attr_dict["date_hidden"] = True
 
                 if len([v for v in attr_dict.values() if v is not None]) > 0:
 
@@ -753,6 +756,8 @@ class TreesManager:
                     "koha_id": None,
                     "name": None,
                     "title_in_note": None,
+                    "title_hidden": None,
+                    "date_hidden": None,
                     "series": None,
                     "edition": None,
                     "page": None,
@@ -798,6 +803,8 @@ class TreesManager:
                                 attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
+                                if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
+                                    attr_dict["title_hidden"] = True
 
                         elif (
                              xml_elem_child.tag.endswith("rs")
@@ -815,6 +822,8 @@ class TreesManager:
                                     else:
                                         attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                                         attr_dict["name"] = attr_dict["name"].replace("</ns0:title> </ns0:rs>", "")
+                                    if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
+                                        attr_dict["title_hidden"] = True
 
                         elif (
                              xml_elem_child.tag.endswith("note")
@@ -848,6 +857,8 @@ class TreesManager:
                             else:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
+                                if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
+                                        attr_dict["date_hidden"] = True
 
                         elif xml_elem_child.tag.endswith("ref"):
 
@@ -905,6 +916,8 @@ class TreesManager:
                                 attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
+                                if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
+                                        attr_dict["title_hidden"] = True
 
                         elif xml_elem_child.tag.endswith("edition"):
 
@@ -934,6 +947,8 @@ class TreesManager:
                             else:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
+                                if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
+                                        attr_dict["date_hidden"] = True
 
                         elif xml_elem_child.tag.endswith("ref"):
 
@@ -986,6 +1001,8 @@ class TreesManager:
                                 attr_dict["untertitel"] = attr_dict["untertitel"] = remove_whitespace(remove_outer_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
                             else:
                                 attr_dict["name"] = remove_whitespace(remove_xml_tags(ET.tostring(xml_elem_child, encoding="unicode").strip(xml_elem_child.tail)))
+                                if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
+                                    attr_dict["title_hidden"] = True
                         elif (
                             xml_elem_child.tag.endswith("hi")
                             and is_valid_text(xml_elem_child.text)
@@ -1014,6 +1031,8 @@ class TreesManager:
                             else:
 
                                 attr_dict["start_date_written"] = xml_elem_child.text
+                                if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
+                                        attr_dict["date_hidden"] = True
 
                         elif xml_elem_child.tag.endswith("note"):
 
@@ -1144,11 +1163,8 @@ class TreesManager:
 
                     elif attr_dict["name"] is not None:
 
-                        # TODO : Temporary Work-around until the encoding problem is solved
-                        # db_result = F3_Manifestation_Product_Type.objects.get_or_create(
-                        #     name=attr_dict["name"],
-                        # )
-                        db_hit = F3_Manifestation_Product_Type.objects.filter(name=attr_dict["name"])
+                        filter_dict = dict(filter(lambda entry: entry[1] is not None, attr_dict.items()))
+                        db_hit = F3_Manifestation_Product_Type.objects.filter(**filter_dict)
 
                         if len(db_hit) > 1:
 
@@ -1914,6 +1930,7 @@ class TreesManager:
                     "airing_date": None,
                     "broadcast_id": None,
                     "start_date_written": None,
+                    "date_hidden": None,
                     "recording_type": None,
                     "note": None
                 }
@@ -1951,6 +1968,8 @@ class TreesManager:
                             airing_date = xml_elem_child.text
                             attr_dict["airing_date"] = xml_elem_child.text
                             attr_dict["start_date_written"] = xml_elem_child.text
+                            if xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]:
+                                attr_dict["date_hidden"] = True
 
                         elif (
                             (xml_elem_child.tag.endswith("orgName")
@@ -2068,6 +2087,7 @@ class TreesManager:
                     "name": None,
                     "note": None,
                     "category": None,
+                    "date_hidden": None,
                     "start_date_written": None,
                     "performance_id": None,
                     "performance_type": None
@@ -2079,6 +2099,7 @@ class TreesManager:
                     and (
                         xml_elem.attrib.get("ana") == "staging" 
                         or xml_elem.attrib.get("ana") == "UA" 
+                        or xml_elem.attrib.get("ana") == "UL" 
                         or xml_elem.attrib.get("ana") == "UA_Film" 
                         or xml_elem.attrib.get("ana") == "UA_film" 
                         or xml_elem.attrib.get("ana") == "EA" 
@@ -2093,6 +2114,8 @@ class TreesManager:
 
                     if xml_elem.attrib.get("ana") == "UA":
                             attr_dict["performance_type"] = "UA"
+                    if xml_elem.attrib.get("ana") == "UL":
+                            attr_dict["performance_type"] = "UL"
                     elif xml_elem.attrib.get("ana") == "UA_Film":
                             attr_dict["performance_type"] = "UA_Film"
                     elif xml_elem.attrib.get("ana") == "UA_film":
@@ -2114,6 +2137,8 @@ class TreesManager:
                         ):
 
                             attr_dict["start_date_written"] = xml_elem_child.text
+                            if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
+                                attr_dict["date_hidden"] = True
 
                         elif (
                             (xml_elem_child.tag.endswith("rs")
@@ -2620,7 +2645,7 @@ class TreesManager:
 
                 return path_node
 
-        def create_triple(entity_subj, entity_obj, prop):
+        def create_triple(entity_subj, entity_obj, prop, path_node=None):
 
             db_result = None
             if prop.name == "is in chapter":
@@ -2630,10 +2655,19 @@ class TreesManager:
                     prop=prop
                 )
             else:
-                db_result = TempTriple.objects.get_or_create(
+                hidden = None
+                if path_node is not None:
+                    current_path_node = path_node
+                    while hidden is None and current_path_node.path_node_parent is not None:
+                        if current_path_node.xml_elem.attrib.get("rendition", "") in ["#hidden", "hidden"]:
+                            hidden = True
+                        current_path_node = current_path_node.path_node_parent
+
+                db_result = RenditionTriple.objects.get_or_create(
                     subj=entity_subj,
                     obj=entity_obj,
-                    prop=prop
+                    prop=prop,
+                    rendition_hidden=hidden
                 )
 
             if db_result[1] is True:
@@ -2668,7 +2702,7 @@ class TreesManager:
                                                 if entity_other is None or entity_work is None:
                                                     print("One of the two entities is none, this shouldn't happen")
                                                 else:
-                                                    create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                                                    create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"), path_node=rs)
                         
                         for sibling in path_node.path_node_parent.path_node_children_list:
                             if (
@@ -2689,7 +2723,8 @@ class TreesManager:
                                                     create_triple(
                                                         entity_subj=entity_work,
                                                         entity_obj=entity_other,
-                                                        prop=Property.objects.get(name="contains")
+                                                        prop=Property.objects.get(name="contains"),
+                                                        path_node=sibling_grandchild                                              
                                                     )
                             elif (
                                 sibling.xml_elem.attrib.get("type") is not None 
@@ -2703,7 +2738,7 @@ class TreesManager:
                                                     if entity_other is None or entity_work is None:
                                                         print("One of the two entities is none, this shouldn't happen")
                                                     else:
-                                                        create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                                                        create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"),path_node=rs)
                         
                 elif (
                         path_node.path_node_parent is not None
@@ -2722,7 +2757,7 @@ class TreesManager:
                                                 if entity_other is None or entity_work is None:
                                                     print("One of the two entities is none, this shouldn't happen")
                                                 else:
-                                                    create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                                                    create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"),path_node=rs)
                 elif (
                             "0007_SendungenundFilmporträts" in TreesManager.helper_dict["file_path"]
                             and path_node.path_node_parent is not None
@@ -2742,7 +2777,7 @@ class TreesManager:
                                                 if entity_other is None or entity_work is None:
                                                     print("One of the two entities is none, this shouldn't happen")
                                                 else:
-                                                    create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"))
+                                                    create_triple(entity_obj=entity_other, entity_subj=entity_work,prop=Property.objects.get(name="is about"), path_node=rs)
                         
 
                 elif (  path_node.path_node_parent is not None
@@ -2765,7 +2800,8 @@ class TreesManager:
                                             create_triple(
                                                 entity_subj=entity_work,
                                                 entity_obj=entity_other,
-                                                prop=Property.objects.get(name="contains")
+                                                prop=Property.objects.get(name="contains"),
+                                                path_node=sibling_child
                                             )
                 
             def triple_from_f1_to_f3(entity_work, path_node):
@@ -2779,7 +2815,8 @@ class TreesManager:
                             create_triple(
                                 entity_subj=entity_work,
                                 entity_obj=entity_other,
-                                prop=Property.objects.get(name="is expressed in")
+                                prop=Property.objects.get(name="is expressed in"),
+                                path_node=path_node_other
                             )
 
                 for neighbour_path_node in path_node.path_node_parent.path_node_children_list:
@@ -2824,7 +2861,8 @@ class TreesManager:
                                             create_triple(
                                                 entity_obj=entity_manifestation,
                                                 entity_subj=entity_work,
-                                                prop=Property.objects.get(name="is original for translation")
+                                                prop=Property.objects.get(name="is original for translation"),
+                                                path_node=list_bibl_child_path_node
                                             )
 
                     # contained manifestations (aggregation_work)
@@ -2849,7 +2887,8 @@ class TreesManager:
                                             create_triple(
                                                 entity_subj=entity_work,
                                                 entity_obj=entity_manifestation,
-                                                prop=Property.objects.get(name="contains")
+                                                prop=Property.objects.get(name="contains"),
+                                                path_node=list_bibl_child_path_node
                                             )
                     elif (
                         neighbour_path_node.xml_elem.tag.endswith("listBibl")
@@ -2870,7 +2909,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_work,
                                             entity_obj=entity_manifestation,
-                                            prop=Property.objects.get(name="contains")
+                                            prop=Property.objects.get(name="contains"),
+                                            path_node=list_bibl_child_path_node
                                         )
 
                 # for seklit works + manifestations
@@ -2895,14 +2935,16 @@ class TreesManager:
                                     create_triple(
                                             entity_subj=entity_other,
                                             entity_obj=entity_work,
-                                            prop=Property.objects.get(name="is editor of")
+                                            prop=Property.objects.get(name="is editor of"),
+                                            path_node=child_path_node
                                         )
                                 elif (child_path_node.xml_elem.attrib.get("role") == "author"):
 
                                     create_triple(
                                             entity_subj=entity_other,
                                             entity_obj=entity_work,
-                                            prop=Property.objects.get(name="is author of")
+                                            prop=Property.objects.get(name="is author of"),
+                                            path_node=child_path_node
                                         )
 
 
@@ -2917,7 +2959,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_other,
                                             entity_obj=entity_work,
-                                            prop=Property.objects.get(name="is author of")
+                                            prop=Property.objects.get(name="is author of"),
+                                            path_node = child_child_path_node
                                         )
 
                                     elif (child_child_path_node.xml_elem.attrib.get("role") == "editor"):
@@ -2925,7 +2968,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_other,
                                             entity_obj=entity_work,
-                                            prop=Property.objects.get(name="is editor of")
+                                            prop=Property.objects.get(name="is editor of"),
+                                            path_node = child_child_path_node
                                         )
 
                                     elif (child_child_path_node.xml_elem.attrib.get("role") == "interviewer"):
@@ -2933,7 +2977,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_other,
                                             entity_obj=entity_work,
-                                            prop=Property.objects.get(name="is interviewer of")
+                                            prop=Property.objects.get(name="is interviewer of"),
+                                            path_node = child_child_path_node
                                         )
 
                                     elif (child_child_path_node.xml_elem.attrib.get("role") == "interviewee"):
@@ -2941,7 +2986,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_other,
                                             entity_obj=entity_work,
-                                            prop=Property.objects.get(name="is interviewee of")
+                                            prop=Property.objects.get(name="is interviewee of"),
+                                            path_node = child_child_path_node
                                         )
 
                                     elif (child_child_path_node.xml_elem.attrib.get("role") == "adaptioner"):
@@ -2949,7 +2995,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_other,
                                             entity_obj=entity_work,
-                                            prop=Property.objects.get(name="is adaptioner of")
+                                            prop=Property.objects.get(name="is adaptioner of"),
+                                            path_node = child_child_path_node
                                         )
 
                                     # elif (child_child_path_node.xml_elem.attrib.get("role") == "contributor"):
@@ -2991,7 +3038,8 @@ class TreesManager:
                                                 create_triple(
                                                     entity_subj=entity_other,
                                                     entity_obj=entity_work,
-                                                    prop=Property.objects.get(name="is contributor of")
+                                                    prop=Property.objects.get(name="is contributor of"),
+                                                    path_node=child_child_child_path_node
                                                 )
 
                                             elif (child_child_child_path_node.xml_elem.attrib.get("role") == "actor"):
@@ -2999,7 +3047,8 @@ class TreesManager:
                                                 create_triple(
                                                     entity_subj=entity_other,
                                                     entity_obj=entity_work,
-                                                    prop=Property.objects.get(name="is actor of")
+                                                    prop=Property.objects.get(name="is actor of"),
+                                                    path_node=child_child_child_path_node
                                                 )
 
                                             elif (child_child_child_path_node.xml_elem.attrib.get("role") == "director"):
@@ -3007,7 +3056,8 @@ class TreesManager:
                                                 create_triple(
                                                     entity_subj=entity_other,
                                                     entity_obj=entity_work,
-                                                    prop=Property.objects.get(name="is director of")
+                                                    prop=Property.objects.get(name="is director of"),
+                                                    path_node=child_child_child_path_node
                                                 )                   
                                 
             def triple_from_f1_to_f31(entity_work, path_node):
@@ -3022,7 +3072,8 @@ class TreesManager:
                                             create_triple(
                                                         entity_obj=entity_other,
                                                         entity_subj=entity_work,
-                                                        prop=Property.objects.get(name="has been performed in")
+                                                        prop=Property.objects.get(name="has been performed in"),
+                                                        path_node=child_path_node
                                                     )
                                 for child_child_path_node in child_path_node.path_node_children_list:
                                     for entity_other in child_child_path_node.entities_list:
@@ -3030,7 +3081,8 @@ class TreesManager:
                                             create_triple(
                                                         entity_obj=entity_other,
                                                         entity_subj=entity_work,
-                                                        prop=Property.objects.get(name="has been performed in")
+                                                        prop=Property.objects.get(name="has been performed in"),
+                                                        path_node=child_child_path_node
                                                     )
                 for neighbour_path_node in parent.path_node_children_list:
                     for child_path_node in neighbour_path_node.path_node_children_list:
@@ -3041,7 +3093,8 @@ class TreesManager:
                                             create_triple(
                                                         entity_obj=entity_other,
                                                         entity_subj=entity_work,
-                                                        prop=Property.objects.get(name="has been performed in")
+                                                        prop=Property.objects.get(name="has been performed in"),
+                                                        path_node=child_child_path_node
                                                     )
                                 for child_child_child_path_node in child_child_path_node.path_node_children_list:
                                     for entity_other in child_child_child_path_node.entities_list:
@@ -3049,7 +3102,8 @@ class TreesManager:
                                             create_triple(
                                                         entity_obj=entity_other,
                                                         entity_subj=entity_work,
-                                                        prop=Property.objects.get(name="has been performed in")
+                                                        prop=Property.objects.get(name="has been performed in"),
+                                                        path_node=child_child_child_path_node
                                                     )
                                     if child_child_child_path_node.xml_elem.tag.endswith("p"):
                                         for item_path_node in child_child_child_path_node.path_node_children_list:
@@ -3059,7 +3113,8 @@ class TreesManager:
                                                         create_triple(
                                                                     entity_obj=entity_other,
                                                                     entity_subj=entity_work,
-                                                                    prop=Property.objects.get(name="has been performed in")
+                                                                    prop=Property.objects.get(name="has been performed in"),
+                                                                    path_node=ptr_path_node
                                                                 )
                 
             def triples_from_f1_to_note(entity_work, path_node: PathNode):
@@ -3076,7 +3131,8 @@ class TreesManager:
                             create_triple(
                                 entity_subj=entity_work,
                                 entity_obj=entity_other,
-                                prop=Property.objects.get(name="has note")
+                                prop=Property.objects.get(name="has note"),
+                                path_node=child_path_node
                             )
 
             def triple_from_f1_to_f26(entity_recording_work, path_node: PathNode):
@@ -3098,6 +3154,7 @@ class TreesManager:
                                                     entity_subj=entity_recording_work,
                                                     entity_obj=entity_other,
                                                     prop=Property.objects.get(name="R13 is realised in"),
+                                                    path_node=path_node_neighbour_child_child_child
                                                 )
 
                                         if path_node_neighbour_child_child_child.xml_elem.tag.endswith("p"):
@@ -3108,6 +3165,7 @@ class TreesManager:
                                                             entity_subj=entity_recording_work,
                                                             entity_obj=entity_other,
                                                             prop=Property.objects.get(name="R13 is realised in"),
+                                                            path_node=item_path_node
                                                         )
 
                                 for entity_other in path_node_neighbour_child_child.entities_list:
@@ -3118,6 +3176,7 @@ class TreesManager:
                                             entity_subj=entity_recording_work,
                                             entity_obj=entity_other,
                                             prop=Property.objects.get(name="R13 is realised in"),
+                                            path_node=path_node_neighbour_child_child
                                         )
                 
 
@@ -3186,7 +3245,8 @@ class TreesManager:
                             create_triple(
                                 entity_subj=entity_honour,
                                 entity_obj=entity_other,
-                                prop=Property.objects.get(name="took place in")
+                                prop=Property.objects.get(name="took place in"),
+                                path_node=child_path_node
                             )
 
             def triples_from_honour_to_e40(entity_honour, path_node: PathNode):
@@ -3205,7 +3265,8 @@ class TreesManager:
                             triple = create_triple(
                                 entity_subj=entity_other,
                                 entity_obj=entity_honour,
-                                prop=Property.objects.get(name="is organizer of")
+                                prop=Property.objects.get(name="is organizer of"),
+                                path_node=child_path_node
                             )
 
                 if triple is not None:
@@ -3225,7 +3286,8 @@ class TreesManager:
                             create_triple(
                                 entity_subj=entity_honour,
                                 entity_obj=entity_other,
-                                prop=Property.objects.get(name="has note")
+                                prop=Property.objects.get(name="has note"),
+                                path_node=child_path_node
                             )
 
             def triples_from_honour_to_f3(entity_honour, path_node):
@@ -3239,7 +3301,8 @@ class TreesManager:
                             create_triple(
                                 entity_subj=entity_honour,
                                 entity_obj=entity_other,
-                                prop=Property.objects.get(name="is reported in")
+                                prop=Property.objects.get(name="is reported in"),
+                                path_node=path_node_other
                             )
 
                 for neighbour_path_node in path_node.path_node_parent.path_node_parent.path_node_children_list:
@@ -3349,7 +3412,8 @@ class TreesManager:
                                 create_triple(
                                     entity_subj=entity_manifestation,
                                     entity_obj=entity_other,
-                                    prop=Property.objects.get(name="has host")
+                                    prop=Property.objects.get(name="has host"),
+                                    path_node=path_node_child
                                 )
 
             def triples_from_f3_to_f9(entity_manifestation, path_node: PathNode):
@@ -3365,7 +3429,8 @@ class TreesManager:
                             create_triple(
                                 entity_subj=entity_manifestation,
                                 entity_obj=entity_other,
-                                prop=Property.objects.get(name="was published in")
+                                prop=Property.objects.get(name="was published in"),
+                                path_node=child_path_node
                             )
 
             def triples_from_f3_to_e40(entity_manifestation, path_node: PathNode):
@@ -3385,7 +3450,8 @@ class TreesManager:
                             triple = create_triple(
                                 entity_subj=entity_other,
                                 entity_obj=entity_manifestation,
-                                prop=Property.objects.get(name="is publisher of")
+                                prop=Property.objects.get(name="is publisher of"),
+                                path_node=child_path_node
                             )
 
                         if (
@@ -3397,7 +3463,8 @@ class TreesManager:
                             triple = create_triple(
                                 entity_subj=entity_other,
                                 entity_obj=entity_manifestation,
-                                prop=Property.objects.get(name="is editor of")
+                                prop=Property.objects.get(name="is editor of"),
+                                path_node=child_path_node
                             )
 
                         if (
@@ -3408,7 +3475,8 @@ class TreesManager:
                             triple = create_triple(
                                 entity_subj=entity_other,
                                 entity_obj=entity_manifestation,
-                                prop=Property.objects.get(name="is author of")
+                                prop=Property.objects.get(name="is author of"),
+                                path_node=child_path_node
                             )
                         if (
                             entity_other.__class__ is E40_Legal_Body
@@ -3418,7 +3486,8 @@ class TreesManager:
                             triple = create_triple(
                                 entity_subj=entity_other,
                                 entity_obj=entity_manifestation,
-                                prop=Property.objects.get(name="is interviewer of")
+                                prop=Property.objects.get(name="is interviewer of"),
+                                path_node=child_path_node
                             )
 
                         if (
@@ -3429,7 +3498,8 @@ class TreesManager:
                             triple = create_triple(
                                 entity_subj=entity_other,
                                 entity_obj=entity_manifestation,
-                                prop=Property.objects.get(name="is broadcaster of")
+                                prop=Property.objects.get(name="is broadcaster of"),
+                                path_node=child_path_node
                             )
 
                     for child_child_path_node in child_path_node.path_node_children_list:
@@ -3444,7 +3514,8 @@ class TreesManager:
                                 triple = create_triple(
                                     entity_subj=entity_other,
                                     entity_obj=entity_manifestation,
-                                    prop=Property.objects.get(name="is publisher of")
+                                    prop=Property.objects.get(name="is publisher of"),
+                                    path_node=child_child_path_node
                                 )
 
                             if (
@@ -3456,7 +3527,8 @@ class TreesManager:
                                 triple = create_triple(
                                     entity_subj=entity_other,
                                     entity_obj=entity_manifestation,
-                                    prop=Property.objects.get(name="is editor of")
+                                    prop=Property.objects.get(name="is editor of"),
+                                    path_node=child_child_path_node
                                 )
                             if (
                                 entity_other.__class__ is E40_Legal_Body
@@ -3466,7 +3538,8 @@ class TreesManager:
                                 triple = create_triple(
                                     entity_subj=entity_other,
                                     entity_obj=entity_manifestation,
-                                    prop=Property.objects.get(name="is author of")
+                                    prop=Property.objects.get(name="is author of"),
+                                    path_node=child_child_path_node
                                 )
                             if (
                                 entity_other.__class__ is E40_Legal_Body
@@ -3476,7 +3549,8 @@ class TreesManager:
                                 triple = create_triple(
                                     entity_subj=entity_other,
                                     entity_obj=entity_manifestation,
-                                    prop=Property.objects.get(name="is interviewer of")
+                                    prop=Property.objects.get(name="is interviewer of"),
+                                    path_node=child_child_path_node
                                 )
                             if (
                             entity_other.__class__ is E40_Legal_Body
@@ -3486,7 +3560,8 @@ class TreesManager:
                                 triple = create_triple(
                                     entity_subj=entity_other,
                                     entity_obj=entity_manifestation,
-                                    prop=Property.objects.get(name="is broadcaster of")
+                                    prop=Property.objects.get(name="is broadcaster of"),
+                                    path_node=child_child_path_node
                                 )
 
                     if (
@@ -3524,7 +3599,8 @@ class TreesManager:
                             create_triple(
                                 entity_subj=entity_manifestation,
                                 entity_obj=entity_other,
-                                prop=Property.objects.get(name="has note")
+                                prop=Property.objects.get(name="has note"),
+                                path_node=child_path_node
                             )
                 if path_node.xml_elem.tag.endswith("ptr"):
                     for path_node_sibling in path_node.path_node_parent.path_node_children_list:
@@ -3535,7 +3611,8 @@ class TreesManager:
                                 create_triple(
                                     entity_subj=entity_manifestation,
                                     entity_obj=entity_other,
-                                    prop=Property.objects.get(name="has note")
+                                    prop=Property.objects.get(name="has note"),
+                                    path_node=path_node_sibling
                                 )
 
             triples_from_f3_to_e55(entity_manifestation, path_node)
@@ -3582,7 +3659,8 @@ class TreesManager:
                         create_triple(
                             entity_subj=entity_e40,
                             entity_obj=place,
-                            prop=Property.objects.get(name="is located in")
+                            prop=Property.objects.get(name="is located in"),
+                            path_node=child
                         )
 
         def parse_triples_from_f10_person(entity_person, path_node: PathNode):
@@ -3602,14 +3680,16 @@ class TreesManager:
                                     create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is editor of")
+                                            prop=Property.objects.get(name="is editor of"),
+                                            path_node=path_node
                                         )
                                 elif (path_node.xml_elem.attrib.get("role") == "author"):
 
                                     create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is author of")
+                                            prop=Property.objects.get(name="is author of"),
+                                            path_node=path_node
                                     )
 
                                 elif (path_node.xml_elem.attrib.get("role") == "redaktion"):
@@ -3617,7 +3697,8 @@ class TreesManager:
                                     create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is redactor of")
+                                            prop=Property.objects.get(name="is redactor of"),
+                                            path_node=path_node
                                     )
 
                             for child_path_node in path_node.path_node_children_list:
@@ -3629,21 +3710,24 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is author of")
+                                            prop=Property.objects.get(name="is author of"),
+                                            path_node = child_path_node
                                         )
                                     elif (child_path_node.xml_elem.attrib.get("role") == "composer"):
 
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is composer of")
+                                            prop=Property.objects.get(name="is composer of"),
+                                            path_node = child_path_node
                                         )
                                     elif (child_path_node.xml_elem.attrib.get("role") == "editor"):
 
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is editor of")
+                                            prop=Property.objects.get(name="is editor of"),
+                                            path_node = child_path_node
                                         )
 
                                     elif (child_path_node.xml_elem.attrib.get("role") == "interviewer"):
@@ -3651,7 +3735,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is interviewer of")
+                                            prop=Property.objects.get(name="is interviewer of"),
+                                            path_node = child_path_node
                                         )
 
                                     elif (child_path_node.xml_elem.attrib.get("role") == "interviewee"):
@@ -3659,7 +3744,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is interviewee of")
+                                            prop=Property.objects.get(name="is interviewee of"),
+                                            path_node = child_path_node
                                         )
 
                                     elif (child_path_node.xml_elem.attrib.get("role") == "translator"):
@@ -3667,7 +3753,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is translator of")
+                                            prop=Property.objects.get(name="is translator of"),
+                                            path_node = child_path_node
                                         )
 
                                     elif (child_path_node.xml_elem.attrib.get("role") == "voice_actor"):
@@ -3675,7 +3762,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is voice actor of")
+                                            prop=Property.objects.get(name="is voice actor of"),
+                                            path_node = child_path_node
                                         )
 
                                     elif (child_path_node.xml_elem.attrib.get("role") == "director"):
@@ -3683,7 +3771,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is director of")
+                                            prop=Property.objects.get(name="is director of"),
+                                            path_node = child_path_node
                                         )
 
                                     elif (child_path_node.xml_elem.attrib.get("role") == "redaktion"):
@@ -3691,7 +3780,8 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is redactor of")
+                                            prop=Property.objects.get(name="is redactor of"),
+                                            path_node = child_path_node
                                         )
 
             def triple_from_f10_to_f21(entity_person, path_node: PathNode):
@@ -3710,34 +3800,39 @@ class TreesManager:
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is contributor of")
+                                            prop=Property.objects.get(name="is contributor of"),
+                                            path_node=child_path_node
                                         )
                                     elif (child_path_node.xml_elem.attrib.get("role") == "actor"):
 
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is actor of")
+                                            prop=Property.objects.get(name="is actor of"),
+                                            path_node=child_path_node
                                         )
                                     elif (child_path_node.xml_elem.attrib.get("role") == "voice_actor"):
 
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is voice actor of")
+                                            prop=Property.objects.get(name="is voice actor of"),
+                                            path_node=child_path_node
                                         )
                                     elif (child_path_node.xml_elem.attrib.get("role") == "director"):
 
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is director of")
+                                            prop=Property.objects.get(name="is director of"),
+                                            path_node=child_path_node
                                         )
                                     else:
                                         create_triple(
                                             entity_subj=entity_person,
                                             entity_obj=entity_other,
-                                            prop=Property.objects.get(name="is author of")
+                                            prop=Property.objects.get(name="is author of"),
+                                            path_node=child_path_node
                                         )
 
 
@@ -3764,7 +3859,8 @@ class TreesManager:
                                                 create_triple(
                                                     entity_subj=entity_other,
                                                     entity_obj=entity_work,
-                                                    prop=Property.objects.get(name="is contributor of")
+                                                    prop=Property.objects.get(name="is contributor of"),
+                                                    path_node=child_child_child_path_node
                                                 )
 
                                             elif (child_child_child_path_node.xml_elem.attrib.get("role") == "actor"):
@@ -3772,7 +3868,8 @@ class TreesManager:
                                                 create_triple(
                                                     entity_subj=entity_other,
                                                     entity_obj=entity_work,
-                                                    prop=Property.objects.get(name="is actor of")
+                                                    prop=Property.objects.get(name="is actor of"),
+                                                    path_node=child_child_child_path_node
                                                 )
 
                                             elif (child_child_child_path_node.xml_elem.attrib.get("role") == "director"):
@@ -3780,7 +3877,8 @@ class TreesManager:
                                                 create_triple(
                                                     entity_subj=entity_other,
                                                     entity_obj=entity_work,
-                                                    prop=Property.objects.get(name="is director of")
+                                                    prop=Property.objects.get(name="is director of"),
+                                                    path_node=child_child_child_path_node
                                                 )
                     
 
@@ -3802,6 +3900,7 @@ class TreesManager:
                                             entity_subj=entity_recording_work,
                                             entity_obj=entity_other,
                                             prop=Property.objects.get(name="R13 is realised in"),
+                                            path_node=path_node_neighbour_child_child
                                         )
 
             def triple_from_f21_to_chapter(entity_recording_work, path_node: PathNode):
@@ -3829,6 +3928,7 @@ class TreesManager:
                                 entity_subj=entity_performance,
                                 entity_obj=entity_other,
                                 prop=Property.objects.get(name="has been performed at"),
+                                path_node=path_node_child
                             )
 
                     if (len(path_node_child.entities_list) <= 1 and path_node_child.xml_elem.attrib.get("type") == "institutions") or (path_node_child.xml_elem.tag.endswith("note")):
@@ -3847,6 +3947,7 @@ class TreesManager:
                                                 entity_obj=entity_performance,
                                                 entity_subj=entity_other,
                                                 prop=Property.objects.get(name="is organizer of"),
+                                                path_node=path_node_child_child
                                             )
 
                                         if (path_node_child_child.xml_elem.attrib.get("role") == "broadcaster"):
@@ -3855,12 +3956,14 @@ class TreesManager:
                                                 entity_obj=entity_performance,
                                                 entity_subj=entity_other,
                                                 prop=Property.objects.get(name="is broadcaster of"),
+                                                path_node=path_node_child_child
                                             )
 
                                     create_triple(
                                                 entity_subj=entity_performance,
                                                 entity_obj=entity_other,
                                                 prop=Property.objects.get(name="has been performed at"),
+                                                path_node=path_node_child_child
                                             )
 
             def triple_from_f31_to_f1(entity_performance, path_node: PathNode):
@@ -3875,6 +3978,7 @@ class TreesManager:
                                 entity_obj=entity_performance,
                                 entity_subj=entity_other,
                                 prop=Property.objects.get(name="has been performed in"),
+                                path_node=path_node_child
                             )
 
                     if len(path_node_child.entities_list) == 0 and path_node_child.xml_elem.attrib.get("type") == "basedOn":
@@ -3889,6 +3993,7 @@ class TreesManager:
                                         entity_obj=entity_performance,
                                         entity_subj=entity_other,
                                         prop=Property.objects.get(name="has been performed in"),
+                                        path_node=path_node_child
                                     )
 
                     
@@ -3929,6 +4034,7 @@ class TreesManager:
                                     entity_subj=entity_person,
                                     entity_obj=entity_performance,
                                     prop=Property.objects.get(name="is director of"),
+                                    path_node=path_node_child
                                 )
 
                             elif role == "translator":
@@ -3937,6 +4043,7 @@ class TreesManager:
                                     entity_subj=entity_person,
                                     entity_obj=entity_performance,
                                     prop=Property.objects.get(name="is translator of"),
+                                    path_node=path_node_child
                                 )
 
                                 #pass # to be ignored, because a translated theatre play needs to have its own work
@@ -3947,6 +4054,7 @@ class TreesManager:
                                     entity_subj=entity_person,
                                     entity_obj=entity_performance,
                                     prop=Property.objects.get(name="is composer of"),
+                                    path_node=path_node_child
                                 )
 
                             elif role == "singer":
@@ -3955,6 +4063,7 @@ class TreesManager:
                                     entity_subj=entity_person,
                                     entity_obj=entity_performance,
                                     prop=Property.objects.get(name="is singer of"),
+                                    path_node=path_node_child
                                 )
 
                             elif role == "musician":
@@ -3963,6 +4072,7 @@ class TreesManager:
                                     entity_subj=entity_person,
                                     entity_obj=entity_performance,
                                     prop=Property.objects.get(name="is musician of"),
+                                    path_node=path_node_child
                                 )
 
                             elif role == "musical_direction":
@@ -3971,6 +4081,7 @@ class TreesManager:
                                     entity_subj=entity_person,
                                     entity_obj=entity_performance,
                                     prop=Property.objects.get(name="is musical director of"),
+                                    path_node=path_node_child
                                 )
 
                             elif role == "choreographer":
@@ -3979,6 +4090,7 @@ class TreesManager:
                                     entity_subj=entity_person,
                                     entity_obj=entity_performance,
                                     prop=Property.objects.get(name="is choreographer of"),
+                                    path_node=path_node_child
                                 )
 
                             else:
@@ -4005,7 +4117,8 @@ class TreesManager:
                             create_triple(
                                 entity_subj=entity_manifestation,
                                 entity_obj=entity_other,
-                                prop=Property.objects.get(name="has note")
+                                prop=Property.objects.get(name="has note"),
+                                path_node=child_path_node
                             )
                 if path_node.xml_elem.tag.endswith("ptr"):
                     for path_node_sibling in path_node.path_node_parent.path_node_children_list:
@@ -4016,7 +4129,8 @@ class TreesManager:
                                 create_triple(
                                     entity_subj=entity_manifestation,
                                     entity_obj=entity_other,
-                                    prop=Property.objects.get(name="has note")
+                                    prop=Property.objects.get(name="has note"),
+                                    path_node=path_node_sibling
                                 )
 
             triple_from_f31_to_e40(entity_performance, path_node)
@@ -4038,6 +4152,7 @@ class TreesManager:
                                 entity_obj=entity_broadcast,
                                 entity_subj=entity_other,
                                 prop=Property.objects.get(name="R13 is realised in"),
+                                path_node=path_node_child
                             )
 
                     if len(path_node_child.entities_list) == 0 and path_node_child.xml_elem.attrib.get("type") == "basedOn":
@@ -4052,6 +4167,7 @@ class TreesManager:
                                         entity_obj=entity_broadcast,
                                         entity_subj=entity_other,
                                         prop=Property.objects.get(name="R13 is realised in"),
+                                        path_node=path_node_child
                                     )
             def triple_from_f26_to_e40(entity_broadcast, path_node: PathNode):
 
@@ -4074,13 +4190,14 @@ class TreesManager:
                                             entity_obj=entity_broadcast,
                                             entity_subj=entity_other,
                                             prop=Property.objects.get(name="is broadcaster of"),
+                                            path_node=org_name
                                         ) 
                                 
-
                             create_triple(
                                 entity_subj=entity_broadcast,
                                 entity_obj=entity_other,
                                 prop=Property.objects.get(name="has been performed at"),
+                                path_node=path_node_child
                             )                
             def triples_from_f26_to_note(entity_manifestation, path_node: PathNode):
 
@@ -4093,7 +4210,8 @@ class TreesManager:
                             create_triple(
                                 entity_subj=entity_manifestation,
                                 entity_obj=entity_other,
-                                prop=Property.objects.get(name="has note")
+                                prop=Property.objects.get(name="has note"),
+                                path_node=child_path_node
                             )
 
                 if path_node.xml_elem.tag.endswith("ptr"):
@@ -4105,7 +4223,8 @@ class TreesManager:
                                 create_triple(
                                     entity_subj=entity_manifestation,
                                     entity_obj=entity_other,
-                                    prop=Property.objects.get(name="has note")
+                                    prop=Property.objects.get(name="has note"),
+                                    path_node=path_node_sibling
                                 )
 
                     
@@ -4144,6 +4263,7 @@ class TreesManager:
                                                         entity_subj=entity_work,
                                                         entity_obj=entity_image,
                                                         prop=Property.objects.get(name=property_name),
+                                                        path_node=path_node_bibl
                                                     )
 
                                                 break
@@ -4160,6 +4280,7 @@ class TreesManager:
                                                                 entity_subj=entity_work,
                                                                 entity_obj=entity_image,
                                                                 prop=Property.objects.get(name=property_name),
+                                                                path_node=path_node_bibl
                                                             )
 
                                                         break
@@ -4178,6 +4299,7 @@ class TreesManager:
                                                                 entity_subj=entity_work,
                                                                 entity_obj=entity_image,
                                                                 prop=Property.objects.get(name=property_name),
+                                                                path_node=path_node_bibl
                                                             )
 
                                                     if path_node_bibl.xml_elem.tag.endswith("head"):
@@ -4191,6 +4313,7 @@ class TreesManager:
                                                                         entity_subj=entity_work,
                                                                         entity_obj=entity_image,
                                                                         prop=Property.objects.get(name=property_name),
+                                                                        path_node=path_node_bibl
                                                                     )
 
                                                 break
@@ -4246,6 +4369,7 @@ class TreesManager:
                                                         entity_subj=entity_work,
                                                         entity_obj=entity_chapter,
                                                         prop=Property.objects.get(name="is in chapter"),
+                                                        path_node=path_node_div_child
                                                     )
 
                                                 if not entity_chapter.chapter_number.startswith("6"):
@@ -4261,7 +4385,7 @@ class TreesManager:
                                                         create_triple(
                                                                         entity_subj=f1,
                                                                         entity_obj=entity_chapter,
-                                                                        prop=Property.objects.get(name="is in chapter"),
+                                                                        prop=Property.objects.get(name="is in chapter")
                                                                     )
                                         if entity_chapter.chapter_number.startswith("7"):
                                             for path_node_div_child in path_node_div.path_node_children_list:
@@ -4320,6 +4444,7 @@ class TreesManager:
                                                             entity_subj=entity_work,
                                                             entity_obj=entity_chapter,
                                                             prop=Property.objects.get(name="is in chapter"),
+                                                            path_node=path_node_event
                                                         )
 
                                                     if not entity_chapter.chapter_number.startswith("6"):
@@ -4381,7 +4506,7 @@ class TreesManager:
                                                     create_triple(
                                                         entity_subj=entity_work,
                                                         entity_obj=entity_keyword,
-                                                        prop=Property.objects.get(name="has keyword"),
+                                                        prop=Property.objects.get(name="has keyword")
                                                     )
 
                                                 break

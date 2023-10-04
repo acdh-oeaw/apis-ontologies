@@ -21,6 +21,8 @@ class Xml_Content_Dump(TempEntityClass):
 @reversion.register(follow=["tempentityclass_ptr"])
 class E1_Crm_Entity(TempEntityClass):
     entity_id = models.CharField(max_length=1024, blank=True, null=True)
+    date_hidden = models.BooleanField(blank=True, null=True)
+    title_hidden = models.BooleanField(blank=True, null=True)
     vector_column_e1_set = SearchVectorField(null=True)
     vector_related_f10_set = SearchVectorField(null=True)
     vector_related_E40_set = SearchVectorField(null=True)
@@ -250,6 +252,10 @@ class E38_Image(E1_Crm_Entity):
 @reversion.register(follow=["temptriple_ptr"])
 class InChapterTriple(TempTriple):
     index_in_chapter = models.IntegerField(blank=True, null=True)
+
+@reversion.register(follow=["temptriple_ptr"])
+class RenditionTriple(TempTriple):
+    rendition_hidden = models.BooleanField(blank=True, null=True)
 
 def construct_properties():
     
