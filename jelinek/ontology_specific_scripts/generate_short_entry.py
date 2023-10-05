@@ -98,9 +98,8 @@ def generate_short_text():
     def get_sorted_manifestations_for_work(work, include_translations=False):
         relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.edition == "first_edition"]
         if len(relations) == 0 and include_translations:
-            relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.edition == "first_edition"]
-            RelInv = namedtuple("RelInv", "obj prop subj")
-            relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
+            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is original for translation") if rel.obj.edition == "first_edition"]
+            
         if len(relations) == 0:
             relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
             relations.sort(key=lambda rel: rel.obj.start_date)
@@ -108,9 +107,8 @@ def generate_short_text():
             relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is expressed in")]
             relations.sort(key=lambda rel: rel.obj.id)
         if len(relations) == 0 and include_translations:
-            relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.start_date is not None]
-            RelInv = namedtuple("RelInv", "obj prop subj")
-            relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
+            relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is original for translation") if rel.obj.start_date is not None]
+            
             relations.sort(key=lambda rel: rel.obj.start_date)
         return relations
 
@@ -127,9 +125,9 @@ def generate_short_text():
             relations = get_sorted_manifestations_for_work(work)
             has_translator = False
             if work.index_in_chapter >= 7: ## koniec/ende and Gesammelte Gedichte/Poésies Complètes have translations
-                        relations_reversed = [rel for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.start_date is not None]
-                        RelInv = namedtuple("RelInv", "obj prop subj")
-                        relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
+                        relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="is original for translation") if rel.obj.start_date is not None]
+                        # RelInv = namedtuple("RelInv", "obj prop subj")
+                        # relations = [RelInv(obj=rel.subj, prop=rel.prop, subj=rel.obj) for rel in relations_reversed]
                         relations.sort(key=lambda rel: rel.obj.start_date)
                         has_translator = True
             if len(relations) > 0:
@@ -645,7 +643,7 @@ def generate_short_text():
 
     def short_text_Uebersetzte_Werke(work):
         def short_text_Sammelbaende(work):
-            relations = [t.subj for t in Triple.objects.filter(obj=work, prop__name="is translation of") if t.subj.start_date is not None]
+            relations = [t.obj for t in Triple.objects.filter(subj=work, prop__name="is original for translation") if t.obj.start_date is not None]
             if len(relations) > 0:
                 first_manifestation = relations[0]
                 publishers = Triple.objects.filter(prop__name="is publisher of", obj=first_manifestation)
@@ -665,7 +663,7 @@ def generate_short_text():
                         work.short = short
             return work
         def short_text_single(work):
-            translations = [t.subj for t in Triple.objects.filter(obj=work, prop__name="is translation of")]
+            translations = [t.obj for t in Triple.objects.filter(subj=work, prop__name="is original for translation")]
             for translation in translations:
                 authors = Triple.objects.filter(prop__name="is author of", obj=translation)
                 places = Triple.objects.filter(prop__name="was published in", subj=translation)
