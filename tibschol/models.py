@@ -79,8 +79,8 @@ class Instance(TempEntityClass):
         logger.warn(f"Unknown {self.set_num}. Cannot build citation.")
         return f"Unknown {self.set_num}. Cannot build citation."
 
-    tibschol_ref = models.CharField(
-        max_length=25, blank=True, null=True, verbose_name="Tibschol reference"
+    tibschol_ref = models.TextField(
+        blank=True, null=True, verbose_name="Tibschol reference"
     )
     alternative_names = models.TextField(
         blank=True, null=True, verbose_name="Alternative names"
