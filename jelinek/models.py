@@ -1,3 +1,5 @@
+import datetime
+import re
 import reversion
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -35,6 +37,21 @@ class E1_Crm_Entity(TempEntityClass):
                 model = E1_Crm_Entity
                 exclude = ["vector_column_e1_set", "vector_related_f10_set", "vector_related_E40_set", "vector_related_xml_content_dump_set", "vector_related_xml_note_set"]
         return AdHocEntityListFilter
+    
+    def save(self, *args, **kwargs):
+        if self.start_date_written is not None and "/" in self.start_date_written:
+            regex_match = re.match(r"^([0-9]{4})/([0-9]{4})$", self.start_date_written)
+            if regex_match is not None:
+                try:
+                    if int(regex_match.group(2)) == int(regex_match.group(1)) + 1:
+                        self.start_date = datetime.datetime(year=int(regex_match.group(1)), month=12, day=31)
+                        super(E1_Crm_Entity, self).save(parse_dates=False, *args, **kwargs)
+                        return
+                
+                except:
+                    pass
+
+        super(E1_Crm_Entity, self).save(*args, **kwargs)
 
 
 
