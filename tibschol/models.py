@@ -17,6 +17,11 @@ class Instance(TempEntityClass):
         ("Set 3", "Set 3"),
         ("Set 4", "Set 4"),
     ]
+    AVAILABILITY = [
+        ("lost", "lost"),
+        ("available", "available"),
+        ("non-accessible", "non-accessible"),
+    ]
     set_num = models.CharField(
         max_length=5, choices=SETS, null=True, blank=True, verbose_name="Set"
     )
@@ -80,6 +85,9 @@ class Instance(TempEntityClass):
     alternative_names = models.TextField(
         blank=True, null=True, verbose_name="Alternative names"
     )
+    availability = models.CharField(
+        max_length=15, choices=AVAILABILITY, blank=True, null=True
+    )
 
     @cached_property
     def work(self):
@@ -107,6 +115,7 @@ class Person(TempEntityClass):
         ("male", "Male"),
         ("female", "Female"),
     ]
+    NATIONALITY = [("Indic", "Indic"), ("Tibetan", "Tibetan")]
     gender = models.CharField(max_length=6, choices=GENDERS, default="male")
     comments = models.TextField(blank=True, null=True)
     external_link = models.TextField(
@@ -115,10 +124,21 @@ class Person(TempEntityClass):
     alternative_names = models.TextField(
         blank=True, null=True, verbose_name="Alternative names"
     )
+    nationality = models.CharField(
+        max_length=10, choices=NATIONALITY, blank=True, null=True
+    )
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
 class Work(TempEntityClass):
+    LANGUAGES = [
+        ("Sanskrit", "Sanskrit"),
+        ("Tibetan", "Tibetan"),
+        ("Tangut", "Tangut"),
+        ("Other", "Other"),
+    ]
+    STATUS = [("extant", "extant"), ("non-extant", "non-extant")]
+
     class_uri = "http://id.loc.gov/ontologies/bibframe/Work"
     subject = models.CharField(
         max_length=255,
@@ -136,6 +156,10 @@ class Work(TempEntityClass):
     sde_dge_ref = models.CharField(
         max_length=25, blank=True, null=True, verbose_name="Derge reference"
     )
+    original_language = models.CharField(
+        max_length=10, choices=LANGUAGES, blank=True, null=True
+    )
+    existance = models.CharField(max_length=15, choices=STATUS, blank=True, null=True)
 
     @cached_property
     def author(self):
