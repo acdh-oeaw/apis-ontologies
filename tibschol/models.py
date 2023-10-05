@@ -88,6 +88,9 @@ class Instance(TempEntityClass):
     availability = models.CharField(
         max_length=15, choices=AVAILABILITY, blank=True, null=True
     )
+    item_description = models.TextField(
+        blank=True, null=True, verbose_name="Item description"
+    )
 
     @cached_property
     def work(self):
