@@ -140,7 +140,6 @@ class Work(TempEntityClass):
         ("Tangut", "Tangut"),
         ("Other", "Other"),
     ]
-    STATUS = [("extant", "extant"), ("non-extant", "non-extant")]
 
     class_uri = "http://id.loc.gov/ontologies/bibframe/Work"
     subject = models.CharField(
@@ -162,7 +161,7 @@ class Work(TempEntityClass):
     original_language = models.CharField(
         max_length=10, choices=LANGUAGES, blank=True, null=True
     )
-    existance = models.CharField(max_length=15, choices=STATUS, blank=True, null=True)
+    isExtant = models.BooleanField(default=True, verbose_name="Is extant")
 
     @cached_property
     def author(self):
