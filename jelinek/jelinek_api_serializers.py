@@ -15,7 +15,7 @@ def remove_null_empty_from_dict(d):
     if isinstance(d, dict):
         new_d = {}
         for k, v in d.items():
-            if v is not None and v != [] and v != {} and v != "" and not isinstance(v, dict) and not isinstance(v, list):
+            if v is not None and v != [] and v != {} and not isinstance(v, dict) and not isinstance(v, list):
                 new_d[k] = v
             elif isinstance(v, dict):
                 new_d[k] = remove_null_empty_from_dict(v)
@@ -24,7 +24,7 @@ def remove_null_empty_from_dict(d):
     elif isinstance(d, list):
         new_d = []
         for v in d:
-            if v is not None and v != [] and v != {} and v != "" and not isinstance(v, dict) and not isinstance(v, list):
+            if v is not None and v != [] and v != {} and not isinstance(v, dict) and not isinstance(v, list):
                 new_d.append(v)
             elif isinstance(v, dict):
                 new_d.append(remove_null_empty_from_dict(v))
