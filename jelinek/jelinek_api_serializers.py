@@ -94,6 +94,7 @@ def patch_serializer(model):
 class TripleSerializer(serializers.ModelSerializer):
     property = serializers.CharField(source="prop.name")
     index_in_chapter = serializers.SerializerMethodField(method_name="get_index_in_chapter")
+    rendition_hidden = serializers.SerializerMethodField(method_name="get_rendition_hidden")
 
     class Meta:
         model = Triple
@@ -116,6 +117,13 @@ class TripleSerializer(serializers.ModelSerializer):
                     return None
         else:
             return None
+        
+    def get_rendition_hidden(self, obj):
+        if hasattr(obj.temptriple, "renditiontriple"):
+            if obj.temptriple.renditiontriple.rendition_hidden is not None:
+                return obj.temptriple.renditiontriple.rendition_hidden
+        else:
+            return False
 
 
 class TripleSerializerFromObj(TripleSerializer):
@@ -229,6 +237,7 @@ class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
             "references",
             "notes",
             "review",
+            "vector_column_e1_set"
         ]
         depth = 3
 
