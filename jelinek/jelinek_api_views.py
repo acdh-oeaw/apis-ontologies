@@ -4,7 +4,7 @@ from .models import E1_Crm_Entity, E40_Legal_Body, E55_Type, F10_Person, F1_Work
 from .jelinek_api_serializers import F1WorkSerializer, HonourSerializer, LonelyE1CrmEntitySerializer, SearchSerializer, F3ManifestationProductTypeSerializer, SearchSerializer2, WorkForChapterSerializer
 from .jelinek_api_filters import ChapterFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter, SearchFilter2, EntitiesWithoutRelationsFilter, FacetFilter
 from apis_core.apis_relations.models import Triple
-from django.db.models import Q, Count, Sum, Case, When, IntegerField
+from django.db.models import Q, Count, Sum, Case, When, IntegerField,Exists
 from datetime import datetime
 from django.db.models import Q, OuterRef
 from django.db.models.functions import JSONObject
@@ -204,7 +204,8 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
         place_subquery = F9_Place.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
         country_subquery = F9_Place.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values_list("country", flat=True)
         mediatype_subquery = E55_Type.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values_list('name', flat=True)
-        work_subquery = F1_Work.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk"), triple_set_from_subj__prop__name__in=["is expressed in", "is reported in", "is original for translation", "has been performed in"]).values(json=JSONObject(pk="pk", name="name", genre="genre", entity_id="entity_id"))
+        work_subquery = F1_Work.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk"), triple_set_from_subj__prop__name__in=["is expressed in", "is reported in", "is original for translation", "has been performed in"]).distinct().values(json=JSONObject(pk="pk", name="name", genre="genre", entity_id="entity_id"))
+        work_host_subquery = F1_Work.objects.filter(triple_set_from_subj__obj__triple_set_from_subj__obj_id=OuterRef("pk"), triple_set_from_subj__prop__name__in=["is expressed in", "is reported in", "is original for translation", "has been performed in"]).distinct().values(json=JSONObject(pk="pk", name="name", genre="genre", entity_id="entity_id"))
         qs = E1_Crm_Entity.objects_inheritance.select_subclasses("f1_work", "f3_manifestation_product_type", "honour", "f31_performance").filter(Q(f1_work__isnull=False) | Q(honour__isnull=False) | Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False)).annotate(
             related_persons=ArraySubquery(person_subquery),
             related_person_roles=ArraySubquery(person_property_subquery), 
@@ -214,7 +215,12 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
             related_places=ArraySubquery(place_subquery), 
             related_countries=ArraySubquery(country_subquery), 
             related_mediatypes=ArraySubquery(mediatype_subquery), 
-            related_work= ArraySubquery(work_subquery),
+            related_work= Case(
+                When(
+                    Exists(work_subquery), then=ArraySubquery(work_subquery)
+                    ),
+                default=ArraySubquery(work_host_subquery)
+            )
             )
         return qs
     
