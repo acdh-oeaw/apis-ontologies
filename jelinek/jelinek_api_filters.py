@@ -136,6 +136,8 @@ class SearchFilter(django_filters.FilterSet):
     work_id = TextInFilter(field_name="f1_work__entity_id", lookup_expr="in")
     # honour = django_filters.CharFilter(field_name="honour__name", lookup_expr="contains")
     honour_id = TextInFilter(field_name="honour__entity_id", lookup_expr="in")
+    
+    bibl_id = TextInFilter(field_name="f3_manifestation_product_type__entity_id", lookup_expr="in")
     genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
     chapter_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is in chapter", check_dump=False, is_chapter=True))
     keyword = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=Keyword, lookup_expr="in"))
@@ -214,6 +216,7 @@ class SearchFilter2(django_filters.FilterSet):
     title = django_filters.CharFilter(field_name="f1_work__name", lookup_expr="contains")
     # work_id = TextInFilter(field_name="f1_work__entity_id", lookup_expr="in")
     work_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], or_self=True))
+    bibl_id = TextInFilter(field_name="f3_manifestation_product_type__entity_id", lookup_expr="in")
     honour_id = TextInFilter(field_name="honour__entity_id", lookup_expr="in")
     genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
     textLang = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
