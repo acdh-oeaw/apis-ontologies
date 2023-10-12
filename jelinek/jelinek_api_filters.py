@@ -271,13 +271,19 @@ def exclude_null_values(queryset, name, value):
     filter_name = "{}__isnull".format(name)
     return queryset.exclude(Q(**{filter_name: True}))
 
+def filter_on_related_work(queryset, name, value):
+    matches = [q.id for q in queryset if next((item for item in q.related_work if item["genre"] in value), None)]
+    res = queryset.filter(Q(id__in=matches) | Q(f1_work__genre__in=value))
+    return res
+
 class FacetFilter(django_filters.FilterSet):
     class TextInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
         pass
 
     filter_persons = TextInFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"]))
     filter_institutions = TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
-    filter_genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
+    # filter_genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
+    filter_genre = TextInFilter(method=filter_on_related_work)
     filter_keywords = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=Keyword, lookup_expr="in"))
     filter_countries = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], is_country=True))
     filter_places= TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
