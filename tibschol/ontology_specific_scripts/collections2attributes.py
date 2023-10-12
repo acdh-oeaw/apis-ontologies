@@ -6,8 +6,8 @@ from tqdm.auto import tqdm
 def update_works():
     try:
         INDIAN_WORKS = Collection.objects.get(name="Indian works")
-        EXTANT_WORKS = Collection.objects.get(name="Non-extant")
-        NONEXTANT_WORKS = Collection.objects.get(name="Extant")
+        EXTANT_WORKS = Collection.objects.get(name="Extant")
+        NONEXTANT_WORKS = Collection.objects.get(name="Non-extant")
         for w in tqdm(Work.objects.all(), desc="Processing Works"):
             if INDIAN_WORKS in w.collection.all():
                 w.original_language = "Sanskrit"
@@ -26,8 +26,8 @@ def update_works():
 
 
 def update_instances():
-    EXTANT = Collection.objects.get(name="Non-extant")
-    NONEXTANT = Collection.objects.get(name="Extant")
+    EXTANT = Collection.objects.get(name="Extant")
+    NONEXTANT = Collection.objects.get(name="Non-extant")
     for i in tqdm(Instance.objects.all(), desc="Processing Instances"):
         try:
             w = i.work
