@@ -209,9 +209,9 @@ class SearchFilter2(django_filters.FilterSet):
         pass
 
     searchTerm = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note", "e1", "e40"]))
-    person = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"]))
+    person = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e1", "f10", "dump", "note"]))
     person_id = TextInFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"]))
-    institution = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
+    institution = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e1", "e40", "dump", "note"]))
     institution_id = TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
     title = django_filters.CharFilter(field_name="f1_work__name", lookup_expr="contains")
     # work_id = TextInFilter(field_name="f1_work__entity_id", lookup_expr="in")
@@ -241,7 +241,7 @@ class SearchFilter2(django_filters.FilterSet):
         if "person_id" in self.data:
             self.filters['person'] = django_filters.CharFilter(method=empty_filter)
         if "person" in self.data:
-            self.filters['person_id'] = self.TextInFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note"], names_to_check=[self.data["person"]]))
+            self.filters['person_id'] = self.TextInFilter(method=search_in_vectors(cols_to_check=["e1", "f10", "dump", "note"], names_to_check=[self.data["person"]]))
         if "personRole" in self.data:
             if "about" in self.data["personRole"]:
                 self.filters['person_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
@@ -251,7 +251,7 @@ class SearchFilter2(django_filters.FilterSet):
         if "institution_id" in self.data:
             self.filters['institution'] = django_filters.CharFilter(method=empty_filter)
         if "institution" in self.data:
-            self.filters['institution_id'] = self.TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"], names_to_check=[self.data["institution"]]))
+            self.filters['institution_id'] = self.TextInFilter(method=search_in_vectors(cols_to_check=["e1", "e40", "dump", "note"], names_to_check=[self.data["institution"]]))
         if "institutionRole" in self.data:
             if "about" in self.data["institutionRole"]:
                 self.filters['institution_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
