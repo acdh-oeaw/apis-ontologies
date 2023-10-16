@@ -48,7 +48,7 @@
       Comments
     </th>
     <td>
-      {{ object.comments }}
+      {{ object.comments | parse_comment | safe}}
     </td>
   </tr>
   {% endif %}

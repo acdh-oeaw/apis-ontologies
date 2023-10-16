@@ -43,7 +43,7 @@ function reinitialize_bibsonomy_tooltips() {
 					$('div.bibs-container > table > tbody').html('');
 					$('div.bibs-container > div#bibs-messages').html('');
 					data.responseJSON.forEach(function (entry) {
-					  $('div.bibs-container > table > tbody').append($('<tr id="bib-entry-' + entry.pk + '"><td><a href="#" data-bib-id="' + entry.pk + '" class="delete-bib-entry"><i data-feather="trash"></i></a></td><td>' + entry.id + '</td><td>' + entry.author + '</td><td>' + entry.title + '</td><td>' + entry.year + '</td><td>' + entry.pages_start + '</td><td>' + entry.pages_end + '</td><td>' + entry.folio + '</td><td>' + entry.notes + '</td><td><a href="/bibsonomy/references/'+entry.pk+'"><i data-feather="book-open"></a></td></tr>'))
+					  $('div.bibs-container > table > tbody').append($('<tr id="bib-entry-' + entry.pk + '"><td><a href="#" data-bib-id="' + entry.pk + '" class="delete-bib-entry"><i data-feather="trash"></i></a></td><td>' + entry.id +', '+ entry.pk +  '</td><td>' + entry.author + '</td><td>' + entry.title + '</td><td>' + entry.year + '</td><td>' + entry.pages_start + '</td><td>' + entry.pages_end + '</td><td>' + entry.folio + '</td><td>' + entry.notes + '</td><td><a href="/bibsonomy/references/'+entry.pk+'"><i data-feather="book-open"></a></td></tr>'))
 					});
 					feather.replace()
 				}
