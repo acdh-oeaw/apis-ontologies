@@ -1,0 +1,92 @@
+{% extends "apis_entities/detail_views/person_detail_generic.html" %}
+{% load custom_filters %}
+
+{% block info-table %}
+<table class="table table-bordered table-hover">
+  <tr>
+    <th>
+      Name
+    </th>
+    <td>
+      {{ object.name }}
+    </td>
+  </tr>
+  <tr>
+    <th>
+      Alternative Names
+    </th>
+    <td>
+      {{ object.alternative_names }}
+    </td>
+  </tr>
+  <tr>
+    <th>
+      ID
+    </th>
+    <td>
+      {{ object.id }}
+    </td>
+  </tr>
+  <tr>
+    <th>
+      Nationality
+    </th>
+    <td>
+      {{ object.nationality }}
+    </td>
+  </tr> <tr>
+    <th>
+      Gender
+    </th>
+    <td>
+      {{ object.gender }}
+    </td>
+  </tr>
+  {% if user.is_authenticated %}
+  <tr>
+    <th>
+      Comments
+    </th>
+    <td>
+      {{ object.comments }}
+    </td>
+  </tr>
+  {% endif %}
+  <tr>
+    <th>
+      References
+    </th>
+    <td>
+      {{ object.references }}
+    </td>
+  </tr>
+  {% if object.start_date or object.end_date %}
+  <tr>
+      <th>
+          Lifespan
+      </th>
+      <td>
+          {% if object.start_date %}
+              <abbr title="{{ object.start_date }}">{{ object.start_date_written }}</abbr>
+          {% endif %}
+          {% if object.end_date %}
+              - <abbr title="{{ object.end_date }}">{{ object.end_date_written }}</abbr>
+          {% endif %}
+      </td>
+  </tr>
+  {% endif %}
+     <tr>
+      <th>
+          Links
+      </th>
+      <td><ul>
+        {% for l in object.external_link|linebreak_split %}
+        <li><a href="{{l}}" target="_BLANK">{{ l }}</a></<li>
+        {% endfor %}
+      </ul>
+
+      </td>
+     </tr>
+
+</table>
+{% endblock info-table %}
