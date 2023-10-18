@@ -231,7 +231,7 @@ class SearchFilter2(django_filters.FilterSet):
     country = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], is_country=True))
     place_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
 
-    mediatype = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
+    mediatype = TextInFilter(method=filter_entity(["triple_set_from_subj__obj", "triple_set_from_subj__obj__triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
 
     publisher = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
     publisher_id = TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
@@ -287,7 +287,7 @@ class FacetFilter(django_filters.FilterSet):
     filter_keywords = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=Keyword, lookup_expr="in"))
     filter_countries = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], is_country=True))
     filter_places= TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
-    filter_mediatypes = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
+    filter_mediatypes = TextInFilter(method=filter_entity(["triple_set_from_subj__obj", "triple_set_from_subj__obj__triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
     filter_mediagroups = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
     filter_languages = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
     filter_startDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="gte")
