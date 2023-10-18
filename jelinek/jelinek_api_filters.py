@@ -220,8 +220,8 @@ class SearchFilter2(django_filters.FilterSet):
     honour_id = TextInFilter(field_name="honour__entity_id", lookup_expr="in")
     genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
     textLang = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
-    startDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="gte")
-    endDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="lte")
+    startDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="gte")
+    endDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="lte")
 
     chapter_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is in chapter", check_dump=False, is_chapter=True))
     keyword = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=Keyword, lookup_expr="in"))
@@ -290,8 +290,8 @@ class FacetFilter(django_filters.FilterSet):
     filter_mediatypes = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
     filter_mediagroups = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
     filter_languages = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
-    filter_startDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="gte")
-    filter_endDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="lte")
+    filter_startDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="gte")
+    filter_endDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="lte")
     filter_koha = django_filters.CharFilter(field_name="f3_manifestation_product_type__koha_id", method=exclude_null_values)
 
     @property
