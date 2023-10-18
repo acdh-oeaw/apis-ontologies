@@ -15,6 +15,7 @@ from os.path import isfile, isdir, join
 from .generate_short_entry import run as generate_short
 from .generate_genre import run as generate_genre
 from .generate_xml_dumps import run as generate_xml_dumps
+from .generate_publisher_relations_for_journals import run as generate_publisher_relations_for_journals
 from .import_index_in_chapter import run as import_index_in_chapter
 from .populate_indexes import run as populate_indexes
 from .assign_default_manifestation import run as assign_default_manifestation
@@ -4906,6 +4907,7 @@ def run(*args, **options):
         import_index_in_chapter()
         populate_indexes()
         assign_default_manifestation()
+        generate_publisher_relations_for_journals()
         
 
     main_run()
