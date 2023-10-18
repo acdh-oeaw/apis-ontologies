@@ -235,6 +235,7 @@ class TreesManager:
                 attr_dict = {
                     "name": None,
                     "institution_id": None,
+                    "institution_type": None,
                     "date": None
                 }
 
@@ -269,6 +270,10 @@ class TreesManager:
                         attr_dict["institution_id"] = xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
                     elif xml_elem.attrib.get("ref") is not None and not "place:place_" in xml_elem.attrib.get("ref"):
                         attr_dict["institution_id"] = xml_elem.attrib.get("ref").replace("insti:", "").replace("venues:","")
+
+                    if  xml_elem.tag.endswith("publisher") or xml_elem.attrib.get("type") in ["publisher"]:
+                        attr_dict["institution_type"] = "publisher"
+
                 elif (
                     xml_elem.tag.endswith("orgName")
                     and xml_elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") is not None

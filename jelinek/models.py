@@ -59,6 +59,7 @@ class E1_Crm_Entity(TempEntityClass):
 class E40_Legal_Body(E1_Crm_Entity):
     # for institutions and publishers
     institution_id = models.CharField(max_length=1024, blank=True, null=True)
+    institution_type = models.CharField(max_length=1024, blank=True, null=True)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity_id = self.institution_id

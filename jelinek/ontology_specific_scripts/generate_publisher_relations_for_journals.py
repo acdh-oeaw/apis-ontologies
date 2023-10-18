@@ -20,7 +20,7 @@ def generate_publisher_relations_for_journals_without_existing_e40():
     counter = 1
     for j in journals:
         if not E40_Legal_Body.objects.filter(name=j.name).exists():
-            insti = E40_Legal_Body.objects.create(name=j.name, institution_id="inst_from_{}".format(j.bibl_id))
+            insti = E40_Legal_Body.objects.create(name=j.name, institution_id="inst_from_{}".format(j.bibl_id), institution_type="journal")
             child_manifestation_triples = j.triple_set_from_obj.filter(prop__name="has host")
             for triple in child_manifestation_triples:
                 RenditionTriple.objects.get_or_create(subj=insti, obj=triple.subj, prop=Property.objects.get(name="is publisher of"), rendition_hidden=True)
