@@ -13,7 +13,7 @@ def assign_default_manifestations():
     def get_sorted_manifestations_for_work(work, include_translations=False):
         relations = [rel.obj for rel in Triple.objects.filter(subj=work, prop__name__in=["is expressed in", "is reported in"]) if rel.obj.edition == "first_edition"]
         if len(relations) == 0 and include_translations:
-            relations_reversed = [rel.subj for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.edition == "first_edition"]
+            relations = [rel.subj for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.edition == "first_edition"]
         if len(relations) == 0:
             relations = [rel.obj for rel in Triple.objects.filter(subj=work, prop__name="is expressed in") if rel.obj.start_date is not None]
             relations.sort(key=lambda rel: rel.start_date)
@@ -21,7 +21,7 @@ def assign_default_manifestations():
             relations = [rel.obj for rel in Triple.objects.filter(subj=work, prop__name="is expressed in")]
             relations.sort(key=lambda rel: rel.id)
         if len(relations) == 0 and include_translations:
-            relations_reversed = [rel.subj for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.start_date is not None]
+            relations = [rel.subj for rel in Triple.objects.filter(obj=work, prop__name="is translation of") if rel.subj.start_date is not None]
             relations.sort(key=lambda rel: rel.start_date)
         return relations
     def get_sorted_performances_for_work(work, included_types=None):
@@ -68,14 +68,20 @@ def assign_default_manifestations():
             ]
         for default_generator in default_manifestation_generator:
             print("_____{}_____".format(default_generator[0]))
-            works = [rel.subj for rel in Triple.objects.filter(prop__name="is in chapter", obj__name__contains=default_generator[0]) if rel.obj.chapter_number == default_generator[2]]
+            works = [rel.subj for rel in Triple.objects.filter(prop__name="is in chapter", obj__name__contains=default_generator[0]) if rel.obj.chapter_number == default_generator[2] and rel.subj.start_date_written is None]
             for work in works:
                 if len(work.name) > 0:
                     manifestations = default_generator[1](work)
                     if manifestations is None or len(manifestations) == 0:
                         print(work.name)
                     else:
-                        work.start_date_written = manifestations[0].start_date_written
+                        first_manifestation = manifestations[0]
+                        if first_manifestation.start_date_written is None:
+                            hosts = [t.obj for t in first_manifestation.triple_set_from_subj.filter(prop__name="has host") if t.obj.start_date is not None]
+                            if len(hosts) > 0:
+                                hosts.sort(key=lambda h: h.start_date )
+                                first_manifestation = hosts[0]
+                        work.start_date_written = first_manifestation.start_date_written
                         work.save()
                 
 
