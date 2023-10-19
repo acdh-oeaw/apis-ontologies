@@ -7,11 +7,15 @@ register = template.Library()
 
 @register.filter
 def linebreak_split(value):
+    if not value:
+        return ""
     return value.splitlines()
 
 
 @register.filter
 def parse_comment(value):
+    if not value:
+        return ""
     pattern = r"<<(.*?) \[(.*?)\]>>"
 
     # subbed = re.sub(pattern, r'<a href="\2">\1</a>', value)

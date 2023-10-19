@@ -1,8 +1,9 @@
+import logging
+
 import reversion
 from apis_core.apis_entities.models import TempEntityClass
+from apis_core.apis_relations.models import Property, Triple
 from django.db import models
-import logging
-from apis_core.apis_relations.models import Triple, Property
 from django.utils.functional import cached_property
 
 logger = logging.getLogger(__name__)
@@ -61,6 +62,7 @@ class Instance(TempEntityClass):
     external_link = models.TextField(
         blank=True, null=True, verbose_name="External links"
     )
+    zotero_ref = models.CharField(max_length=255, blank=True, null=True)
 
     @property
     def citation(self):

@@ -1,6 +1,10 @@
 {% extends "apis_entities/detail_views/person_detail_generic.html" %}
 {% load custom_filters %}
 
+{% if apis_bibsonomy %}
+{% include 'apis_bibsonomy/apis_bibsonomy_include.html' %}
+{% endif %}
+
 {% block info-table %}
 <table class="table table-bordered table-hover">
   <tr>
