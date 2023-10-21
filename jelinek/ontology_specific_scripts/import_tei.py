@@ -4910,9 +4910,9 @@ def run(*args, **options):
         generate_xml_dumps()
         generate_short()
         import_index_in_chapter()
-        populate_indexes()
         assign_default_manifestation()
         generate_publisher_relations_for_journals()
+        populate_indexes()
         
 
     main_run()
