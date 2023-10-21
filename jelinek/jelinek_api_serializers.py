@@ -499,6 +499,7 @@ class SearchSerializerFacets(serializers.Serializer):
     mediatype = SearchSerializerFacetsDetail(many=True)
     date = SearchSerializerFacetsDetail(many=True)
     language = SearchSerializerFacetsDetail(many=True)
+    publishers = SearchSerializerFacetsDetail(many=True)
         
     
 class SearchSerializer2(serializers.Serializer):
@@ -520,7 +521,8 @@ class SearchSerializer2(serializers.Serializer):
                 "country": {},
                 "mediatype": {},
                 "date": {},
-                "language": {}
+                "language": {},
+                "publishers": {},
             }, 
             "results": instance}
         subqueries_to_facet_mapping = {
@@ -545,11 +547,18 @@ class SearchSerializer2(serializers.Serializer):
                     for val in getattr(inst, field):
                         if isinstance(val, dict):
                             id_to_name_mapping[val["entity_id"]] = val["name"]
+                            type = val.get("type", "")
                             val = val["entity_id"]
-                            
+                         
                         if val not in res["facets"][subqueries_to_facet_mapping[field]]:
                             res["facets"][subqueries_to_facet_mapping[field]][val] = 0
                         res["facets"][subqueries_to_facet_mapping[field]][val] += 1
+
+                        if field == "related_institutions" and type == "publisher":
+                            if val not in res["facets"]["publishers"]:
+                                res["facets"]["publishers"][val] = 0
+                            res["facets"]["publishers"][val] += 1
+
             for field in props_to_facet_mapping:
                 if hasattr(inst, field) and getattr(inst, field) is not None:
                     val = getattr(inst, field)
@@ -565,6 +574,12 @@ class SearchSerializer2(serializers.Serializer):
             for k, v in res["facets"][subqueries_to_facet_mapping[field]].items():
                 final.append({"search_by": k, "name": id_to_name_mapping.get(k, k), "count": v})
             res["facets"][subqueries_to_facet_mapping[field]] = sorted(final, key=lambda k: k["count"], reverse=True)
+
+        for field in ["publishers"]:   
+            final = []
+            for k, v in res["facets"][field].items():
+                final.append({"search_by": k, "name": id_to_name_mapping.get(k, k), "count": v})
+            res["facets"][field] = sorted(final, key=lambda k: k["count"], reverse=True)
 
         for field in props_to_facet_mapping:   
             final = []

@@ -198,7 +198,7 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
         institution_contenttype = ContentType.objects.get_for_model(model=E40_Legal_Body)
         person_subquery = F10_Person.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
         person_property_subquery = Property.objects.filter(triple_set_from_prop__obj_id=OuterRef("pk"), triple_set_from_prop__subj__self_contenttype_id=person_contenttype).values_list('name', flat=True)
-        institution_subquery = E40_Legal_Body.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
+        institution_subquery = E40_Legal_Body.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id", type="institution_type"))
         institution_property_subquery = Property.objects.filter(triple_set_from_prop__obj_id=OuterRef("pk"), triple_set_from_prop__subj__self_contenttype_id=institution_contenttype).values_list('name', flat=True)
         keyword_subquery = Keyword.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values_list('name', flat=True)
         place_subquery = F9_Place.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
