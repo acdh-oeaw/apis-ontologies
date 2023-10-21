@@ -23,6 +23,7 @@ APIS_SKOSMOS = {
     "description": "Thesaurus of the APIS project. Used to type entities and relations.",
 }
 
+
 ALLOWED_HOSTS = re.sub(
     r"https?://",
     "",
@@ -64,11 +65,14 @@ APIS_AUTOCOMPLETE_SETTINGS = "apis_ontology.settings.autocomplete_settings"
 # APIS_BLAZEGRAPH = ('https://blazegraph.herkules.arz.oeaw.ac.at/metaphactory-play/sparql', 'metaphactory-play', 'KQCsD24treDY')
 # INSTALLED_APPS += ["apis_ontology"]
 
+INSTALLED_APPS += ["apis_bibsonomy"]
+
 APIS_RELATIONS_FILTER_EXCLUDE += ["annotation", "annotation_set_relation"]
 
 import sentry_sdk
+from apis_ontology.filters import (instance_name_filter, name_filter,
+                                   work_name_filter)
 from sentry_sdk.integrations.django import DjangoIntegration
-from apis_ontology.filters import name_filter, instance_name_filter, work_name_filter
 
 sentry_sdk.init(
     dsn="https://26617c9eabdc4fb7b54a8d8d2037c67d@o4504360778661888.ingest.sentry.io/4504360943484928",
@@ -149,3 +153,5 @@ APIS_ENTITIES = {
 ONTOLOGY_DIR = os.path.dirname(os.path.dirname(__file__))
 for template in TEMPLATES:
     template["DIRS"].append(os.path.join(ONTOLOGY_DIR, "templates"))
+
+APIS_BIBSONOMY_FIELDS = ["provenance", "external_link", "comments"]
