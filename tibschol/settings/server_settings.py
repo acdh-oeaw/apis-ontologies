@@ -161,9 +161,9 @@ APIS_BIBSONOMY = [
         "type": "zotero",  # or zotero
         "url": "https://api.zotero.org",  # url of the bibsonomy instance or zotero.org
         "user": os.environ.get(
-            "TIBSCHOL_BIBSONOMY_USER"
+            "APIS_BIBSONOMY_USER"
         ),  # for zotero use the user id number found in settings
-        "API key": os.environ.get("TIBSCHOL_BIBSONOMY_PASSWORD"),
+        "API key": os.environ.get("APIS_BIBSONOMY_PASSWORD"),
         "group": "4394244",
     }
 ]
