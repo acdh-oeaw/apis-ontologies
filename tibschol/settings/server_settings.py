@@ -155,3 +155,15 @@ for template in TEMPLATES:
     template["DIRS"].append(os.path.join(ONTOLOGY_DIR, "templates"))
 
 APIS_BIBSONOMY_FIELDS = ["provenance", "external_link", "comments"]
+
+APIS_BIBSONOMY = [
+    {
+        "type": "zotero",  # or zotero
+        "url": "https://api.zotero.org",  # url of the bibsonomy instance or zotero.org
+        "user": os.environ.get(
+            "TIBSCHOL_BIBSONOMY_USER"
+        ),  # for zotero use the user id number found in settings
+        "API key": os.environ.get("TIBSCHOL_BIBSONOMY_PASSWORD"),
+        "group": "4394244",
+    }
+]
