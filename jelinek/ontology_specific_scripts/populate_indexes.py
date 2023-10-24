@@ -21,7 +21,7 @@ def populate_indexes():
         txt_xml_content = ""
         txt_xml_note = ""
         check = False
-        for attr in ["name", "content", "file_content", "note", "short"]:
+        for attr in ["name", "content", "file_content"]:
             if hasattr(ent, attr):
                 if getattr(ent, attr) is not None:
                     txt_e1 += getattr(ent, attr) + " "
