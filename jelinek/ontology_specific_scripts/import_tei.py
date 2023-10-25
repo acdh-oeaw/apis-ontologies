@@ -3453,6 +3453,12 @@ class TreesManager:
 
                 for child_path_node in path_node.path_node_children_list:
 
+                    role = child_path_node.xml_elem.attrib.get("role")
+                    if role is None:
+                        for child_child_path_node in child_path_node.path_node_children_list:
+                            if child_child_path_node.xml_elem.attrib.get("role") is not None:
+                                role = child_child_path_node.xml_elem.attrib.get("role")
+
                     for entity_other in child_path_node.entities_list:
 
                         if (
@@ -3469,8 +3475,8 @@ class TreesManager:
 
                         if (
                             entity_other.__class__ is E40_Legal_Body
-                            and (child_path_node.xml_elem.attrib.get("role") == "editor"
-                            or child_path_node.xml_elem.attrib.get("role") == "possessor")
+                            and (role == "editor"
+                            or role == "possessor")
                         ):
 
                             triple = create_triple(
@@ -3482,7 +3488,7 @@ class TreesManager:
 
                         if (
                             entity_other.__class__ is E40_Legal_Body
-                            and (child_path_node.xml_elem.attrib.get("role") == "author")
+                            and (role == "author")
                         ):
 
                             triple = create_triple(
@@ -3493,7 +3499,7 @@ class TreesManager:
                             )
                         if (
                             entity_other.__class__ is E40_Legal_Body
-                            and (child_path_node.xml_elem.attrib.get("role") == "interviewer")
+                            and (role == "interviewer")
                         ):
 
                             triple = create_triple(
@@ -3505,7 +3511,7 @@ class TreesManager:
 
                         if (
                             entity_other.__class__ is E40_Legal_Body
-                            and (child_path_node.xml_elem.attrib.get("role") == "broadcaster")
+                            and (role == "broadcaster")
                         ):
 
                             triple = create_triple(
