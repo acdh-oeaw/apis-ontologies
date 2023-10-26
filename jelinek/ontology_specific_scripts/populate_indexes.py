@@ -42,11 +42,11 @@ def populate_indexes():
         for triple in ent.triple_set_from_subj.filter(obj__self_contenttype_id=contenttype_e40):
             txt_e40 += triple.obj.name + " "
             if triple.obj.entity_id is not None:
-                txt_e40 += triple.obj.entity_id + " "
+                txt_e40 += "({})".format(triple.obj.entity_id) + " "
         for triple in ent.triple_set_from_obj.filter(subj__self_contenttype_id=contenttype_e40):
             txt_e40 += triple.subj.name + " "
             if triple.subj.entity_id is not None:
-                txt_e40 += triple.subj.entity_id + " "
+                txt_e40 += "({})".format(triple.subj.entity_id) + " "
         if len(txt_e40) > 0:
             check = True
             ent.vector_related_E40_set = SearchVector(Value(txt_e40))
