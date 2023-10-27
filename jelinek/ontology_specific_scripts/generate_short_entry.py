@@ -600,9 +600,12 @@ def generate_short_text():
                     places = Triple.objects.filter(subj__id=first_manifestation.id, prop__name="was published in")
                     if places.count() > 0:
                         place = places[0].obj
-                        short = "<b><i>{}.</i></b> {}: {} {}.".format(first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
+                        subtitle = ""
+                        if first_manifestation.note is not None and "type=\"subtitle\"" in first_manifestation.note:
+                            subtitle = " " + re.sub(r"<.*?>", "", first_manifestation.note)
+                        short = "<b><i>{}.</i></b>{} {}: {} {}.".format(first_manifestation.name, subtitle, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
-                            short = short + " ({})".format(first_manifestation.series)
+                            short = short + " (= {})".format(first_manifestation.series)
                         work.short = short
             return work
         if Triple.objects.filter(subj=work, prop__name="is in chapter", obj__name="Sammelbände").count() > 0:
@@ -658,7 +661,7 @@ def generate_short_text():
                         place = places[0].obj
                         short = "<b>{}: <i>{}.</i></b> {}: {} {}".format(author.name, first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
                         if first_manifestation.series is not None:
-                            short = short + " ({})".format(first_manifestation.series)
+                            short = short + " (= {})".format(first_manifestation.series)
                         short = short + "."
                         work.short = short
             return work
@@ -750,7 +753,7 @@ def generate_short_text():
                     place = places[0].obj
                     short = "<b>{} (Hg.): <i>{}.</i></b> {}: {} {}".format(editor_string, first_manifestation.name, place.name, publisher.name, first_manifestation.start_date_written)
                     if first_manifestation.series is not None:
-                        short = short + " ({})".format(first_manifestation.series)
+                        short = short + " (= {})".format(first_manifestation.series)
                     short = short + "."
                     work.short = short
             else:
