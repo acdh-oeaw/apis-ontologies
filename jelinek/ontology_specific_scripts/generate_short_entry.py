@@ -573,9 +573,9 @@ def generate_short_text():
     def short_text_Theatertexte(work):
         def short_text_Einzeltext(work):
             relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.performance_type == "UA"]
-            if len(relations) == 0:
-                relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.start_date is not None]
-                relations.sort(key=lambda rel: rel.obj.start_date)
+            # if len(relations) == 0:
+            #     relations = [rel for rel in Triple.objects.filter(subj=work, prop__name="has been performed in") if rel.obj.start_date is not None]
+            #     relations.sort(key=lambda rel: rel.obj.start_date)
             if len(relations) > 0:
                 perf = relations[0].obj
                 institutions = [re.sub(r"\<.*?\>", "", rel.obj.content) for rel in Triple.objects.filter(prop__name="has note", subj=perf) if "type=\"institutions\"" in rel.obj.content]
@@ -587,6 +587,8 @@ def generate_short_text():
                 short = re.sub(r", *$", "", short)
                 
                 work.short = short
+            else:
+                work = short_text_Essays(work)
             return work
         def short_text_Sammelband(work):
             relations = [r for r in Triple.objects.filter(subj=work, prop__name="is expressed in")if r.obj.start_date is not None]
@@ -853,12 +855,12 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            ("Lyrik", short_text_Lyrik, "1.1"), 
-            ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
-            ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
-            ("Romane", short_text_Romane, "1.2"), 
-            ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
-            ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
+            # ("Lyrik", short_text_Lyrik, "1.1"), 
+            # ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
+            # ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
+            # ("Romane", short_text_Romane, "1.2"), 
+            # ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
+            # ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
             ("Theatertexte", short_text_Theatertexte, "1.4"), 
             ("Kompositionen", short_text_Theatertexte, "1.7"), 
             ("Texte für Kompositionen", short_text_Theatertexte, "1.8"), 
