@@ -2099,6 +2099,7 @@ class TreesManager:
                     "category": None,
                     "date_hidden": None,
                     "start_date_written": None,
+                    "start_date": None,
                     "performance_id": None,
                     "performance_type": None
                 }
@@ -2149,6 +2150,8 @@ class TreesManager:
                             attr_dict["start_date_written"] = xml_elem_child.text
                             if (xml_elem_child.attrib.get("rendition", "") in ["hidden", "#hidden"]):
                                 attr_dict["date_hidden"] = True
+                            if xml_elem_child.attrib.get("when") is not None:
+                                attr_dict["start_date"] = xml_elem_child.attrib.get("when")
 
                         elif (
                             (xml_elem_child.tag.endswith("rs")

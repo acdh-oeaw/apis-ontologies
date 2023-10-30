@@ -855,9 +855,9 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            # ("Lyrik", short_text_Lyrik, "1.1"), 
-            # ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
-            # ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
+            ("Lyrik", short_text_Lyrik, "1.1"), 
+            ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
+            ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
             ("Romane", short_text_Romane, "1.2"), 
             ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
             ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
