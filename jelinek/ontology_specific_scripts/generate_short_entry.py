@@ -221,7 +221,7 @@ def generate_short_text():
                 publishers = [p for p in publishers]
                 publishers.sort(key=lambda e: e.temptriple.start_date if e.temptriple.start_date is not None else datetime.datetime.now().date())
                 manifestations_and_years.append((rel, publishers[0], publishers[0].temptriple.start_date))
-            manifestations_and_years.sort(key=lambda t: t[2])
+            manifestations_and_years.sort(key=lambda t: t[2] if t[2] is not None else datetime.datetime.now().date())
             if len(manifestations_and_years) > 0:
                 manifestation = manifestations_and_years[0][0].obj
                 publisher = manifestations_and_years[0][1]
@@ -855,9 +855,9 @@ def generate_short_text():
 
     def main():
         short_text_generators = [
-            ("Lyrik", short_text_Lyrik, "1.1"), 
-            ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
-            ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
+            # ("Lyrik", short_text_Lyrik, "1.1"), 
+            # ("Kurzprosa", short_text_Kurzprosa, "1.3"), 
+            # ("Essayistische Texte, Reden und Statements", short_text_Essays, "1.10"), 
             ("Romane", short_text_Romane, "1.2"), 
             ("Texte für Hörspiele", short_text_Hoerspiele, "1.5"), 
             ("Drehbücher und Texte für Filme", short_text_Drehbuecher, "1.6"), 
