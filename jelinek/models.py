@@ -247,6 +247,8 @@ class F31_Performance(E1_Crm_Entity):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity_id = self.performance_id
+    def filtered_triples_from_subj(self):
+        return self.triple_set_from_subj.exclude(prop__name__in=["data read from file"])
 
 
 @reversion.register(follow=["tempentityclass_ptr"])
