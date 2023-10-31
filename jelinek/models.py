@@ -51,16 +51,16 @@ class E1_Crm_Entity(TempEntityClass):
                 except:
                     pass
 
-        if self.start_date is not None and isinstance(self.start_date, str):
-            regex_match = re.match(r"^([0-9]{4})-([0-9]{2})$", self.start_date)
-            if regex_match is not None:
-                try:
-                    self.start_date = datetime.datetime(year=int(regex_match.group(1)), month=int(regex_match.group(2)), day=1)
-                    super(E1_Crm_Entity, self).save(parse_dates=False, *args, **kwargs)
-                    return
-                
-                except:
-                    pass
+        if self.start_date is not None:
+            if isinstance(self.start_date, str):
+                regex_match = re.match(r"^([0-9]{4})-([0-9]{2})$", self.start_date)
+                if regex_match is not None:
+                    try:
+                        self.start_date = datetime.datetime(year=int(regex_match.group(1)), month=int(regex_match.group(2)), day=1)                    
+                    except:
+                        pass
+            super(E1_Crm_Entity, self).save(parse_dates=False, *args, **kwargs)
+            return
 
         super(E1_Crm_Entity, self).save(*args, **kwargs)
 
