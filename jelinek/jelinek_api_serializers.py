@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.fields import empty
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
-from apis_ontology.models import Chapter, E1_Crm_Entity, F17_Aggregation_Work, F20_Performance_Work, F21_Recording_Work, F31_Performance, F3_Manifestation_Product_Type, F1_Work, Honour
+from apis_ontology.models import *
 
 serializers_cache = {}
 serializers_cache_patched = {}
@@ -250,6 +250,34 @@ class F3ManifestationProductTypeSerializer(serializers.ModelSerializer):
        return c
     # def add_triple_set_from(self, obj):
     #     return obj.get_triple_set()
+
+class F31PerformanceSerializer(serializers.ModelSerializer):
+    """
+    Custom serializer for F31Performance
+    """
+
+    triple_set_from_obj = TripleSerializerFromObj(many=True, read_only=True)
+    triple_set_from_subj = TripleSerializerFromSubj(source="filtered_triples_from_subj", many=True, read_only=True)
+    # triple_set_from_obj = serializers.SerializerMethodField(
+    #     method_name="add_triple_set_from"
+    # )
+
+    class Meta:
+        model = F31_Performance
+        exclude = [
+            "source",
+            "status",
+            "references",
+            "notes",
+            "review",
+            "vector_column_e1_set"
+        ]
+        depth = 3
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return remove_null_empty_from_dict(ret)
+    
 
 class WorkForChapterSerializer(serializers.ModelSerializer):
     """

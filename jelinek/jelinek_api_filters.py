@@ -1,5 +1,5 @@
 import django_filters
-from .models import Chapter, E40_Legal_Body, E55_Type, F10_Person, F1_Work, F3_Manifestation_Product_Type, F9_Place, Honour, Keyword, E1_Crm_Entity, XMLNote, Xml_Content_Dump
+from .models import *
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.search import SearchQuery, SearchVector
@@ -11,6 +11,15 @@ class F3ManifestationProductTypeFilter(django_filters.FilterSet):
                   'bibl_id': ['exact', 'in'],
                   'note': ['icontains'], 
                   'series': ['icontains'],
+                  'short': ['icontains']
+                  }
+        
+class F31PerformanceFilter(django_filters.FilterSet):
+    class Meta:
+        model = F31_Performance
+        fields = {'id': ['exact', 'in'],
+                  'performance_id': ['exact', 'in'],
+                  'note': ['icontains'],
                   'short': ['icontains']
                   }
         

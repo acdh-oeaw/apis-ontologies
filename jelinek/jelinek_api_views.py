@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from rest_framework import viewsets
-from .models import E1_Crm_Entity, E40_Legal_Body, E55_Type, F10_Person, F1_Work, F3_Manifestation_Product_Type, Chapter, F9_Place, Honour, Keyword, XMLNote, Xml_Content_Dump
-from .jelinek_api_serializers import F1WorkSerializer, HonourSerializer, LonelyE1CrmEntitySerializer, SearchSerializer, F3ManifestationProductTypeSerializer, SearchSerializer2, WorkForChapterSerializer
-from .jelinek_api_filters import ChapterFilter, F3ManifestationProductTypeFilter, HonourFilter, SearchFilter, F1WorkFilter, SearchFilter2, EntitiesWithoutRelationsFilter, FacetFilter
+from .models import *
+from .jelinek_api_serializers import *
+from .jelinek_api_filters import *
 from apis_core.apis_relations.models import Triple
 from django.db.models import Q, Count, Sum, Case, When, IntegerField,Exists
 from datetime import datetime
@@ -18,6 +18,11 @@ class F3ManifestationProductType(viewsets.ReadOnlyModelViewSet):
     serializer_class = F3ManifestationProductTypeSerializer
     filter_class = F3ManifestationProductTypeFilter
     queryset = F3_Manifestation_Product_Type.objects.all().prefetch_related('triple_set_from_obj', 'triple_set_from_subj')
+
+class F31Performance(viewsets.ReadOnlyModelViewSet):
+    serializer_class = F31PerformanceSerializer
+    filter_class = F31PerformanceFilter
+    queryset = F31_Performance.objects.all().prefetch_related('triple_set_from_obj', 'triple_set_from_subj')
 
 class F1Work(viewsets.ReadOnlyModelViewSet):
     serializer_class = F1WorkSerializer
