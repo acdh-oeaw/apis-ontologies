@@ -59,8 +59,9 @@ class E1_Crm_Entity(TempEntityClass):
                         self.start_date = datetime.datetime(year=int(regex_match.group(1)), month=int(regex_match.group(2)), day=1)                    
                     except:
                         pass
-            super(E1_Crm_Entity, self).save(parse_dates=False, *args, **kwargs)
-            return
+            if isinstance(self.start_date, datetime.datetime):
+                super(E1_Crm_Entity, self).save(parse_dates=False, *args, **kwargs)
+                return
 
         super(E1_Crm_Entity, self).save(*args, **kwargs)
 
