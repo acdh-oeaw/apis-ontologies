@@ -896,6 +896,7 @@ additional_serializers_list = [
                         F10_Person.forename,
                         F10_Person.surname,
                         F10_Person.id,
+                        F10_Person.entity_id,
                         F10_Person.self_contenttype,
                     ]
                 },
