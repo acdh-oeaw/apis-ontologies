@@ -678,3 +678,10 @@ def construct_properties():
     has_image.subj_class.add(ContentType.objects.get_for_model(model=F1_Work))
     has_image.subj_class.add(ContentType.objects.get_for_model(model=Honour))
     has_image.obj_class.add(ContentType.objects.get_for_model(model=E38_Image))
+
+    has_recording_artefact = Property.objects.create(
+        name="has recording artefact",
+        name_reverse="is recording event"
+    )
+    has_recording_artefact.subj_class.add(ContentType.objects.get_for_model(model=F31_Performance))
+    has_recording_artefact.obj_class.add(ContentType.objects.get_for_model(model=F3_Manifestation_Product_Type))

@@ -2837,26 +2837,8 @@ class TreesManager:
 
                 for neighbour_path_node in path_node.path_node_parent.path_node_children_list:
 
-                    # direct manifestations
-                    if (
-                        neighbour_path_node.xml_elem.tag.endswith("div")
-                        and neighbour_path_node.xml_elem.attrib.get("type") in ["frbroo:manifestations", "audiocassette", "cd", "dvd"]
-                    ):
-
-                        for neighbour_child_path_node in neighbour_path_node.path_node_children_list:
-
-                            if neighbour_child_path_node.xml_elem.tag.endswith("listBibl"):
-
-                                for neighbour_child_child_path_node in neighbour_child_path_node.path_node_children_list:
-
-                                    check_and_create_triple_to_f3(entity_work, neighbour_child_child_path_node)
-
-                            else:
-
-                                check_and_create_triple_to_f3(entity_work, neighbour_child_path_node)
-
                     # translated manifestations
-                    elif (
+                    if (
                         neighbour_path_node.xml_elem.tag.endswith("div")
                         and neighbour_path_node.xml_elem.attrib.get("type") == "translations"
                     ):
@@ -2928,6 +2910,23 @@ class TreesManager:
                                             prop=Property.objects.get(name="contains"),
                                             path_node=list_bibl_child_path_node
                                         )
+                    
+                    # direct manifestations
+                    elif (
+                        neighbour_path_node.xml_elem.tag.endswith("div")
+                    ):
+
+                        for neighbour_child_path_node in neighbour_path_node.path_node_children_list:
+
+                            if neighbour_child_path_node.xml_elem.tag.endswith(("listBibl", "p")):
+
+                                for neighbour_child_child_path_node in neighbour_child_path_node.path_node_children_list:
+
+                                    check_and_create_triple_to_f3(entity_work, neighbour_child_child_path_node)
+
+                            else:
+
+                                check_and_create_triple_to_f3(entity_work, neighbour_child_path_node)
 
                 # for seklit works + manifestations
                 for path_node_child in path_node.path_node_children_list:
@@ -3637,11 +3636,27 @@ class TreesManager:
                                     path_node=path_node_sibling
                                 )
 
+            def triples_from_f3_to_f31(entity_manifestation, path_node: PathNode):
+                for child_path_node in path_node.path_node_children_list:
+                    if (child_path_node.xml_elem.tag.endswith("relatedItem")
+                        and child_path_node.xml_elem.attrib.get("type", "") == "recording-event"):
+                        for ptr in child_path_node.path_node_children_list:
+                            for entity_other in ptr.entities_list:
+                                if entity_other.__class__ == F31_Performance:
+                                    create_triple(
+                                        entity_subj=entity_other,
+                                        entity_obj=entity_manifestation,
+                                        prop=Property.objects.get(name="has recording artefact")
+                                    )
+
+
+
             triples_from_f3_to_e55(entity_manifestation, path_node)
             triples_from_f3_to_f3(entity_manifestation, path_node)
             triples_from_f3_to_f9(entity_manifestation, path_node)
             triples_from_f3_to_e40(entity_manifestation, path_node)
             triples_from_f3_to_note(entity_manifestation, path_node)
+            triples_from_f3_to_f31(entity_manifestation, path_node)
 
         def parse_triples_from_e55_manifestation(entity_e55, path_node):
 
