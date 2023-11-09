@@ -229,8 +229,8 @@ class SearchFilter2(django_filters.FilterSet):
     honour_id = TextInFilter(field_name="honour__entity_id", lookup_expr="in")
     genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
     textLang = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
-    startDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="gte")
-    endDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="lte")
+    startDate = django_filters.DateFilter(method='start_date_filter')
+    endDate = django_filters.DateFilter(method='end_date_filter')
 
     chapter_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is in chapter", check_dump=False, is_chapter=True))
     keyword = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=Keyword, lookup_expr="in"))
@@ -244,6 +244,11 @@ class SearchFilter2(django_filters.FilterSet):
 
     publisher = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
     publisher_id = TextInFilter(method=search_in_vectors(cols_to_check=["e40", "dump", "note"]))
+
+    def start_date_filter(self, queryset, name, value):
+        return queryset.filter(Q(start_end_date__gte=value) | Q(start_date__gte=value))
+    def end_date_filter(self, queryset, name, value):
+        return queryset.filter(Q(start_start_date__lte=value) | Q(start_date__lte=value))
 
     @property
     def qs(self):
@@ -299,9 +304,14 @@ class FacetFilter(django_filters.FilterSet):
     filter_mediatypes = TextInFilter(method=filter_entity(["triple_set_from_subj__obj", "triple_set_from_subj__obj__triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
     filter_mediagroups = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=E55_Type, lookup_expr="in"))
     filter_languages = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
-    filter_startDate = django_filters.DateFilter(field_name="start_end_date", lookup_expr="gte")
-    filter_endDate = django_filters.DateFilter(field_name="start_start_date", lookup_expr="lte")
+    filter_startDate = django_filters.DateFilter(method="start_date_filter")
+    filter_endDate = django_filters.DateFilter(method="end_date_filter")
     filter_koha = django_filters.CharFilter(field_name="f3_manifestation_product_type__koha_id", method=exclude_null_values)
+
+    def start_date_filter(self, queryset, name, value):
+        return queryset.filter(Q(start_end_date__gte=value) | Q(start_date__gte=value))
+    def end_date_filter(self, queryset, name, value):
+        return queryset.filter(Q(start_start_date__lte=value) | Q(start_date__lte=value))
 
     @property
     def qs(self):
