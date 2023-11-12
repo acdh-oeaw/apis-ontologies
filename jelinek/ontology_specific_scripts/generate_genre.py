@@ -44,16 +44,21 @@ def identify_seklit_subsection(work, file):
                              "Zur ORF-Kultursendung K1 - KULTUR LIVE", "WERKREZENSIONEN", "KOMMENTAR", "WEITERE INTERVIEWS", "ANKÜNDIGUNGEN", 
                              "Szenische Realisierung bei überGrenzen 97, Podewil, Berlin, 3.10.1997 (zusammen mit Aufenthalt)", "Szenische Realisierung im WUK Wien, 20.2.1985",
                              "REZENSIONEN ZUR PRÄSENTATION BEI DEN FILMFESTSPIELEN IN CANNES 2001", "BERICHTE"]
-    root = etree.fromstring(file.file_content)
-    xpath = f"//*[@type='seklitSubsection' and .//*[@target='seklit:{work.idno}']]/@ana"
-    ana = root.xpath(xpath)
-    if ana and len(ana) > 0:
-        if ana[0] in seklit_ana:
-            work.genre = "Sekundärliteratur"
-        elif ana[0] in berichterstattung_ana:
-            work.genre = "Berichterstattung"
-        else:
-            work.genre = "Sekundärliteratur"
+    try:
+        root = etree.fromstring(file.file_content)
+        xpath = f"//*[@type='seklitSubsection' and .//*[@target='seklit:{work.idno}']]/@ana"
+        ana = root.xpath(xpath)
+        if ana and len(ana) > 0:
+            if ana[0] in seklit_ana:
+                work.genre = "Sekundärliteratur"
+            elif ana[0] in berichterstattung_ana:
+                work.genre = "Berichterstattung"
+            else:
+                work.genre = "Sekundärliteratur"
+    except:
+        print(f"Parse error in work {work.name}")
+    
+    
     return work
 
 def generate_genre():

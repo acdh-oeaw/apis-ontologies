@@ -882,7 +882,10 @@ def generate_short_text():
             for work in works:
                 if len(work.name) > 0:
                     print(work.name)
-                    work = short_text_generator[1](work)
+                    try:
+                        work = short_text_generator[1](work)
+                    except Exception as e:
+                        print("An error occurred during short entry generation")
                     if work.short is not None:  
                         work.short = work.short.replace("..", ".").replace(" datiert mit None", "").replace(" None", "").replace(", .", ".").replace(" ,", ",")
                     else:
