@@ -3,6 +3,7 @@ import logging
 import reversion
 from apis_core.apis_entities.models import TempEntityClass
 from apis_core.apis_relations.models import Property, Triple
+from apis_core.relations.models import Relation
 from django.db import models
 from django.utils.functional import cached_property
 
@@ -193,3 +194,25 @@ class Place(TempEntityClass):
     alternative_names = models.TextField(
         blank=True, null=True, verbose_name="Alternative names"
     )
+
+class TibscholRelation(models.Model):
+    CONFIDENCE = [
+        ("Positive", "Positive"),
+        ("Uncertain", "Uncertain"),
+        ("Negative", "Negative"),
+    ]
+
+    zotero_refs = models.TextField(blank=True, null=True,verbose_name="Zotero")
+    tei_refs = models.TextField(blank=True, null=True, verbose_name="Excerpts")
+    support_notes = models.TextField(blank=True, null=True, verbose_name="Support notes")
+    confidence =models.CharField(blank=True, null=True, choices=CONFIDENCE, verbose_name="Confidence",max_length=1000)
+
+    class Meta:
+        abstract = True
+
+
+class PersonAuthorOfWork(Relation, TibscholRelation):
+    subj_model = Person
+    obj_model = Work
+    name = "author of"
+    name_reverse = "composed by"

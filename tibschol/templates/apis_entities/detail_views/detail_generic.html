@@ -1,5 +1,8 @@
 {% extends basetemplate %}
 {% load static %}
+<script src="https://unpkg.com/htmx.org@latest/dist/htmx.js"></script>
+
+{% load relations %}
 
 {% load django_tables2 %}
 {% load custom_filters %}
@@ -298,22 +301,24 @@
                 </div>
                 <div class="card-body">
 
-                  {% block relations %}
-                    {% for obj in right_card %}
-
-                      {% if obj.1.data|length > 0 %}
-                        <div class="card card-default">
-                          <div class="card-heading">
-                            <h4 class="card-title">{{ obj.0 }}</h4>
-                          </div>
-                          <div class="card-body">
-                            <div id="tab_{{ obj.2 }}" class="card-body">{% render_table obj.1 %}</div>
-                          </div>
-                        </div>
-                      {% endif %}
-
-                    {% endfor %}
-                  {% endblock relations %}
+{% block relations %}
+{% instance_is_related_to instance=object as contenttypes %}
+{% for contenttype in contenttypes %}
+<div class="card card-default">
+  <div class="card-header" role="tab" id="heading{{ forloop.counter }}">
+    <h4 class="card-title">
+      <a role="button">{{ contenttype.name }}</a>
+    </h4>
+  </div>
+    <div role="tabcard">
+      <div class="card-body">
+        {% relations_table instance=object tocontenttype=contenttype as table %}
+	      {% render_table table %}
+      </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
 
                 </div>
               </div>
