@@ -99,10 +99,11 @@ def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_
             entities = [c.id for c in F9_Place.objects.filter(country__in=value)]
         else:
             entities = [e.id for e in E1_Crm_Entity.objects.filter(entity_id__in=value)]
-        id_criterion_lookup = "__".join([expr, "id__in"])
-        id_criterion = Q(**{id_criterion_lookup: entities})
+        
         disjunction = Q()
-        for entry in criteria_to_join:
+        for (idx, entry) in enumerate(criteria_to_join):
+            id_criterion_lookup = "__".join([expr_to_entity[idx], "id__in"])
+            id_criterion = Q(**{id_criterion_lookup: entities})
             disjunction = disjunction | (id_criterion & entry["role_criterion"])
         if check_dump:
             if check_dump_for_name is not None:
@@ -194,9 +195,9 @@ class SearchFilter(django_filters.FilterSet):
 def search_in_vectors(cols_to_check=["dump", "note", "e1"], names_to_check=None):
         def build_filter_method(queryset, name, value):
             if isinstance(value, list):
-                value = SearchQuery(" | ".join(["({})".format(entry.replace("inst_from", "").replace(" ", "&")) for entry in value]), search_type="raw", config="german")
+                value = SearchQuery(" | ".join([entry.replace("_", "").replace(" ", "&") for entry in value]), search_type="raw", config="german")
                 if names_to_check is not None:
-                    value = value | SearchQuery(" | ".join(["({})".format(entry.replace("inst_from", "").replace(" ", "&")) for entry in names_to_check]), search_type="raw", config="german")
+                    value = value | SearchQuery(" | ".join([entry.replace("_", "").replace(" ", "&") for entry in names_to_check]), search_type="raw", config="german")
             else:
                 value = SearchQuery(value, config="german")
             disjunction = Q()
@@ -216,6 +217,8 @@ def search_in_vectors(cols_to_check=["dump", "note", "e1"], names_to_check=None)
 class SearchFilter2(django_filters.FilterSet):
     class TextInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
         pass
+
+    
 
     searchTerm = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note", "e1", "e40"]))
     person = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e1", "f10", "dump", "note"]))

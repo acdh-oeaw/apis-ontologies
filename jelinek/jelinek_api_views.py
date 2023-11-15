@@ -200,6 +200,13 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
     
     def get_queryset(self):
         f31_only = self.request.GET.get("return_type", "") == "f31"
+        work_only_fields = ["title", "work_id", "honour_id", "genre", "genreFilter", "chapter_id", "keyword", "keyword_id", "workRole", 
+                            "honourRole", "chapterRole", "limit", "filter_genre", "filter_keywords", "filter_startDate", 
+                            "filter_endDate", "filter_persons", "filter_institutions", "filter_personRoles", "filter_institutionRoles"]
+        work_only = set(i[0] for i in self.request.GET.items() if i[1] is not None and i[1] != "").issubset(work_only_fields)
+        
+        
+        print(work_only)
         person_contenttype = ContentType.objects.get_for_model(model=F10_Person)
         institution_contenttype = ContentType.objects.get_for_model(model=E40_Legal_Body)
         person_subquery = F10_Person.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
@@ -216,7 +223,9 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
         work_subquery = F1_Work.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk"), triple_set_from_subj__prop__name__in=["is expressed in", "is reported in", "is original for translation", "has been performed in"]).distinct().values(json=JSONObject(pk="pk", name="name", genre="genre", entity_id="entity_id"))
         work_host_subquery = F1_Work.objects.filter(triple_set_from_subj__obj__triple_set_from_subj__obj_id=OuterRef("pk"), triple_set_from_subj__prop__name__in=["is expressed in", "is reported in", "is original for translation", "has been performed in"]).distinct().values(json=JSONObject(pk="pk", name="name", genre="genre", entity_id="entity_id"))
         subclass_filter = Q(f1_work__isnull=False) | Q(honour__isnull=False) | Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False)
-        if f31_only:
+        if work_only:
+            subclass_filter = Q(f1_work__isnull=False) | Q(honour__isnull=False)
+        elif f31_only:
             subclass_filter = Q(f31_performance__isnull=False)
         qs = E1_Crm_Entity.objects_inheritance.select_subclasses("f1_work", "f3_manifestation_product_type", "honour", "f31_performance").filter(subclass_filter).annotate(
             related_persons=ArraySubquery(person_subquery),
