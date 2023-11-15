@@ -199,6 +199,7 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
     
     def get_queryset(self):
+        f31_only = self.request.GET.get("return_type", "") == "f31"
         person_contenttype = ContentType.objects.get_for_model(model=F10_Person)
         institution_contenttype = ContentType.objects.get_for_model(model=E40_Legal_Body)
         person_subquery = F10_Person.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
@@ -214,7 +215,10 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
         mediatype_subquery = E55_Type.objects.filter(triple_set_from_obj__subj_id=OuterRef("pk")).union(E55_Type.objects.filter(mediatype_host_subquery)).values_list('name', flat=True)
         work_subquery = F1_Work.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk"), triple_set_from_subj__prop__name__in=["is expressed in", "is reported in", "is original for translation", "has been performed in"]).distinct().values(json=JSONObject(pk="pk", name="name", genre="genre", entity_id="entity_id"))
         work_host_subquery = F1_Work.objects.filter(triple_set_from_subj__obj__triple_set_from_subj__obj_id=OuterRef("pk"), triple_set_from_subj__prop__name__in=["is expressed in", "is reported in", "is original for translation", "has been performed in"]).distinct().values(json=JSONObject(pk="pk", name="name", genre="genre", entity_id="entity_id"))
-        qs = E1_Crm_Entity.objects_inheritance.select_subclasses("f1_work", "f3_manifestation_product_type", "honour", "f31_performance").filter(Q(f1_work__isnull=False) | Q(honour__isnull=False) | Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False)).annotate(
+        subclass_filter = Q(f1_work__isnull=False) | Q(honour__isnull=False) | Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False)
+        if f31_only:
+            subclass_filter = Q(f31_performance__isnull=False)
+        qs = E1_Crm_Entity.objects_inheritance.select_subclasses("f1_work", "f3_manifestation_product_type", "honour", "f31_performance").filter(subclass_filter).annotate(
             related_persons=ArraySubquery(person_subquery),
             related_person_roles=ArraySubquery(person_property_subquery), 
             related_institutions=ArraySubquery(institution_subquery),
