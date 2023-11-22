@@ -94,11 +94,11 @@ def filter_by_entity_id(expr_to_entity, role=None, check_dump=False, check_dump_
         entities = []
         # get internal id of entity with the given entity_id
         if is_chapter:
-            entities = [c.id for c in Chapter.objects.filter(chapter_number__in=value)]
+            entities = Chapter.objects.filter(chapter_number__in=value).values_list("id", flat=True)
         elif is_country:
-            entities = [c.id for c in F9_Place.objects.filter(country__in=value)]
+            entities = F9_Place.objects.filter(country__in=value).values_list("id", flat=True)
         else:
-            entities = [e.id for e in E1_Crm_Entity.objects.filter(entity_id__in=value)]
+            entities = E1_Crm_Entity.objects.filter(entity_id__in=value).values_list("id", flat=True)
         
         disjunction = Q()
         for (idx, entry) in enumerate(criteria_to_join):
@@ -214,11 +214,25 @@ def search_in_vectors(cols_to_check=["dump", "note", "e1"], names_to_check=None)
             return queryset.filter(disjunction).distinct("id")
         return build_filter_method
 
+def search_in_work_and_its_manifestations(role, entity_class, lookup_name="entity_id__in"):
+    def build_filter_method(queryset, name, value): 
+        entities = entity_class.objects.filter(Q(**{lookup_name: value})).values_list("id", flat=True)
+        f1_results = queryset.filter(triple_set_from_subj__obj__id__in=entities, triple_set_from_subj__prop__name=role)
+        f3_results = queryset.filter(Q(triple_set_from_obj__subj__in=f1_results) & (Q(f3_manifestation_product_type__isnull=False) | Q(f31_performance__isnull=False)))
+        return f1_results | f3_results
+    return build_filter_method
+
+def filter_on_related_work(queryset, name, value):
+    matches = [q.id for q in queryset if next((item for item in q.related_work if item["genre"] in value), None)]
+    res = queryset.filter(Q(id__in=matches) | Q(f1_work__genre__in=value))
+    return res
+
+
+
+
 class SearchFilter2(django_filters.FilterSet):
     class TextInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
         pass
-
-    
 
     searchTerm = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["f10", "dump", "note", "e1", "e40"]))
     person = django_filters.CharFilter(method=search_in_vectors(cols_to_check=["e1", "f10", "dump", "note"]))
@@ -230,12 +244,11 @@ class SearchFilter2(django_filters.FilterSet):
     work_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj"], or_self=True))
     bibl_id = TextInFilter(field_name="f3_manifestation_product_type__entity_id", lookup_expr="in")
     honour_id = TextInFilter(field_name="honour__entity_id", lookup_expr="in")
-    genre = TextInFilter(field_name="f1_work__genre", lookup_expr="in")
     textLang = TextInFilter(field_name="f3_manifestation_product_type__text_language", lookup_expr="in")
     startDate = django_filters.DateFilter(method='start_date_filter')
     endDate = django_filters.DateFilter(method='end_date_filter')
 
-    chapter_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is in chapter", check_dump=False, is_chapter=True))
+    chapter_id = TextInFilter(method=search_in_work_and_its_manifestations("is in chapter", Chapter, lookup_name="chapter_number__in"))
     keyword = TextInFilter(method=filter_entity(["triple_set_from_subj__obj"], class_to_check=Keyword, lookup_expr="in"))
     keyword_id = TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"]))
     
@@ -276,11 +289,11 @@ class SearchFilter2(django_filters.FilterSet):
                 self.filters['institution'] = django_filters.CharFilter(method=filter_entity(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], class_to_check=E40_Legal_Body, lookup_expr="contains", role=self.data["institutionRole"]))
                 self.filters['institution_id'] =  self.TextInFilter(method=filter_by_entity_id(["triple_set_from_obj__subj", "triple_set_from_subj__obj"], role=self.data["institutionRole"]))
         if "workRole" in self.data and "about" in self.data["workRole"]:
-            self.filters['work_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
+            self.filters['work_id'] = self.TextInFilter(method=search_in_work_and_its_manifestations("is about", F1_Work))
         if "honourRole" in self.data and "about" in self.data["honourRole"]:
-            self.filters['honour_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about"))
+            self.filters['honour_id'] = self.TextInFilter(method=search_in_work_and_its_manifestations("is about", Honour))
         if "chapterRole" in self.data and "about" in self.data["chapterRole"]:
-            self.filters['chapter_id'] = self.TextInFilter(method=filter_by_entity_id(["triple_set_from_subj__obj"], role="is about", is_chapter=True, check_dump=False))
+            self.filters['chapter_id'] = self.TextInFilter(method=search_in_work_and_its_manifestations("is about", Chapter))
         parent = super(SearchFilter2, self).qs
         return parent
 
@@ -288,10 +301,7 @@ def exclude_null_values(queryset, name, value):
     filter_name = "{}__isnull".format(name)
     return queryset.exclude(Q(**{filter_name: True}))
 
-def filter_on_related_work(queryset, name, value):
-    matches = [q.id for q in queryset if next((item for item in q.related_work if item["genre"] in value), None)]
-    res = queryset.filter(Q(id__in=matches) | Q(f1_work__genre__in=value))
-    return res
+
 
 class FacetFilter(django_filters.FilterSet):
     class TextInFilter(django_filters.BaseInFilter, django_filters.CharFilter):

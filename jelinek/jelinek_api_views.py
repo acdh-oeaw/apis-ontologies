@@ -204,9 +204,6 @@ class SearchV2(viewsets.ReadOnlyModelViewSet):
                             "honourRole", "chapterRole", "limit", "filter_genre", "filter_keywords", "filter_startDate", 
                             "filter_endDate", "filter_persons", "filter_institutions", "filter_personRoles", "filter_institutionRoles"]
         work_only = set(i[0] for i in self.request.GET.items() if i[1] is not None and i[1] != "").issubset(work_only_fields)
-        
-        
-        print(work_only)
         person_contenttype = ContentType.objects.get_for_model(model=F10_Person)
         institution_contenttype = ContentType.objects.get_for_model(model=E40_Legal_Body)
         person_subquery = F10_Person.objects.filter(triple_set_from_subj__obj_id=OuterRef("pk")).values(json=JSONObject(name="name", entity_id="entity_id"))
